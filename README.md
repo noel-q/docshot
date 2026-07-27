@@ -61,6 +61,28 @@ Open `DocShot.xcodeproj`, choose the **DocShot** scheme, run on **My Mac**, and 
 Recording permission when macOS asks. The app is Apple Development-signed for local development;
 it is not notarised or distributed as a public installer.
 
+### Create a local test package
+
+On a Mac with Xcode and the configured Apple Development signing identity, create a release-build
+ZIP with:
+
+```bash
+./Scripts/package-development-app.sh
+```
+
+The package is written to `dist/DocShot-macos-development.zip` and contains `DocShot.app`.
+The script refuses to overwrite an existing package and verifies its code signature before zipping.
+Use a fresh `dist/` directory or pass a custom output directory:
+
+```bash
+./Scripts/package-development-app.sh /path/to/output
+```
+
+This is a **development testing package**, not a public release. It is signed with an Apple
+Development identity and is not notarised. A recipient may need to use Finder's **Open** action to
+accept macOS's warning. Do not redistribute it as a production installer; public distribution
+requires Developer ID signing, notarisation, and a release process that has not yet been added.
+
 ## Verify
 
 ```bash
@@ -83,5 +105,5 @@ through both SwiftPM and Xcode test paths. Device-level checks are tracked in
 ## Status
 
 DocShot is an actively developed native macOS project. The screenshot workflow, MP4 recording,
-opt-in system audio, bounded GIF export, and post-stop editor are implemented. Packaging,
-notarisation, and public distribution are deliberately out of scope for this repository today.
+opt-in system audio, bounded GIF export, and post-stop editor are implemented. A local development
+package is supported; notarisation and public distribution remain deliberately out of scope.

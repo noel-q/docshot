@@ -78,13 +78,16 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
         static let capture: UInt32 = 1
         /// Escape, registered only while a capture is pending and no overlay exists yet.
         static let temporaryEscape: UInt32 = 2
+        static let recording: UInt32 = 3
     }
 
     private var hotKeyRef: EventHotKeyRef?
     private var escapeHotKeyRef: EventHotKeyRef?
+    private var recordingHotKeyRef: EventHotKeyRef?
     private var eventHandlerRef: EventHandlerRef?
     private var onTrigger: (@MainActor @Sendable () -> Void)?
     private var onTemporaryEscape: (@MainActor @Sendable () -> Void)?
+    private var onRecordingTrigger: (@MainActor @Sendable () -> Void)?
 
     private enum DefaultsKey {
         static let presetID = "DocShotHotkeyPresetID"
@@ -95,6 +98,7 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
     }
     
     @Published public private(set) var currentPreset: HotkeyPreset = HotkeyPreset.presets[0]
+    @Published public private(set) var recordingPreset = HotkeyPreset(id: 4, label: "⌘⇧8 (Cmd + Shift + 8)", keyCode: 28, modifiers: UInt32(cmdKey | shiftKey))
     public private(set) var registrationFailed: Bool = false
     public private(set) var lastError: String?
     
@@ -191,6 +195,29 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
         removeEventHandlerIfUnused()
     }
 
+    /// Releases the independently registered recording shortcut. This is primarily useful
+    /// during app teardown; the recording shortcut otherwise remains active for the app's
+    /// lifetime alongside the screenshot shortcut.
+    public func unregisterRecordingHotkey() {
+        if let ref = recordingHotKeyRef {
+            UnregisterEventHotKey(ref)
+            recordingHotKeyRef = nil
+        }
+        onRecordingTrigger = nil
+        removeEventHandlerIfUnused()
+    }
+
+    @discardableResult
+    public func registerRecordingHotkey(action: @escaping @MainActor @Sendable () -> Void) -> Bool {
+        if let ref = recordingHotKeyRef { UnregisterEventHotKey(ref); recordingHotKeyRef = nil }
+        onRecordingTrigger = action
+        guard installEventHandlerIfNeeded() else { return false }
+        let id = EventHotKeyID(signature: HotkeyService.signature, id: HotkeyIdentifier.recording)
+        let status = RegisterEventHotKey(recordingPreset.keyCode, recordingPreset.modifiers, id, GetApplicationEventTarget(), 0, &recordingHotKeyRef)
+        if status != noErr { lastError = "Recording shortcut registration failed (OSStatus \(status))."; return false }
+        return true
+    }
+
     /// Installs the shared Carbon handler once. Both the capture shortcut and the temporary
     /// Escape registration dispatch through it, so neither can tear down the other's delivery.
     private func installEventHandlerIfNeeded() -> Bool {
@@ -226,6 +253,8 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
                         service.onTrigger?()
                     case HotkeyIdentifier.temporaryEscape:
                         service.onTemporaryEscape?()
+                    case HotkeyIdentifier.recording:
+                        service.onRecordingTrigger?()
                     default:
                         break
                     }
@@ -256,7 +285,8 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
 
     /// Removes the shared handler only once nothing is registered through it.
     private func removeEventHandlerIfUnused() {
-        guard hotKeyRef == nil, escapeHotKeyRef == nil, let handler = eventHandlerRef else { return }
+        guard hotKeyRef == nil, escapeHotKeyRef == nil, recordingHotKeyRef == nil,
+              let handler = eventHandlerRef else { return }
         RemoveEventHandler(handler)
         eventHandlerRef = nil
     }
@@ -266,6 +296,7 @@ public final class HotkeyService: ObservableObject, @unchecked Sendable {
             UnregisterEventHotKey(ref)
             escapeHotKeyRef = nil
         }
+        unregisterRecordingHotkey()
         unregisterHotkey()
     }
 }

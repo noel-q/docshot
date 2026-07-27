@@ -63,6 +63,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         HotkeyService.shared.registerPreset(HotkeyService.shared.currentPreset) {
             AppDelegate.startScreenshotCaptureIfAllowed()
         }
+        HotkeyService.shared.registerRecordingHotkey {
+            let policy = CaptureActivityPolicy.evaluate(captureState: CaptureCoordinator.shared.state, recordingState: RecordingCoordinator.shared.state)
+            guard policy.allowsRecordingCapture else { NSSound.beep(); return }
+            RecordingCoordinator.shared.startRecording()
+        }
 
         // Show onboarding guide on first launch
         Task { @MainActor in

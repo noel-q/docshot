@@ -425,10 +425,11 @@ public final class RecordingCoordinator: ObservableObject {
 
             let audio: RecordingAudioMode = UserDefaults.standard.bool(forKey: "DocShotRecordSystemAudio")
                 ? .system : .none
+            let savedFrameRate = UserDefaults.standard.integer(forKey: "DocShotRecordingFrameRate")
             let options = RecordingOptions(
                 audio: audio,
-                showsCursor: ScreenCaptureService.shared.includeCursor,
-                maximumFrameRate: RecordingOptions.defaultMaximumFrameRate
+                showsCursor: UserDefaults.standard.bool(forKey: "DocShotRecordIncludeCursor"),
+                maximumFrameRate: savedFrameRate == 0 ? RecordingOptions.defaultMaximumFrameRate : savedFrameRate
             )
 
             do {

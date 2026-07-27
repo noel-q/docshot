@@ -8,6 +8,11 @@ public struct SettingsView: View {
     @State private var isShowingCustomShortcutRecorder = false
     @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
     @State private var recordSystemAudio: Bool = UserDefaults.standard.bool(forKey: "DocShotRecordSystemAudio")
+    @State private var recordCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotRecordIncludeCursor")
+    @State private var recordFrameRate: Int = {
+        let saved = UserDefaults.standard.integer(forKey: "DocShotRecordingFrameRate")
+        return saved == 0 ? 30 : saved
+    }()
     
     @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
     @State private var folderPathDisplay: String = OutputFolderService.shared.displayPath ?? "No folder selected"
@@ -39,9 +44,18 @@ public struct SettingsView: View {
             
             Divider()
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Recording Audio")
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Recording")
                     .font(.system(size: 13, weight: .semibold))
+                HStack {
+                    Text("Global shortcut")
+                    Spacer()
+                    Text(HotkeyService.shared.recordingPreset.shortcutDisplay)
+                        .font(.system(size: 13, design: .monospaced))
+                    Text("Records screen")
+                        .font(.system(size: 11))
+                        .foregroundColor(DesignTokens.secondaryText)
+                }
                 Toggle(isOn: $recordSystemAudio) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Include system audio in recordings")
@@ -53,6 +67,17 @@ public struct SettingsView: View {
                 }
                 .onChange(of: recordSystemAudio) { _, newValue in
                     UserDefaults.standard.set(newValue, forKey: "DocShotRecordSystemAudio")
+                }
+                Toggle("Include cursor in recordings", isOn: $recordCursor)
+                    .onChange(of: recordCursor) { _, newValue in
+                        UserDefaults.standard.set(newValue, forKey: "DocShotRecordIncludeCursor")
+                    }
+                Picker("Maximum frame rate", selection: $recordFrameRate) {
+                    Text("30 fps").tag(30)
+                }
+                .pickerStyle(.menu)
+                .onChange(of: recordFrameRate) { _, newValue in
+                    UserDefaults.standard.set(newValue, forKey: "DocShotRecordingFrameRate")
                 }
             }
 
@@ -306,6 +331,9 @@ public struct SettingsView: View {
             registrationError = HotkeyService.shared.lastError
             includeCursor = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
             recordSystemAudio = UserDefaults.standard.bool(forKey: "DocShotRecordSystemAudio")
+            recordCursor = UserDefaults.standard.bool(forKey: "DocShotRecordIncludeCursor")
+            let savedFrameRate = UserDefaults.standard.integer(forKey: "DocShotRecordingFrameRate")
+            recordFrameRate = savedFrameRate == 0 ? 30 : savedFrameRate
             outputFolderMode = OutputFolderService.shared.currentMode
             folderPathDisplay = OutputFolderService.shared.displayPath ?? "No folder selected"
             validateFolder()

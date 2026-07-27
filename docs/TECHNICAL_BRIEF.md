@@ -17,6 +17,7 @@ Windows is a later native port. Keep product concepts and data structures platfo
 | Permission | `CGPreflightScreenCaptureAccess` and `CGRequestScreenCaptureAccess` with clear explanatory UI |
 | Window discovery | `CGWindowListCopyWindowInfo`, filtering hidden, tiny, system and DocShot windows |
 | Still capture | ScreenCaptureKit, using the selected `SCWindow` where possible; Core Graphics fallback only if necessary |
+| Later recording | A recording-specific ScreenCaptureKit pipeline and state machine; AVFoundation/`AVAssetWriter` for local MP4 output |
 | Selection UI | Borderless transparent AppKit `NSPanel`/`NSWindow` above each display, coordinated by one capture controller |
 | Annotation | SwiftUI canvas/view model with serialisable annotation objects and a single flattened render pipeline |
 | Clipboard | `NSPasteboard` using PNG data |
@@ -76,6 +77,21 @@ No capture should produce a file or clipboard write until the editor asks an out
 - Verify no file or clipboard entry exists after a cancelled capture.
 - Verify copied PNG pastes into Preview, Messages/Slack equivalent, and a browser-based issue tracker.
 
-## Later recording implementation
+## Scheduled post-V1 recording implementation
 
-Use ScreenCaptureKit for window/display capture and crop region recordings in the pipeline. Export MP4 before tackling GIF. Audio needs its own consent/state handling and is not part of the screenshot milestone.
+Recording is deliberately separate from the still-capture coordinator: use a recording-specific
+state machine for selection, permission preflight, armed, recording, stopping, export choice,
+cancelled, and failure. Use ScreenCaptureKit for window/display video and crop region
+recordings in the pipeline. Write local MP4 first with AVFoundation/`AVAssetWriter`; do not add
+GIF encoding until MP4 lifecycle, timing, interruption recovery, and explicit output are proven.
+
+The audio setting defaults to **Off**. **System Audio**, **Microphone**, and **Both** are
+selectable only when their distinct macOS permission and capture capabilities are available;
+the UI must explain unavailable choices and record no unselected track. The exact ScreenCaptureKit
+system-audio API and entitlement/permission behaviour must be prototyped before a delivery
+promise is made.
+
+GIF is silent and available only for clips of 15 seconds or less that satisfy a clearly labelled,
+yet-to-be-finalised file-size guard; all other clips offer MP4. Stop must lead to an explicit
+output choice. Cancel, denied permission, interruption, and failure must leave no silent save,
+clipboard write, capture history, cloud upload, account, or analytics event.

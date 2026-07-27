@@ -2,7 +2,7 @@
 
 ## Product summary
 
-DocShot is a fast, private desktop capture utility for macOS and Windows. It lets people select a detected window or precise region, annotate it before committing anything, and explicitly choose copy, save, GIF, or video output.
+DocShot is a fast, private, macOS-first desktop capture utility. It lets people select a detected window or precise region, annotate a still before committing anything, and explicitly choose copy, save, or discard. Later, separately shipped macOS milestones may add local video and short GIF output.
 
 It should feel as immediate as Lightshot, with ShareX-style window awareness, without the account, cloud-sharing, library-management, or documentation-tool overhead of established alternatives.
 
@@ -58,18 +58,26 @@ Users need a fast capture workflow that preserves control: decide what to captur
 - Discard closes the canvas without output.
 - No cloud uploads, accounts, analytics, history library, or automatic files.
 
-## Deferred from V1
+## Scheduled after V1
 
-- Screen recording.
-- MP4 and GIF export.
-- System-audio and microphone capture.
 - Scrolling capture.
 - OCR, AI features, integrations and sharing links.
 - Windows delivery. It follows the validated macOS interaction model.
 
-## Recording product contract for later phases
+## Recording product contract
 
-Recording uses the same selection-first interaction: select a detected window or drag a region, then see a compact confirmation control with Record and Cancel. Stopping opens an export choice. A short clip may be copied or exported as GIF only when it is at most 15 seconds and within a file-size guard; otherwise offer MP4 export. Recording must never silently save a file.
+Recording is a separately approved, local-only post-V1 milestone. It uses the same
+selection-first interaction: select a detected window or drag a region, then see a compact
+confirmation control with Record and Cancel. The audio setting defaults to **Off** and offers
+**System Audio**, **Microphone**, and **Both** only when the relevant permission and macOS
+capture capability are available; unavailable choices must explain why.
+
+Stopping opens an explicit export choice. MP4 is the baseline output. A GIF may be
+exported only when the clip is 15 seconds or less and is under a clearly labelled,
+yet-to-be-finalised file-size guard; otherwise offer MP4. GIF output contains no audio.
+Cancellation, permission denial, interruption, and failure must not silently save a file or
+leave capture history. Recording has no cloud upload, account, analytics, or automatic
+clipboard write.
 
 ## Success criteria
 

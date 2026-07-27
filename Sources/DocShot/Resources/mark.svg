@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Noel Quadri identity mark: amber-on-dark variant. Ring built from 8 angular segments plus a tail node (bottom-right) that must stay visible at all sizes. -->
+  <path d="M729.4 543.3 L583.3 689.4 L539.3 583.2 L623.2 499.3Z" fill="#B5791E"/>
+  <path d="M583.3 689.4 L376.7 689.4 L420.7 583.2 L539.3 583.2Z" fill="#B5791E"/>
+  <path d="M376.7 689.4 L230.6 543.3 L336.8 499.3 L420.7 583.2Z" fill="#CB8B2F"/>
+  <path d="M230.6 543.3 L230.6 336.7 L336.8 380.7 L336.8 499.3Z" fill="#E3A84C"/>
+  <path d="M230.6 336.7 L376.7 190.6 L420.7 296.8 L336.8 380.7Z" fill="#E3A84C"/>
+  <path d="M376.7 190.6 L583.3 190.6 L539.3 296.8 L420.7 296.8Z" fill="#E3A84C"/>
+  <path d="M583.3 190.6 L729.4 336.7 L623.2 380.7 L539.3 296.8Z" fill="#CB8B2F"/>
+  <path d="M729.4 336.7 L729.4 543.3 L623.2 499.3 L623.2 380.7Z" fill="#B5791E"/>
+  <path d="M578.3 603.3 L719.7 744.8 L784.8 679.7 L643.3 538.3Z" fill="#E3A84C"/>
+  <rect x="753.7" y="719.4" width="96" height="96" fill="#E3A84C"/>
+</svg>

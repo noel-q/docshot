@@ -3,13 +3,14 @@ import AppKit
 
 public struct VideoEditorView: View {
     @ObservedObject var viewModel: VideoEditorViewModel
-    public var onClose: () -> Void
+    public var onExit: (VideoEditorExit) -> Void
 
     @State private var showDiscardAlert: Bool = false
+    @State private var showReturnAlert: Bool = false
 
-    public init(viewModel: VideoEditorViewModel, onClose: @escaping () -> Void) {
+    public init(viewModel: VideoEditorViewModel, onExit: @escaping (VideoEditorExit) -> Void) {
         self.viewModel = viewModel
-        self.onClose = onClose
+        self.onExit = onExit
     }
 
     public var body: some View {
@@ -19,10 +20,9 @@ public struct VideoEditorView: View {
                 // Back / Cancel Button
                 Button(action: {
                     if viewModel.hasUnsavedChanges {
-                        showDiscardAlert = true
+                        showReturnAlert = true
                     } else {
-                        viewModel.cancel()
-                        onClose()
+                        onExit(.returnToOutputChoice)
                     }
                 }) {
                     HStack(spacing: 6) {
@@ -75,12 +75,7 @@ public struct VideoEditorView: View {
 
                 // Discard Button
                 Button(action: {
-                    if viewModel.hasUnsavedChanges {
-                        showDiscardAlert = true
-                    } else {
-                        viewModel.discard()
-                        onClose()
-                    }
+                    showDiscardAlert = true
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "xmark.circle")
@@ -138,17 +133,26 @@ public struct VideoEditorView: View {
         .alert(isPresented: $showDiscardAlert) {
             Alert(
                 title: Text("Discard Changes?"),
-                message: Text("You have unsaved edits on this recording. Discarding will close the editor without saving."),
+                message: Text("Discarding deletes this recording because it has not been saved."),
                 primaryButton: .destructive(Text("Discard")) {
-                    viewModel.discard()
-                    onClose()
+                    onExit(.discardRecording)
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert(isPresented: $showReturnAlert) {
+            Alert(
+                title: Text("Discard Edits?"),
+                message: Text("Your original recording will be kept. You can save it, export a GIF, or discard it from the output choices."),
+                primaryButton: .destructive(Text("Return to Output Choices")) {
+                    onExit(.returnToOutputChoice)
                 },
                 secondaryButton: .cancel()
             )
         }
         .onChange(of: viewModel.isClosed) { _, closed in
-            if closed {
-                onClose()
+            if closed, viewModel.saveCompletedURL != nil {
+                onExit(.savedOutput)
             }
         }
     }

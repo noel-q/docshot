@@ -502,8 +502,14 @@ public final class RecordingCoordinator: ObservableObject {
         if response == .alertFirstButtonReturn {
             send(.saveRequested)
         } else if response == .alertSecondButtonReturn {
-            VideoEditorWindowController.shared.showEditor(recording: recording) { [weak self] in
-                self?.send(.discardRequested)
+            VideoEditorWindowController.shared.showEditor(recording: recording) { [weak self] exit in
+                guard let self else { return }
+                switch exit {
+                case .returnToOutputChoice:
+                    self.presentOutputChoice(recording)
+                case .discardRecording, .savedOutput:
+                    self.send(.discardRequested)
+                }
             }
         } else if canExportGIF && response == .alertThirdButtonReturn {
             exportGIF(from: recording)

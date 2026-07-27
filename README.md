@@ -45,10 +45,23 @@ removed on cancel, discard, failure, quit, and next launch cleanup.
 
 ## Demo media
 
-Live screenshots and a short recording walkthrough are intentionally captured from the signed
-development build rather than fabricated. The repeatable capture script is in
-[docs/README_MEDIA_CAPTURE.md](docs/README_MEDIA_CAPTURE.md); place approved assets in
-`docs/media/` and link them here before making the PR ready for review.
+These are captured from the signed development build using a synthetic local document; no product
+mockups or personal content are used.
+
+### Recording controls
+
+![DocShot recording settings](docs/media/menu-and-settings.png)
+
+### Screenshot annotation
+
+![DocShot screenshot editor](docs/media/screenshot-editor.png)
+
+### Post-stop video editor
+
+![DocShot video editor](docs/media/video-editor.png)
+
+The repeatable capture checklist, including the optional 20–30 second walkthrough video, is in
+[docs/README_MEDIA_CAPTURE.md](docs/README_MEDIA_CAPTURE.md).
 
 ## Run locally
 

@@ -2,7 +2,7 @@
 
 You are building inside the `docshot` repository. Read `README.md`, `docs/PRODUCT_BRIEF.md`, and `docs/TECHNICAL_BRIEF.md` in full before making changes. If documents conflict, the technical brief decides implementation and the product brief decides user behaviour.
 
-Build the first usable macOS version of DocShot: a local-first screenshot capture and annotation utility. Do not implement recording, GIF/MP4 export, Windows support, cloud sharing, accounts, history, OCR, analytics, a backend, or a database.
+Build the first usable macOS version of DocShot: a local-first screenshot capture and annotation utility. Do not implement recording or GIF/MP4 export **in this V1 milestone**; recording is a separately approved post-V1 milestone. Do not implement Windows support, cloud sharing, accounts, history, OCR, analytics, a backend, or a database.
 
 ## Technology constraints
 
@@ -50,4 +50,4 @@ Run the clean build and tests. Then manually verify:
 4. Smart window selection does not select DocShot's own overlay/editor.
 5. Permission-denied state is understandable and recoverable.
 
-At hand-off, report the files created or changed, core design decisions, verification performed, known limitations and exact run instructions. Do not claim recording or Windows support is complete.
+At hand-off, report the files created or changed, core design decisions, verification performed, known limitations and exact run instructions. Do not claim recording or Windows support is complete for V1. A later recording milestone is local-only: it starts with MP4, keeps audio Off by default, offers System Audio, Microphone, or Both only when available and permitted, and permits silent GIFs only at 15 seconds or less and under a clearly labelled, yet-to-be-finalised file-size guard.

@@ -1,0 +1,821 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000912C50000000000001 /* VideoEditorMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000912C50000000000001 /* VideoEditorMath.swift */; };
+		4FF1ED9130111159009B2696 /* VideoEditorMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000912C50000000000001 /* VideoEditorMath.swift */; };
+		A00000922C50000000000001 /* VideoEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000922C50000000000001 /* VideoEditorViewModel.swift */; };
+		A00000932C50000000000001 /* VideoPlayerPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000932C50000000000001 /* VideoPlayerPreviewView.swift */; };
+		A00000942C50000000000001 /* VideoTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000942C50000000000001 /* VideoTimelineView.swift */; };
+		A00000952C50000000000001 /* VideoAnnotationToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000952C50000000000001 /* VideoAnnotationToolbar.swift */; };
+		A00000962C50000000000001 /* VideoEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000962C50000000000001 /* VideoEditorView.swift */; };
+		A00000972C50000000000001 /* VideoEditorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000972C50000000000001 /* VideoEditorWindowController.swift */; };
+		4FF1ED9830111159009B2696 /* VideoEditorMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000982C50000000000001 /* VideoEditorMathTests.swift */; };
+		4FF1ED9930111159009B2696 /* VideoEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000992C50000000000001 /* VideoEditorViewModelTests.swift */; };
+		4FF1ED1730111159009B2696 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000022C50000000000001 /* Annotation.swift */; };
+		4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000032C50000000000001 /* AnnotationTool.swift */; };
+		4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000042C50000000000001 /* CaptureState.swift */; };
+		4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000052C50000000000001 /* DisplayGeometry.swift */; };
+		4FF1ED1B30111159009B2696 /* WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000062C50000000000001 /* WindowInfo.swift */; };
+		4FF1ED1C30111159009B2696 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000072C50000000000001 /* PermissionService.swift */; };
+		4FF1ED1D30111159009B2696 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000082C50000000000001 /* HotkeyService.swift */; };
+		4FF1ED1E30111159009B2696 /* OutputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000B2C50000000000001 /* OutputService.swift */; };
+		4FF1ED1F30111159009B2696 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001D2C50000000000001 /* ExportService.swift */; };
+		4FF1ED2030111159009B2696 /* EditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000F2C50000000000001 /* EditorViewModel.swift */; };
+		4FF1ED2130111159009B2696 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000132C50000000000001 /* ImageRenderer.swift */; };
+		4FF1ED2330111159009B2696 /* OutputFolderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001E2C50000000000001 /* OutputFolderService.swift */; };
+		4FF1ED2430111159009B2696 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001F2C50000000000001 /* DesignTokens.swift */; };
+		4FF1ED2530111159009B2696 /* MarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000202C50000000000001 /* MarkView.swift */; };
+		A00000012C50000000000001 /* DocShotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000012C50000000000001 /* DocShotApp.swift */; };
+		A00000022C50000000000001 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000022C50000000000001 /* Annotation.swift */; };
+		A00000032C50000000000001 /* AnnotationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000032C50000000000001 /* AnnotationTool.swift */; };
+		A00000042C50000000000001 /* CaptureState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000042C50000000000001 /* CaptureState.swift */; };
+		A00000052C50000000000001 /* DisplayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000052C50000000000001 /* DisplayGeometry.swift */; };
+		A00000062C50000000000001 /* WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000062C50000000000001 /* WindowInfo.swift */; };
+		A00000072C50000000000001 /* PermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000072C50000000000001 /* PermissionService.swift */; };
+		A00000082C50000000000001 /* HotkeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000082C50000000000001 /* HotkeyService.swift */; };
+		A00000092C50000000000001 /* WindowDiscoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000092C50000000000001 /* WindowDiscoveryService.swift */; };
+		A000000A2C50000000000001 /* ScreenCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000A2C50000000000001 /* ScreenCaptureService.swift */; };
+		A000000B2C50000000000001 /* OutputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000B2C50000000000001 /* OutputService.swift */; };
+		A000000C2C50000000000001 /* CaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000C2C50000000000001 /* CaptureCoordinator.swift */; };
+		A000000D2C50000000000001 /* SelectionOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000D2C50000000000001 /* SelectionOverlayWindow.swift */; };
+		A000000E2C50000000000001 /* SelectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000E2C50000000000001 /* SelectionOverlayView.swift */; };
+		A000000F2C50000000000001 /* EditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000000F2C50000000000001 /* EditorViewModel.swift */; };
+		A00000102C50000000000001 /* EditorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000102C50000000000001 /* EditorWindowController.swift */; };
+		A00000112C50000000000001 /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000112C50000000000001 /* EditorView.swift */; };
+		A00000122C50000000000001 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000122C50000000000001 /* CanvasView.swift */; };
+		A00000132C50000000000001 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000132C50000000000001 /* ImageRenderer.swift */; };
+		A00000142C50000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000142C50000000000001 /* SettingsView.swift */; };
+		A00000152C50000000000001 /* DisplayGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000152C50000000000001 /* DisplayGeometryTests.swift */; };
+		A00000162C50000000000001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000162C50000000000001 /* AnnotationModelTests.swift */; };
+		A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000172C50000000000001 /* EditorViewModelTests.swift */; };
+		A00000182C50000000000001 /* PermissionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000182C50000000000001 /* PermissionWindowController.swift */; };
+		A00000192C50000000000001 /* OutputServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000192C50000000000001 /* OutputServiceTests.swift */; };
+		A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001A2C50000000000001 /* CropRenderingTests.swift */; };
+		A000001B2C50000000000001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001B2C50000000000001 /* OnboardingView.swift */; };
+		A000001C2C50000000000001 /* EditorResponsivenessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001C2C50000000000001 /* EditorResponsivenessTests.swift */; };
+		A000001D2C50000000000001 /* ExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001D2C50000000000001 /* ExportService.swift */; };
+		A000001E2C50000000000001 /* OutputFolderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001E2C50000000000001 /* OutputFolderService.swift */; };
+		A000001F2C50000000000001 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000001F2C50000000000001 /* DesignTokens.swift */; };
+		A00000202C50000000000001 /* MarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000202C50000000000001 /* MarkView.swift */; };
+		A00000222C50000000000001 /* OutputFolderServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000222C50000000000001 /* OutputFolderServiceTests.swift */; };
+		A00000232C50000000000001 /* ExportSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000232C50000000000001 /* ExportSize.swift */; };
+		A00000242C50000000000001 /* ExportSizeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000242C50000000000001 /* ExportSizeTests.swift */; };
+		A00000252C50000000000001 /* ExportSizeControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000252C50000000000001 /* ExportSizeControl.swift */; };
+		A00000262C50000000000001 /* CustomShortcutRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000262C50000000000001 /* CustomShortcutRecorder.swift */; };
+		A00000272C50000000000001 /* ColorSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000272C50000000000001 /* ColorSample.swift */; };
+		A00000282C50000000000001 /* PixelSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000282C50000000000001 /* PixelSampler.swift */; };
+		AA1000002C50000000000001 /* DisplaySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000002C50000000000001 /* DisplaySnapshot.swift */; };
+		AC1000002C50000000000001 /* DisplaySnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000002C50000000000001 /* DisplaySnapshot.swift */; };
+		AA1000012C50000000000001 /* SnapshotPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000012C50000000000001 /* SnapshotPlan.swift */; };
+		AC1000012C50000000000001 /* SnapshotPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000012C50000000000001 /* SnapshotPlan.swift */; };
+		AA1000022C50000000000001 /* DisplaySnapshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000022C50000000000001 /* DisplaySnapshotService.swift */; };
+		AC1000022C50000000000001 /* DisplaySnapshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000022C50000000000001 /* DisplaySnapshotService.swift */; };
+		AA1000032C50000000000001 /* ColorReadoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000032C50000000000001 /* ColorReadoutModel.swift */; };
+		AE00002C50000000000001 /* PendingEscapeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE00002C50000000000001 /* PendingEscapeSession.swift */; };
+		AF00002C50000000000001 /* PendingEscapeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE00002C50000000000001 /* PendingEscapeSession.swift */; };
+		AC1000032C50000000000001 /* ColorReadoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000032C50000000000001 /* ColorReadoutModel.swift */; };
+		AB1000002C50000000000001 /* SnapshotPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000042C50000000000001 /* SnapshotPlanTests.swift */; };
+		AB1000012C50000000000001 /* DisplaySnapshotServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000052C50000000000001 /* DisplaySnapshotServiceTests.swift */; };
+		AB1000022C50000000000001 /* ColorReadoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1000062C50000000000001 /* ColorReadoutTests.swift */; };
+		AD00002C50000000000001 /* TemporaryEscapeHotkeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD00002C50000000000001 /* TemporaryEscapeHotkeyTests.swift */; };
+		A00000292C50000000000001 /* ColorSampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000292C50000000000001 /* ColorSampleTests.swift */; };
+		A000002A2C50000000000001 /* PixelSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002A2C50000000000001 /* PixelSamplerTests.swift */; };
+		A000002B2C50000000000001 /* MagnifierGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002B2C50000000000001 /* MagnifierGrid.swift */; };
+		A000002C2C50000000000001 /* MagnifierView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002C2C50000000000001 /* MagnifierView.swift */; };
+		A000002D2C50000000000001 /* MagnifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002D2C50000000000001 /* MagnifierTests.swift */; };
+		4FF1ED2930111159009B2696 /* MagnifierGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = B000002B2C50000000000001 /* MagnifierGrid.swift */; };
+		4FF1ED2730111159009B2696 /* ColorSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000272C50000000000001 /* ColorSample.swift */; };
+		4FF1ED2830111159009B2696 /* PixelSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000282C50000000000001 /* PixelSampler.swift */; };
+		4FF1ED2630111159009B2696 /* ExportSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000232C50000000000001 /* ExportSize.swift */; };
+		990000022C50000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 990000012C50000000000001 /* Assets.xcassets */; };
+		990000032C50000000000001 /* mark.svg in Resources */ = {isa = PBXBuildFile; fileRef = B00000212C50000000000001 /* mark.svg */; };
+		CB0000012C50000000000001 /* RecordingTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000012C50000000000001 /* RecordingTarget.swift */; };
+		CB0000022C50000000000001 /* RecordingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000022C50000000000001 /* RecordingOptions.swift */; };
+		CB0000032C50000000000001 /* RecordingFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000032C50000000000001 /* RecordingFailure.swift */; };
+		CB0000042C50000000000001 /* TemporaryRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000042C50000000000001 /* TemporaryRecording.swift */; };
+		CB0000052C50000000000001 /* RecordingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000052C50000000000001 /* RecordingState.swift */; };
+		CB0000062C50000000000001 /* RecordingStateReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000062C50000000000001 /* RecordingStateReducer.swift */; };
+		CB0000072C50000000000001 /* RecordingRegionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000072C50000000000001 /* RecordingRegionPlan.swift */; };
+		CB0000082C50000000000001 /* CaptureActivityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000082C50000000000001 /* CaptureActivityPolicy.swift */; };
+		CB0000092C50000000000001 /* RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000092C50000000000001 /* RecordingSession.swift */; };
+		CB00000A2C50000000000001 /* TemporaryRecordingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000A2C50000000000001 /* TemporaryRecordingStore.swift */; };
+		CB00000B2C50000000000001 /* RecordingOutputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000B2C50000000000001 /* RecordingOutputService.swift */; };
+		CB00000C2C50000000000001 /* RecordingVideoWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000C2C50000000000001 /* RecordingVideoWriter.swift */; };
+		CB00000D2C50000000000001 /* RecordingFilterFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000D2C50000000000001 /* RecordingFilterFactory.swift */; };
+		CB00000E2C50000000000001 /* ScreenCaptureKitRecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000E2C50000000000001 /* ScreenCaptureKitRecordingSession.swift */; };
+		CB00000F2C50000000000001 /* RecordingSelectionAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000F2C50000000000001 /* RecordingSelectionAdapter.swift */; };
+		CB0000102C50000000000001 /* RecordingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000102C50000000000001 /* RecordingCoordinator.swift */; };
+		CB0000112C50000000000001 /* RecordingConfirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000112C50000000000001 /* RecordingConfirmationView.swift */; };
+		CB0000122C50000000000001 /* RecordingSelectionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000122C50000000000001 /* RecordingSelectionOverlayView.swift */; };
+		CB0000132C50000000000001 /* RecordingStatusPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000192C50000000000001 /* RecordingStatusPanelController.swift */; };
+		CB0000142C50000000000001 /* GIFExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000202C50000000000001 /* GIFExportService.swift */; };
+		CC0000012C50000000000001 /* RecordingTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000012C50000000000001 /* RecordingTarget.swift */; };
+		CC0000022C50000000000001 /* RecordingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000022C50000000000001 /* RecordingOptions.swift */; };
+		CC0000032C50000000000001 /* RecordingFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000032C50000000000001 /* RecordingFailure.swift */; };
+		CC0000042C50000000000001 /* TemporaryRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000042C50000000000001 /* TemporaryRecording.swift */; };
+		CC0000052C50000000000001 /* RecordingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000052C50000000000001 /* RecordingState.swift */; };
+		CC0000062C50000000000001 /* RecordingStateReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000062C50000000000001 /* RecordingStateReducer.swift */; };
+		CC0000072C50000000000001 /* RecordingRegionPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000072C50000000000001 /* RecordingRegionPlan.swift */; };
+		CC0000082C50000000000001 /* CaptureActivityPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000082C50000000000001 /* CaptureActivityPolicy.swift */; };
+		CC0000092C50000000000001 /* RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000092C50000000000001 /* RecordingSession.swift */; };
+		CC00000A2C50000000000001 /* TemporaryRecordingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000A2C50000000000001 /* TemporaryRecordingStore.swift */; };
+		CC00000B2C50000000000001 /* RecordingOutputService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000B2C50000000000001 /* RecordingOutputService.swift */; };
+		CD0000012C50000000000001 /* RecordingStateReducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000132C50000000000001 /* RecordingStateReducerTests.swift */; };
+		CD0000022C50000000000001 /* RecordingRegionPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000142C50000000000001 /* RecordingRegionPlanTests.swift */; };
+		CD0000032C50000000000001 /* TemporaryRecordingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000152C50000000000001 /* TemporaryRecordingStoreTests.swift */; };
+		CD0000042C50000000000001 /* RecordingOutputServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000162C50000000000001 /* RecordingOutputServiceTests.swift */; };
+		CD0000052C50000000000001 /* CaptureActivityPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000172C50000000000001 /* CaptureActivityPolicyTests.swift */; };
+		CD0000062C50000000000001 /* RecordingFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000182C50000000000001 /* RecordingFailureTests.swift */; };
+		CC00000C2C50000000000001 /* RecordingVideoWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00000C2C50000000000001 /* RecordingVideoWriter.swift */; };
+		CD0000072C50000000000001 /* RecordingAudioTrackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001A2C50000000000001 /* RecordingAudioTrackTests.swift */; };
+		CB0000212C50000000000001 /* VideoTimeRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001B2C50000000000001 /* VideoTimeRange.swift */; };
+		CC00000D2C50000000000001 /* VideoTimeRange.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001B2C50000000000001 /* VideoTimeRange.swift */; };
+		CB0000222C50000000000001 /* VideoProjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001C2C50000000000001 /* VideoProjectError.swift */; };
+		CC00000E2C50000000000001 /* VideoProjectError.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001C2C50000000000001 /* VideoProjectError.swift */; };
+		CB0000232C50000000000001 /* VideoProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001D2C50000000000001 /* VideoProject.swift */; };
+		CC00000F2C50000000000001 /* VideoProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001D2C50000000000001 /* VideoProject.swift */; };
+		CB0000242C50000000000001 /* VideoAnnotationOverlayRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001E2C50000000000001 /* VideoAnnotationOverlayRenderer.swift */; };
+		CC0000102C50000000000001 /* VideoAnnotationOverlayRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001E2C50000000000001 /* VideoAnnotationOverlayRenderer.swift */; };
+		CB0000252C50000000000001 /* VideoProjectExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001F2C50000000000001 /* VideoProjectExportService.swift */; };
+		CC0000112C50000000000001 /* VideoProjectExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA00001F2C50000000000001 /* VideoProjectExportService.swift */; };
+		CD0000082C50000000000001 /* VideoProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000222C50000000000001 /* VideoProjectTests.swift */; };
+		CD0000092C50000000000001 /* VideoProjectExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0000232C50000000000001 /* VideoProjectExportTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C00000012C50000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 100000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D00000012C50000000000001;
+			remoteInfo = DocShot;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		B00000912C50000000000001 /* VideoEditorMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorMath.swift; path = Sources/DocShot/Editor/VideoEditorMath.swift; sourceTree = "<group>"; };
+		B00000922C50000000000001 /* VideoEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorViewModel.swift; path = Sources/DocShot/Editor/VideoEditorViewModel.swift; sourceTree = "<group>"; };
+		B00000932C50000000000001 /* VideoPlayerPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoPlayerPreviewView.swift; path = Sources/DocShot/Editor/VideoPlayerPreviewView.swift; sourceTree = "<group>"; };
+		B00000942C50000000000001 /* VideoTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoTimelineView.swift; path = Sources/DocShot/Editor/VideoTimelineView.swift; sourceTree = "<group>"; };
+		B00000952C50000000000001 /* VideoAnnotationToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoAnnotationToolbar.swift; path = Sources/DocShot/Editor/VideoAnnotationToolbar.swift; sourceTree = "<group>"; };
+		B00000962C50000000000001 /* VideoEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorView.swift; path = Sources/DocShot/Editor/VideoEditorView.swift; sourceTree = "<group>"; };
+		B00000972C50000000000001 /* VideoEditorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorWindowController.swift; path = Sources/DocShot/Editor/VideoEditorWindowController.swift; sourceTree = "<group>"; };
+		B00000982C50000000000001 /* VideoEditorMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorMathTests.swift; path = Tests/DocShotTests/VideoEditorMathTests.swift; sourceTree = "<group>"; };
+		B00000992C50000000000001 /* VideoEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorViewModelTests.swift; path = Tests/DocShotTests/VideoEditorViewModelTests.swift; sourceTree = "<group>"; };
+		B00000012C50000000000001 /* DocShotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DocShotApp.swift; path = Sources/DocShot/DocShotApp.swift; sourceTree = "<group>"; };
+		B00000022C50000000000001 /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Annotation.swift; path = Sources/DocShot/Models/Annotation.swift; sourceTree = "<group>"; };
+		B00000032C50000000000001 /* AnnotationTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationTool.swift; path = Sources/DocShot/Models/AnnotationTool.swift; sourceTree = "<group>"; };
+		B00000042C50000000000001 /* CaptureState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureState.swift; path = Sources/DocShot/Models/CaptureState.swift; sourceTree = "<group>"; };
+		B00000052C50000000000001 /* DisplayGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayGeometry.swift; path = Sources/DocShot/Models/DisplayGeometry.swift; sourceTree = "<group>"; };
+		B00000062C50000000000001 /* WindowInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WindowInfo.swift; path = Sources/DocShot/Models/WindowInfo.swift; sourceTree = "<group>"; };
+		B00000072C50000000000001 /* PermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionService.swift; path = Sources/DocShot/Services/PermissionService.swift; sourceTree = "<group>"; };
+		B00000082C50000000000001 /* HotkeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HotkeyService.swift; path = Sources/DocShot/Services/HotkeyService.swift; sourceTree = "<group>"; };
+		B00000092C50000000000001 /* WindowDiscoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WindowDiscoveryService.swift; path = Sources/DocShot/Services/WindowDiscoveryService.swift; sourceTree = "<group>"; };
+		B000000A2C50000000000001 /* ScreenCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScreenCaptureService.swift; path = Sources/DocShot/Services/ScreenCaptureService.swift; sourceTree = "<group>"; };
+		B000000B2C50000000000001 /* OutputService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputService.swift; path = Sources/DocShot/Services/OutputService.swift; sourceTree = "<group>"; };
+		B000000C2C50000000000001 /* CaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureCoordinator.swift; path = Sources/DocShot/Capture/CaptureCoordinator.swift; sourceTree = "<group>"; };
+		B000000D2C50000000000001 /* SelectionOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectionOverlayWindow.swift; path = Sources/DocShot/Capture/SelectionOverlayWindow.swift; sourceTree = "<group>"; };
+		B000000E2C50000000000001 /* SelectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectionOverlayView.swift; path = Sources/DocShot/Capture/SelectionOverlayView.swift; sourceTree = "<group>"; };
+		B000000F2C50000000000001 /* EditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewModel.swift; path = Sources/DocShot/Editor/EditorViewModel.swift; sourceTree = "<group>"; };
+		B00000102C50000000000001 /* EditorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorWindowController.swift; path = Sources/DocShot/Editor/EditorWindowController.swift; sourceTree = "<group>"; };
+		B00000112C50000000000001 /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorView.swift; path = Sources/DocShot/Editor/EditorView.swift; sourceTree = "<group>"; };
+		B00000122C50000000000001 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CanvasView.swift; path = Sources/DocShot/Editor/CanvasView.swift; sourceTree = "<group>"; };
+		B00000132C50000000000001 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageRenderer.swift; path = Sources/DocShot/Editor/ImageRenderer.swift; sourceTree = "<group>"; };
+		B00000142C50000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Sources/DocShot/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		B00000152C50000000000001 /* DisplayGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayGeometryTests.swift; path = Tests/DocShotTests/DisplayGeometryTests.swift; sourceTree = "<group>"; };
+		B00000162C50000000000001 /* AnnotationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationModelTests.swift; path = Tests/DocShotTests/AnnotationModelTests.swift; sourceTree = "<group>"; };
+		B00000172C50000000000001 /* EditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewModelTests.swift; path = Tests/DocShotTests/EditorViewModelTests.swift; sourceTree = "<group>"; };
+		B00000182C50000000000001 /* PermissionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionWindowController.swift; path = Sources/DocShot/Services/PermissionWindowController.swift; sourceTree = "<group>"; };
+		B00000192C50000000000001 /* OutputServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputServiceTests.swift; path = Tests/DocShotTests/OutputServiceTests.swift; sourceTree = "<group>"; };
+		B000001A2C50000000000001 /* CropRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CropRenderingTests.swift; path = Tests/DocShotTests/CropRenderingTests.swift; sourceTree = "<group>"; };
+		B000001B2C50000000000001 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Sources/DocShot/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
+		B000001C2C50000000000001 /* EditorResponsivenessTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorResponsivenessTests.swift; path = Tests/DocShotTests/EditorResponsivenessTests.swift; sourceTree = "<group>"; };
+		B000001D2C50000000000001 /* ExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportService.swift; path = Sources/DocShot/Services/ExportService.swift; sourceTree = "<group>"; };
+		B000001E2C50000000000001 /* OutputFolderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputFolderService.swift; path = Sources/DocShot/Services/OutputFolderService.swift; sourceTree = "<group>"; };
+		B000001F2C50000000000001 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DesignTokens.swift; path = Sources/DocShot/Design/DesignTokens.swift; sourceTree = "<group>"; };
+		B00000202C50000000000001 /* MarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MarkView.swift; path = Sources/DocShot/Design/MarkView.swift; sourceTree = "<group>"; };
+		B00000212C50000000000001 /* mark.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = mark.svg; path = Sources/DocShot/Resources/mark.svg; sourceTree = "<group>"; };
+		B00000222C50000000000001 /* OutputFolderServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputFolderServiceTests.swift; path = Tests/DocShotTests/OutputFolderServiceTests.swift; sourceTree = "<group>"; };
+		B00000232C50000000000001 /* ExportSize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportSize.swift; path = Sources/DocShot/Models/ExportSize.swift; sourceTree = "<group>"; };
+		B00000242C50000000000001 /* ExportSizeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportSizeTests.swift; path = Tests/DocShotTests/ExportSizeTests.swift; sourceTree = "<group>"; };
+		B00000252C50000000000001 /* ExportSizeControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExportSizeControl.swift; path = Sources/DocShot/Editor/ExportSizeControl.swift; sourceTree = "<group>"; };
+		B00000262C50000000000001 /* CustomShortcutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CustomShortcutRecorder.swift; path = Sources/DocShot/Settings/CustomShortcutRecorder.swift; sourceTree = "<group>"; };
+		B00000272C50000000000001 /* ColorSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorSample.swift; path = Sources/DocShot/Models/ColorSample.swift; sourceTree = "<group>"; };
+		B00000282C50000000000001 /* PixelSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PixelSampler.swift; path = Sources/DocShot/Models/PixelSampler.swift; sourceTree = "<group>"; };
+		BB1000002C50000000000001 /* DisplaySnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplaySnapshot.swift; path = Sources/DocShot/Models/DisplaySnapshot.swift; sourceTree = "<group>"; };
+		BB1000012C50000000000001 /* SnapshotPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SnapshotPlan.swift; path = Sources/DocShot/Models/SnapshotPlan.swift; sourceTree = "<group>"; };
+		BB1000022C50000000000001 /* DisplaySnapshotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplaySnapshotService.swift; path = Sources/DocShot/Capture/DisplaySnapshotService.swift; sourceTree = "<group>"; };
+		BB1000032C50000000000001 /* ColorReadoutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorReadoutModel.swift; path = Sources/DocShot/Capture/ColorReadoutModel.swift; sourceTree = "<group>"; };
+		BE00002C50000000000001 /* PendingEscapeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PendingEscapeSession.swift; path = Sources/DocShot/Capture/PendingEscapeSession.swift; sourceTree = "<group>"; };
+		BB1000042C50000000000001 /* SnapshotPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SnapshotPlanTests.swift; path = Tests/DocShotTests/SnapshotPlanTests.swift; sourceTree = "<group>"; };
+		BB1000052C50000000000001 /* DisplaySnapshotServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplaySnapshotServiceTests.swift; path = Tests/DocShotTests/DisplaySnapshotServiceTests.swift; sourceTree = "<group>"; };
+		BB1000062C50000000000001 /* ColorReadoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorReadoutTests.swift; path = Tests/DocShotTests/ColorReadoutTests.swift; sourceTree = "<group>"; };
+		BD00002C50000000000001 /* TemporaryEscapeHotkeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TemporaryEscapeHotkeyTests.swift; path = Tests/DocShotTests/TemporaryEscapeHotkeyTests.swift; sourceTree = "<group>"; };
+		B00000292C50000000000001 /* ColorSampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorSampleTests.swift; path = Tests/DocShotTests/ColorSampleTests.swift; sourceTree = "<group>"; };
+		B000002A2C50000000000001 /* PixelSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PixelSamplerTests.swift; path = Tests/DocShotTests/PixelSamplerTests.swift; sourceTree = "<group>"; };
+		B000002B2C50000000000001 /* MagnifierGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MagnifierGrid.swift; path = Sources/DocShot/Models/MagnifierGrid.swift; sourceTree = "<group>"; };
+		B000002C2C50000000000001 /* MagnifierView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MagnifierView.swift; path = Sources/DocShot/Capture/MagnifierView.swift; sourceTree = "<group>"; };
+		B000002D2C50000000000001 /* MagnifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MagnifierTests.swift; path = Tests/DocShotTests/MagnifierTests.swift; sourceTree = "<group>"; };
+		990000012C50000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Sources/DocShot/Resources/Assets.xcassets; sourceTree = "<group>"; };
+		E00000012C50000000000001 /* DocShot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DocShot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E00000022C50000000000001 /* DocShotTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DocShotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA0000012C50000000000001 /* RecordingTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingTarget.swift; path = Sources/DocShot/Models/RecordingTarget.swift; sourceTree = "<group>"; };
+		CA0000022C50000000000001 /* RecordingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingOptions.swift; path = Sources/DocShot/Models/RecordingOptions.swift; sourceTree = "<group>"; };
+		CA0000032C50000000000001 /* RecordingFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingFailure.swift; path = Sources/DocShot/Models/RecordingFailure.swift; sourceTree = "<group>"; };
+		CA0000042C50000000000001 /* TemporaryRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TemporaryRecording.swift; path = Sources/DocShot/Models/TemporaryRecording.swift; sourceTree = "<group>"; };
+		CA0000052C50000000000001 /* RecordingState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingState.swift; path = Sources/DocShot/Models/RecordingState.swift; sourceTree = "<group>"; };
+		CA0000062C50000000000001 /* RecordingStateReducer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingStateReducer.swift; path = Sources/DocShot/Models/RecordingStateReducer.swift; sourceTree = "<group>"; };
+		CA0000072C50000000000001 /* RecordingRegionPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingRegionPlan.swift; path = Sources/DocShot/Models/RecordingRegionPlan.swift; sourceTree = "<group>"; };
+		CA0000082C50000000000001 /* CaptureActivityPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureActivityPolicy.swift; path = Sources/DocShot/Models/CaptureActivityPolicy.swift; sourceTree = "<group>"; };
+		CA0000092C50000000000001 /* RecordingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingSession.swift; path = Sources/DocShot/Services/RecordingSession.swift; sourceTree = "<group>"; };
+		CA00000A2C50000000000001 /* TemporaryRecordingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TemporaryRecordingStore.swift; path = Sources/DocShot/Services/TemporaryRecordingStore.swift; sourceTree = "<group>"; };
+		CA00000B2C50000000000001 /* RecordingOutputService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingOutputService.swift; path = Sources/DocShot/Services/RecordingOutputService.swift; sourceTree = "<group>"; };
+		CA00000C2C50000000000001 /* RecordingVideoWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingVideoWriter.swift; path = Sources/DocShot/Services/RecordingVideoWriter.swift; sourceTree = "<group>"; };
+		CA00000D2C50000000000001 /* RecordingFilterFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingFilterFactory.swift; path = Sources/DocShot/Services/RecordingFilterFactory.swift; sourceTree = "<group>"; };
+		CA00000E2C50000000000001 /* ScreenCaptureKitRecordingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScreenCaptureKitRecordingSession.swift; path = Sources/DocShot/Services/ScreenCaptureKitRecordingSession.swift; sourceTree = "<group>"; };
+		CA00000F2C50000000000001 /* RecordingSelectionAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingSelectionAdapter.swift; path = Sources/DocShot/Recording/RecordingSelectionAdapter.swift; sourceTree = "<group>"; };
+		CA0000102C50000000000001 /* RecordingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingCoordinator.swift; path = Sources/DocShot/Recording/RecordingCoordinator.swift; sourceTree = "<group>"; };
+		CA0000112C50000000000001 /* RecordingConfirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingConfirmationView.swift; path = Sources/DocShot/Recording/RecordingConfirmationView.swift; sourceTree = "<group>"; };
+		CA0000122C50000000000001 /* RecordingSelectionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingSelectionOverlayView.swift; path = Sources/DocShot/Recording/RecordingSelectionOverlayView.swift; sourceTree = "<group>"; };
+		CA0000192C50000000000001 /* RecordingStatusPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingStatusPanelController.swift; path = Sources/DocShot/Recording/RecordingStatusPanelController.swift; sourceTree = "<group>"; };
+		CA0000202C50000000000001 /* GIFExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GIFExportService.swift; path = Sources/DocShot/Services/GIFExportService.swift; sourceTree = "<group>"; };
+		CA0000132C50000000000001 /* RecordingStateReducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingStateReducerTests.swift; path = Tests/DocShotTests/RecordingStateReducerTests.swift; sourceTree = "<group>"; };
+		CA0000142C50000000000001 /* RecordingRegionPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingRegionPlanTests.swift; path = Tests/DocShotTests/RecordingRegionPlanTests.swift; sourceTree = "<group>"; };
+		CA0000152C50000000000001 /* TemporaryRecordingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = TemporaryRecordingStoreTests.swift; path = Tests/DocShotTests/TemporaryRecordingStoreTests.swift; sourceTree = "<group>"; };
+		CA0000162C50000000000001 /* RecordingOutputServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingOutputServiceTests.swift; path = Tests/DocShotTests/RecordingOutputServiceTests.swift; sourceTree = "<group>"; };
+		CA0000172C50000000000001 /* CaptureActivityPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureActivityPolicyTests.swift; path = Tests/DocShotTests/CaptureActivityPolicyTests.swift; sourceTree = "<group>"; };
+		CA0000182C50000000000001 /* RecordingFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingFailureTests.swift; path = Tests/DocShotTests/RecordingFailureTests.swift; sourceTree = "<group>"; };
+		CA00001A2C50000000000001 /* RecordingAudioTrackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RecordingAudioTrackTests.swift; path = Tests/DocShotTests/RecordingAudioTrackTests.swift; sourceTree = "<group>"; };
+		CA00001B2C50000000000001 /* VideoTimeRange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoTimeRange.swift; path = Sources/DocShot/Models/VideoTimeRange.swift; sourceTree = "<group>"; };
+		CA00001C2C50000000000001 /* VideoProjectError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectError.swift; path = Sources/DocShot/Models/VideoProjectError.swift; sourceTree = "<group>"; };
+		CA00001D2C50000000000001 /* VideoProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProject.swift; path = Sources/DocShot/Models/VideoProject.swift; sourceTree = "<group>"; };
+		CA00001E2C50000000000001 /* VideoAnnotationOverlayRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoAnnotationOverlayRenderer.swift; path = Sources/DocShot/Services/VideoAnnotationOverlayRenderer.swift; sourceTree = "<group>"; };
+		CA00001F2C50000000000001 /* VideoProjectExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportService.swift; path = Sources/DocShot/Services/VideoProjectExportService.swift; sourceTree = "<group>"; };
+		CA0000222C50000000000001 /* VideoProjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectTests.swift; path = Tests/DocShotTests/VideoProjectTests.swift; sourceTree = "<group>"; };
+		CA0000232C50000000000001 /* VideoProjectExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportTests.swift; path = Tests/DocShotTests/VideoProjectExportTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F00000012C50000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F00000022C50000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		R00000012C50000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				990000022C50000000000001 /* Assets.xcassets in Resources */,
+				990000032C50000000000001 /* mark.svg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXGroup section */
+		100000000000000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E00000012C50000000000001 /* DocShot.app */,
+				E00000022C50000000000001 /* DocShotTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		100000000000000000000003 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				B00000012C50000000000001 /* DocShotApp.swift */,
+				B00000022C50000000000001 /* Annotation.swift */,
+				B00000032C50000000000001 /* AnnotationTool.swift */,
+				B00000042C50000000000001 /* CaptureState.swift */,
+				B00000052C50000000000001 /* DisplayGeometry.swift */,
+				B00000232C50000000000001 /* ExportSize.swift */,
+				B00000272C50000000000001 /* ColorSample.swift */,
+				B00000282C50000000000001 /* PixelSampler.swift */,
+				B000002B2C50000000000001 /* MagnifierGrid.swift */,
+				B000002C2C50000000000001 /* MagnifierView.swift */,
+				BB1000002C50000000000001 /* DisplaySnapshot.swift */,
+				BB1000012C50000000000001 /* SnapshotPlan.swift */,
+				BB1000022C50000000000001 /* DisplaySnapshotService.swift */,
+				BB1000032C50000000000001 /* ColorReadoutModel.swift */,
+				BE00002C50000000000001 /* PendingEscapeSession.swift */,
+				B00000062C50000000000001 /* WindowInfo.swift */,
+				B00000072C50000000000001 /* PermissionService.swift */,
+				B00000082C50000000000001 /* HotkeyService.swift */,
+				B00000092C50000000000001 /* WindowDiscoveryService.swift */,
+				B000000A2C50000000000001 /* ScreenCaptureService.swift */,
+				B000000B2C50000000000001 /* OutputService.swift */,
+				B000001E2C50000000000001 /* OutputFolderService.swift */,
+				B000001F2C50000000000001 /* DesignTokens.swift */,
+				B00000202C50000000000001 /* MarkView.swift */,
+				B00000212C50000000000001 /* mark.svg */,
+				B000000C2C50000000000001 /* CaptureCoordinator.swift */,
+				B000000D2C50000000000001 /* SelectionOverlayWindow.swift */,
+				B000000E2C50000000000001 /* SelectionOverlayView.swift */,
+				B000000F2C50000000000001 /* EditorViewModel.swift */,
+				B00000102C50000000000001 /* EditorWindowController.swift */,
+				B00000112C50000000000001 /* EditorView.swift */,
+				B00000122C50000000000001 /* CanvasView.swift */,
+				B00000132C50000000000001 /* ImageRenderer.swift */,
+				B00000252C50000000000001 /* ExportSizeControl.swift */,
+				B00000142C50000000000001 /* SettingsView.swift */,
+				B00000262C50000000000001 /* CustomShortcutRecorder.swift */,
+				B00000182C50000000000001 /* PermissionWindowController.swift */,
+				B000001B2C50000000000001 /* OnboardingView.swift */,
+				CA0000012C50000000000001 /* RecordingTarget.swift */,
+				CA0000022C50000000000001 /* RecordingOptions.swift */,
+				CA0000032C50000000000001 /* RecordingFailure.swift */,
+				CA0000042C50000000000001 /* TemporaryRecording.swift */,
+				CA0000052C50000000000001 /* RecordingState.swift */,
+				CA0000062C50000000000001 /* RecordingStateReducer.swift */,
+				CA0000072C50000000000001 /* RecordingRegionPlan.swift */,
+				CA0000082C50000000000001 /* CaptureActivityPolicy.swift */,
+				CA0000092C50000000000001 /* RecordingSession.swift */,
+				CA00000A2C50000000000001 /* TemporaryRecordingStore.swift */,
+				CA00000B2C50000000000001 /* RecordingOutputService.swift */,
+				CA00000C2C50000000000001 /* RecordingVideoWriter.swift */,
+				CA00000D2C50000000000001 /* RecordingFilterFactory.swift */,
+				CA00000E2C50000000000001 /* ScreenCaptureKitRecordingSession.swift */,
+				CA00000F2C50000000000001 /* RecordingSelectionAdapter.swift */,
+				CA0000102C50000000000001 /* RecordingCoordinator.swift */,
+				CA0000112C50000000000001 /* RecordingConfirmationView.swift */,
+				CA0000122C50000000000001 /* RecordingSelectionOverlayView.swift */,
+				CA0000192C50000000000001 /* RecordingStatusPanelController.swift */,
+				CA0000202C50000000000001 /* GIFExportService.swift */,
+				CA00001B2C50000000000001 /* VideoTimeRange.swift */,
+				CA00001C2C50000000000001 /* VideoProjectError.swift */,
+				CA00001D2C50000000000001 /* VideoProject.swift */,
+				CA00001E2C50000000000001 /* VideoAnnotationOverlayRenderer.swift */,
+				CA00001F2C50000000000001 /* VideoProjectExportService.swift */,
+				990000012C50000000000001 /* Assets.xcassets */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		100000000000000000000004 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B00000152C50000000000001 /* DisplayGeometryTests.swift */,
+				B00000162C50000000000001 /* AnnotationModelTests.swift */,
+				B00000172C50000000000001 /* EditorViewModelTests.swift */,
+				B00000192C50000000000001 /* OutputServiceTests.swift */,
+				B000001A2C50000000000001 /* CropRenderingTests.swift */,
+				B000001C2C50000000000001 /* EditorResponsivenessTests.swift */,
+				B00000222C50000000000001 /* OutputFolderServiceTests.swift */,
+				B00000242C50000000000001 /* ExportSizeTests.swift */,
+				B00000292C50000000000001 /* ColorSampleTests.swift */,
+				B000002A2C50000000000001 /* PixelSamplerTests.swift */,
+				BB1000042C50000000000001 /* SnapshotPlanTests.swift */,
+				BB1000052C50000000000001 /* DisplaySnapshotServiceTests.swift */,
+				BB1000062C50000000000001 /* ColorReadoutTests.swift */,
+				BD00002C50000000000001 /* TemporaryEscapeHotkeyTests.swift */,
+				B000002D2C50000000000001 /* MagnifierTests.swift */,
+				CA0000222C50000000000001 /* VideoProjectTests.swift */,
+				CA0000232C50000000000001 /* VideoProjectExportTests.swift */,
+				CA00001A2C50000000000001 /* RecordingAudioTrackTests.swift */,
+				CA0000132C50000000000001 /* RecordingStateReducerTests.swift */,
+				CA0000142C50000000000001 /* RecordingRegionPlanTests.swift */,
+				CA0000152C50000000000001 /* TemporaryRecordingStoreTests.swift */,
+				CA0000162C50000000000001 /* RecordingOutputServiceTests.swift */,
+				CA0000172C50000000000001 /* CaptureActivityPolicyTests.swift */,
+				CA0000182C50000000000001 /* RecordingFailureTests.swift */,
+			);
+			name = Tests;
+			sourceTree = "<group>";
+		};
+		100000000000000000000005 = {
+			isa = PBXGroup;
+			children = (
+				100000000000000000000003 /* Sources */,
+				100000000000000000000004 /* Tests */,
+				100000000000000000000002 /* Products */,
+				4FF1ED2230111159009B2696 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		4FF1ED2230111159009B2696 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B000001D2C50000000000001 /* ExportService.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D00000012C50000000000001 /* DocShot */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G00000012C50000000000001 /* Build configuration list for PBXNativeTarget "DocShot" */;
+			buildPhases = (
+				S00000012C50000000000001 /* Sources */,
+				F00000012C50000000000001 /* Frameworks */,
+				R00000012C50000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DocShot;
+			productName = DocShot;
+			productReference = E00000012C50000000000001 /* DocShot.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D00000022C50000000000001 /* DocShotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G00000022C50000000000001 /* Build configuration list for PBXNativeTarget "DocShotTests" */;
+			buildPhases = (
+				S00000022C50000000000001 /* Sources */,
+				F00000022C50000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				T00000012C50000000000001 /* PBXTargetDependency */,
+			);
+			name = DocShotTests;
+			productName = DocShotTests;
+			productReference = E00000022C50000000000001 /* DocShotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		100000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					D00000012C50000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					D00000022C50000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = H00000012C50000000000001 /* Build configuration list for PBXProject "DocShot" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 100000000000000000000005;
+			productRefGroup = 100000000000000000000002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D00000012C50000000000001 /* DocShot */,
+				D00000022C50000000000001 /* DocShotTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		S00000012C50000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000912C50000000000001 /* VideoEditorMath.swift in Sources */,
+				A00000922C50000000000001 /* VideoEditorViewModel.swift in Sources */,
+				A00000932C50000000000001 /* VideoPlayerPreviewView.swift in Sources */,
+				A00000942C50000000000001 /* VideoTimelineView.swift in Sources */,
+				A00000952C50000000000001 /* VideoAnnotationToolbar.swift in Sources */,
+				A00000962C50000000000001 /* VideoEditorView.swift in Sources */,
+				A00000972C50000000000001 /* VideoEditorWindowController.swift in Sources */,
+				A00000012C50000000000001 /* DocShotApp.swift in Sources */,
+				A00000022C50000000000001 /* Annotation.swift in Sources */,
+				A00000032C50000000000001 /* AnnotationTool.swift in Sources */,
+				A00000042C50000000000001 /* CaptureState.swift in Sources */,
+				A00000052C50000000000001 /* DisplayGeometry.swift in Sources */,
+				A00000232C50000000000001 /* ExportSize.swift in Sources */,
+				A00000272C50000000000001 /* ColorSample.swift in Sources */,
+				A00000282C50000000000001 /* PixelSampler.swift in Sources */,
+				A000002B2C50000000000001 /* MagnifierGrid.swift in Sources */,
+				A000002C2C50000000000001 /* MagnifierView.swift in Sources */,
+				AA1000002C50000000000001 /* DisplaySnapshot.swift in Sources */,
+				AA1000012C50000000000001 /* SnapshotPlan.swift in Sources */,
+				AA1000022C50000000000001 /* DisplaySnapshotService.swift in Sources */,
+				AA1000032C50000000000001 /* ColorReadoutModel.swift in Sources */,
+				AE00002C50000000000001 /* PendingEscapeSession.swift in Sources */,
+				A00000062C50000000000001 /* WindowInfo.swift in Sources */,
+				A00000072C50000000000001 /* PermissionService.swift in Sources */,
+				A00000082C50000000000001 /* HotkeyService.swift in Sources */,
+				A00000092C50000000000001 /* WindowDiscoveryService.swift in Sources */,
+				A000000A2C50000000000001 /* ScreenCaptureService.swift in Sources */,
+				A000000B2C50000000000001 /* OutputService.swift in Sources */,
+				A000001D2C50000000000001 /* ExportService.swift in Sources */,
+				A000000C2C50000000000001 /* CaptureCoordinator.swift in Sources */,
+				A000000D2C50000000000001 /* SelectionOverlayWindow.swift in Sources */,
+				A000000E2C50000000000001 /* SelectionOverlayView.swift in Sources */,
+				A000000F2C50000000000001 /* EditorViewModel.swift in Sources */,
+				A00000102C50000000000001 /* EditorWindowController.swift in Sources */,
+				A00000112C50000000000001 /* EditorView.swift in Sources */,
+				A00000122C50000000000001 /* CanvasView.swift in Sources */,
+				A00000132C50000000000001 /* ImageRenderer.swift in Sources */,
+				A00000252C50000000000001 /* ExportSizeControl.swift in Sources */,
+				A00000142C50000000000001 /* SettingsView.swift in Sources */,
+				A00000262C50000000000001 /* CustomShortcutRecorder.swift in Sources */,
+				A00000182C50000000000001 /* PermissionWindowController.swift in Sources */,
+				A000001B2C50000000000001 /* OnboardingView.swift in Sources */,
+				A000001E2C50000000000001 /* OutputFolderService.swift in Sources */,
+				A000001F2C50000000000001 /* DesignTokens.swift in Sources */,
+				A00000202C50000000000001 /* MarkView.swift in Sources */,
+				CB0000212C50000000000001 /* VideoTimeRange.swift in Sources */,
+				CB0000222C50000000000001 /* VideoProjectError.swift in Sources */,
+				CB0000232C50000000000001 /* VideoProject.swift in Sources */,
+				CB0000242C50000000000001 /* VideoAnnotationOverlayRenderer.swift in Sources */,
+				CB0000252C50000000000001 /* VideoProjectExportService.swift in Sources */,
+				CB0000012C50000000000001 /* RecordingTarget.swift in Sources */,
+				CB0000022C50000000000001 /* RecordingOptions.swift in Sources */,
+				CB0000032C50000000000001 /* RecordingFailure.swift in Sources */,
+				CB0000042C50000000000001 /* TemporaryRecording.swift in Sources */,
+				CB0000052C50000000000001 /* RecordingState.swift in Sources */,
+				CB0000062C50000000000001 /* RecordingStateReducer.swift in Sources */,
+				CB0000072C50000000000001 /* RecordingRegionPlan.swift in Sources */,
+				CB0000082C50000000000001 /* CaptureActivityPolicy.swift in Sources */,
+				CB0000092C50000000000001 /* RecordingSession.swift in Sources */,
+				CB00000A2C50000000000001 /* TemporaryRecordingStore.swift in Sources */,
+				CB00000B2C50000000000001 /* RecordingOutputService.swift in Sources */,
+				CB00000C2C50000000000001 /* RecordingVideoWriter.swift in Sources */,
+				CB00000D2C50000000000001 /* RecordingFilterFactory.swift in Sources */,
+				CB00000E2C50000000000001 /* ScreenCaptureKitRecordingSession.swift in Sources */,
+				CB00000F2C50000000000001 /* RecordingSelectionAdapter.swift in Sources */,
+				CB0000102C50000000000001 /* RecordingCoordinator.swift in Sources */,
+				CB0000112C50000000000001 /* RecordingConfirmationView.swift in Sources */,
+				CB0000122C50000000000001 /* RecordingSelectionOverlayView.swift in Sources */,
+				CB0000132C50000000000001 /* RecordingStatusPanelController.swift in Sources */,
+				CB0000142C50000000000001 /* GIFExportService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		S00000022C50000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4FF1ED9130111159009B2696 /* VideoEditorMath.swift in Sources */,
+				4FF1ED9830111159009B2696 /* VideoEditorMathTests.swift in Sources */,
+				4FF1ED9930111159009B2696 /* VideoEditorViewModelTests.swift in Sources */,
+				4FF1ED1730111159009B2696 /* Annotation.swift in Sources */,
+				4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */,
+				4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */,
+				4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */,
+				4FF1ED2630111159009B2696 /* ExportSize.swift in Sources */,
+				4FF1ED2730111159009B2696 /* ColorSample.swift in Sources */,
+				4FF1ED2830111159009B2696 /* PixelSampler.swift in Sources */,
+				4FF1ED2930111159009B2696 /* MagnifierGrid.swift in Sources */,
+				AC1000002C50000000000001 /* DisplaySnapshot.swift in Sources */,
+				AC1000012C50000000000001 /* SnapshotPlan.swift in Sources */,
+				AC1000022C50000000000001 /* DisplaySnapshotService.swift in Sources */,
+				AC1000032C50000000000001 /* ColorReadoutModel.swift in Sources */,
+				AF00002C50000000000001 /* PendingEscapeSession.swift in Sources */,
+				4FF1ED1B30111159009B2696 /* WindowInfo.swift in Sources */,
+				4FF1ED1C30111159009B2696 /* PermissionService.swift in Sources */,
+				4FF1ED1D30111159009B2696 /* HotkeyService.swift in Sources */,
+				4FF1ED1E30111159009B2696 /* OutputService.swift in Sources */,
+				4FF1ED1F30111159009B2696 /* ExportService.swift in Sources */,
+				4FF1ED2030111159009B2696 /* EditorViewModel.swift in Sources */,
+				4FF1ED2130111159009B2696 /* ImageRenderer.swift in Sources */,
+				4FF1ED2330111159009B2696 /* OutputFolderService.swift in Sources */,
+				4FF1ED2430111159009B2696 /* DesignTokens.swift in Sources */,
+				4FF1ED2530111159009B2696 /* MarkView.swift in Sources */,
+				A00000152C50000000000001 /* DisplayGeometryTests.swift in Sources */,
+				A00000162C50000000000001 /* AnnotationModelTests.swift in Sources */,
+				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
+				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
+				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,
+				A000001C2C50000000000001 /* EditorResponsivenessTests.swift in Sources */,
+				A00000222C50000000000001 /* OutputFolderServiceTests.swift in Sources */,
+				A00000242C50000000000001 /* ExportSizeTests.swift in Sources */,
+				A00000292C50000000000001 /* ColorSampleTests.swift in Sources */,
+				A000002A2C50000000000001 /* PixelSamplerTests.swift in Sources */,
+				AB1000002C50000000000001 /* SnapshotPlanTests.swift in Sources */,
+				AB1000012C50000000000001 /* DisplaySnapshotServiceTests.swift in Sources */,
+				AB1000022C50000000000001 /* ColorReadoutTests.swift in Sources */,
+				AD00002C50000000000001 /* TemporaryEscapeHotkeyTests.swift in Sources */,
+				A000002D2C50000000000001 /* MagnifierTests.swift in Sources */,
+				CC00000D2C50000000000001 /* VideoTimeRange.swift in Sources */,
+				CC00000E2C50000000000001 /* VideoProjectError.swift in Sources */,
+				CC00000F2C50000000000001 /* VideoProject.swift in Sources */,
+				CC0000102C50000000000001 /* VideoAnnotationOverlayRenderer.swift in Sources */,
+				CC0000112C50000000000001 /* VideoProjectExportService.swift in Sources */,
+				CD0000082C50000000000001 /* VideoProjectTests.swift in Sources */,
+				CD0000092C50000000000001 /* VideoProjectExportTests.swift in Sources */,
+				CC00000C2C50000000000001 /* RecordingVideoWriter.swift in Sources */,
+				CD0000072C50000000000001 /* RecordingAudioTrackTests.swift in Sources */,
+				CC0000012C50000000000001 /* RecordingTarget.swift in Sources */,
+				CC0000022C50000000000001 /* RecordingOptions.swift in Sources */,
+				CC0000032C50000000000001 /* RecordingFailure.swift in Sources */,
+				CC0000042C50000000000001 /* TemporaryRecording.swift in Sources */,
+				CC0000052C50000000000001 /* RecordingState.swift in Sources */,
+				CC0000062C50000000000001 /* RecordingStateReducer.swift in Sources */,
+				CC0000072C50000000000001 /* RecordingRegionPlan.swift in Sources */,
+				CC0000082C50000000000001 /* CaptureActivityPolicy.swift in Sources */,
+				CC0000092C50000000000001 /* RecordingSession.swift in Sources */,
+				CC00000A2C50000000000001 /* TemporaryRecordingStore.swift in Sources */,
+				CC00000B2C50000000000001 /* RecordingOutputService.swift in Sources */,
+				CD0000012C50000000000001 /* RecordingStateReducerTests.swift in Sources */,
+				CD0000022C50000000000001 /* RecordingRegionPlanTests.swift in Sources */,
+				CD0000032C50000000000001 /* TemporaryRecordingStoreTests.swift in Sources */,
+				CD0000042C50000000000001 /* RecordingOutputServiceTests.swift in Sources */,
+				CD0000052C50000000000001 /* CaptureActivityPolicyTests.swift in Sources */,
+				CD0000062C50000000000001 /* RecordingFailureTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		T00000012C50000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D00000012C50000000000001 /* DocShot */;
+			targetProxy = C00000012C50000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		I00000012C50000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/DocShot/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docshot.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		I00000022C50000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Sources/DocShot/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docshot.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		I00000032C50000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docshot.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		I00000042C50000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.docshot.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		I00000052C50000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		I00000062C50000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		G00000012C50000000000001 /* Build configuration list for PBXNativeTarget "DocShot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				I00000012C50000000000001 /* Debug */,
+				I00000022C50000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G00000022C50000000000001 /* Build configuration list for PBXNativeTarget "DocShotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				I00000032C50000000000001 /* Debug */,
+				I00000042C50000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		H00000012C50000000000001 /* Build configuration list for PBXProject "DocShot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				I00000052C50000000000001 /* Debug */,
+				I00000062C50000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 100000000000000000000001 /* Project object */;
+}

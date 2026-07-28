@@ -16,6 +16,8 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
     private nint _hwnd;
     private bool _disposed;
 
+    public event Action<int>? HotkeyPressed;
+
     public HotkeyService()
     {
         _thread = new Thread(MessageThread)
@@ -127,6 +129,7 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
 
         if (message == WM_HOTKEY)
         {
+            HotkeyPressed?.Invoke(unchecked((int)wParam));
             return nint.Zero;
         }
 

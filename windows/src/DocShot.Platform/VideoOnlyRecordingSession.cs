@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DocShot.Core.Models;
 using DocShot.Core.Primitives;
 using DocShot.Core.Services;
@@ -6,7 +7,7 @@ namespace DocShot.Platform;
 
 public sealed class RecordingSessionFactory(IScreenCaptureService? captureService = null) : IRecordingSessionFactory
 {
-    private readonly IScreenCaptureService _captureService = captureService ?? new GdiScreenCaptureService();
+    private readonly IScreenCaptureService _captureService = captureService ?? new WgcScreenCaptureService();
 
     public IRecordingSession MakeSession() => new VideoOnlyRecordingSession(_captureService);
 }
@@ -115,11 +116,12 @@ public sealed class VideoOnlyRecordingSession(IScreenCaptureService captureServi
             checked((int)_pixelSize.Height),
             fps);
 
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            var frame = await CaptureFrame(target).ConfigureAwait(false);
-            writer.WriteFrame(frame, _framesWritten++);
+        var stopwatch = Stopwatch.StartNew();
+        var previousFrame = await CaptureFrame(target).ConfigureAwait(false);
+        var previousTime = TimeSpan.Zero;
 
+        while (true)
+        {
             try
             {
                 await Task.Delay(frameDelay, cancellationToken).ConfigureAwait(false);
@@ -128,13 +130,20 @@ public sealed class VideoOnlyRecordingSession(IScreenCaptureService captureServi
             {
                 break;
             }
+
+            if (cancellationToken.IsCancellationRequested) break;
+
+            var frameTime = stopwatch.Elapsed;
+            var frame = await CaptureFrame(target).ConfigureAwait(false);
+            writer.WriteFrame(previousFrame, previousTime, PositiveDuration(frameTime - previousTime, frameDelay));
+            _framesWritten++;
+
+            previousFrame = frame;
+            previousTime = frameTime;
         }
 
-        if (_framesWritten == 0)
-        {
-            var frame = await CaptureFrame(target).ConfigureAwait(false);
-            writer.WriteFrame(frame, _framesWritten++);
-        }
+        writer.WriteFrame(previousFrame, previousTime, PositiveDuration(stopwatch.Elapsed - previousTime, frameDelay));
+        _framesWritten++;
 
         writer.FinalizeFile();
     }
@@ -157,4 +166,7 @@ public sealed class VideoOnlyRecordingSession(IScreenCaptureService captureServi
 
         return new SizeD(Math.Max(1, Math.Round(size.Width)), Math.Max(1, Math.Round(size.Height)));
     }
+
+    private static TimeSpan PositiveDuration(TimeSpan duration, TimeSpan fallback) =>
+        duration > TimeSpan.Zero ? duration : fallback;
 }

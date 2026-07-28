@@ -56,6 +56,11 @@ internal sealed class MediaFoundationVideoWriter : IDisposable
 
     public void WriteFrame(CapturedImage image, long frameIndex)
     {
+        WriteFrame(image, TimeSpan.FromTicks(frameIndex * _frameDurationHns), TimeSpan.FromTicks(_frameDurationHns));
+    }
+
+    public void WriteFrame(CapturedImage image, TimeSpan presentationTime, TimeSpan duration)
+    {
         if (_finalized) throw new InvalidOperationException("Cannot write after finalizing the recording.");
         if (image.PixelWidth != _width || image.PixelHeight != _height)
         {
@@ -77,8 +82,8 @@ internal sealed class MediaFoundationVideoWriter : IDisposable
             try
             {
                 ThrowIfFailed(sample.AddBuffer(buffer), "IMFSample.AddBuffer");
-                ThrowIfFailed(sample.SetSampleTime(frameIndex * _frameDurationHns), "IMFSample.SetSampleTime");
-                ThrowIfFailed(sample.SetSampleDuration(_frameDurationHns), "IMFSample.SetSampleDuration");
+                ThrowIfFailed(sample.SetSampleTime(ToHundredNanoseconds(presentationTime)), "IMFSample.SetSampleTime");
+                ThrowIfFailed(sample.SetSampleDuration(ToHundredNanoseconds(duration)), "IMFSample.SetSampleDuration");
                 ThrowIfFailed(_writer.WriteSample(_streamIndex, sample), "IMFSinkWriter.WriteSample");
             }
             finally
@@ -92,6 +97,9 @@ internal sealed class MediaFoundationVideoWriter : IDisposable
             Marshal.FinalReleaseComObject(buffer);
         }
     }
+
+    private static long ToHundredNanoseconds(TimeSpan timeSpan) =>
+        Math.Max(1, checked((long)Math.Round(timeSpan.TotalSeconds * 10_000_000)));
 
     public void FinalizeFile()
     {

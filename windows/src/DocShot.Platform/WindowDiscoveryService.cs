@@ -65,7 +65,7 @@ public sealed class WindowDiscoveryService : IWindowDiscoveryService
         var title = GetWindowText(hwnd).Trim();
         if (string.IsNullOrWhiteSpace(title)) return false;
 
-        if (!NativeMethods.GetWindowRect(hwnd, out var rect)) return false;
+        if (!TryGetVisibleWindowBounds(hwnd, out var rect)) return false;
         var width = rect.Right - rect.Left;
         var height = rect.Bottom - rect.Top;
         if (width < 64 || height < 64) return false;
@@ -81,8 +81,17 @@ public sealed class WindowDiscoveryService : IWindowDiscoveryService
 
     private static bool IsCloaked(nint hwnd)
     {
-        var hr = NativeMethods.DwmGetWindowAttribute(hwnd, NativeMethods.DWMWA_CLOAKED, out var cloaked, sizeof(int));
+        int cloaked;
+        var hr = NativeMethods.DwmGetWindowAttribute(hwnd, NativeMethods.DWMWA_CLOAKED, out cloaked, sizeof(int));
         return hr == 0 && cloaked != 0;
+    }
+
+    private static bool TryGetVisibleWindowBounds(nint hwnd, out NativeMethods.Win32Rect rect)
+    {
+        var hr = NativeMethods.DwmGetWindowAttribute(hwnd, NativeMethods.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, Marshal.SizeOf<NativeMethods.Win32Rect>());
+        if (hr == 0 && rect.Right > rect.Left && rect.Bottom > rect.Top) return true;
+
+        return NativeMethods.GetWindowRect(hwnd, out rect);
     }
 
     private static string GetWindowText(nint hwnd)
@@ -119,6 +128,7 @@ public sealed class WindowDiscoveryService : IWindowDiscoveryService
 internal static partial class NativeMethods
 {
     internal const int DWMWA_CLOAKED = 14;
+    internal const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
 
     internal delegate bool EnumWindowsProc(nint hwnd, nint lParam);
 
@@ -153,9 +163,20 @@ internal static partial class NativeMethods
     [DllImport("dwmapi.dll")]
     internal static extern int DwmGetWindowAttribute(nint hwnd, int attribute, out int value, int size);
 
+    [DllImport("dwmapi.dll")]
+    internal static extern int DwmGetWindowAttribute(nint hwnd, int attribute, out Win32Rect value, int size);
+
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct Win32Rect
     {
+        internal Win32Rect(int left, int top, int right, int bottom)
+        {
+            Left = left;
+            Top = top;
+            Right = right;
+            Bottom = bottom;
+        }
+
         internal readonly int Left;
         internal readonly int Top;
         internal readonly int Right;

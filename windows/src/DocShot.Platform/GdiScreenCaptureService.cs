@@ -13,7 +13,7 @@ public sealed class GdiScreenCaptureService : IScreenCaptureService
 {
     public Task<CapturedImage> CaptureWindow(nint windowId)
     {
-        if (!NativeMethods.GetWindowRect(windowId, out var rect))
+        if (!TryGetVisibleWindowBounds(windowId, out var rect))
         {
             throw new InvalidOperationException("Could not resolve the requested window bounds.");
         }
@@ -82,6 +82,14 @@ public sealed class GdiScreenCaptureService : IScreenCaptureService
         var lines = NativeMethods.GetDIBits(deviceContext, bitmap, 0, (uint)height, pixels, ref info, NativeMethods.DIB_RGB_COLORS);
         if (lines == 0) throw new InvalidOperationException("GetDIBits failed while reading captured pixels.");
         return pixels;
+    }
+
+    private static bool TryGetVisibleWindowBounds(nint hwnd, out NativeMethods.Win32Rect rect)
+    {
+        var hr = NativeMethods.DwmGetWindowAttribute(hwnd, NativeMethods.DWMWA_EXTENDED_FRAME_BOUNDS, out rect, Marshal.SizeOf<NativeMethods.Win32Rect>());
+        if (hr == 0 && rect.Right > rect.Left && rect.Bottom > rect.Top) return true;
+
+        return NativeMethods.GetWindowRect(hwnd, out rect);
     }
 }
 

@@ -80,13 +80,17 @@ public sealed class FakePermissionService : IPermissionService
 /// Registers hotkeys in memory only. Set <see cref="SimulateConflictForId"/> to make one
 /// registration id fail, so App can build and test its conflict/failure messaging (see
 /// windows/docs/PARITY_CHECKLIST.md §3) without needing to actually collide with another app's
-/// global hotkey on a real machine.
+/// global hotkey on a real machine. Call <see cref="SimulateHotkeyPress"/> to raise
+/// <see cref="HotkeyPressed"/> as if the user actually pressed a registered shortcut, so App's
+/// "open capture UI on hotkey" wiring can be tested without a real global hotkey at all.
 /// </summary>
 public sealed class FakeHotkeyService : IHotkeyService
 {
     private readonly HashSet<int> _registered = [];
 
     public int? SimulateConflictForId { get; set; }
+
+    public event Action<int>? HotkeyPressed;
 
     public bool Register(int id, uint modifiers, uint virtualKeyCode)
     {
@@ -96,6 +100,12 @@ public sealed class FakeHotkeyService : IHotkeyService
     }
 
     public void Unregister(int id) => _registered.Remove(id);
+
+    /// <summary>Test-only: simulates the hotkey with <paramref name="id"/> being pressed, if it's currently registered.</summary>
+    public void SimulateHotkeyPress(int id)
+    {
+        if (_registered.Contains(id)) HotkeyPressed?.Invoke(id);
+    }
 
     public bool IsRegistered(int id) => _registered.Contains(id);
 }

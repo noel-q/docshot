@@ -58,6 +58,20 @@ public sealed class FakesSmokeTests
     }
 
     [Fact]
+    public void FakeHotkeyService_RaisesHotkeyPressed_OnlyForRegisteredIds()
+    {
+        var service = new FakeHotkeyService();
+        var pressedIds = new List<int>();
+        service.HotkeyPressed += id => pressedIds.Add(id);
+
+        service.Register(id: 1, modifiers: 0, virtualKeyCode: 0x41);
+        service.SimulateHotkeyPress(1);
+        service.SimulateHotkeyPress(99); // never registered - should not raise
+
+        Assert.Equal([1], pressedIds);
+    }
+
+    [Fact]
     public async Task FakeRecordingSession_StartThenStop_ProducesPlayableRecording()
     {
         var session = new FakeRecordingSession();

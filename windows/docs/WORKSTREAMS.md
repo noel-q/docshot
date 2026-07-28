@@ -126,10 +126,18 @@ UI/UX work and Platform's interop work stop blocking each other.
   `Models/ColorSample.cs` and `Models/DisplayGeometry.cs`).
 - ~~`DocShot.Core.Fakes`~~ — done: in-memory fakes for all four capture-side service interfaces,
   unblocking App's W1 work from Platform's schedule. See "Parallelization" above.
-- Fast-follow, not blocking: a cheap `VideoProject.ValidateForExport()`-style pre-flight check
-  mirroring macOS's `VideoProjectExportError.emptyTimeline` case, so App/Platform can short-circuit
-  an obviously-invalid export before it reaches the encoder. See
-  `windows/docs/PARITY_CHECKLIST.md` §4 for the full portability audit this came out of.
+- ~~`VideoProject.ValidateForExport()`~~ — done, mirrors macOS's `emptyTimeline` export error;
+  throws `VideoProjectError.EmptyTimeline` for a zero-duration timeline, tested.
+- **Interface change, 2026-07-28 — flagging per the dependency-order rule since PR #6 already
+  depends on `IHotkeyService`:** added `event Action<int>? HotkeyPressed;` to `IHotkeyService`.
+  Code review of PR #6's `HotkeyService.cs` found its `WM_HOTKEY` case was a no-op - `Register`
+  could succeed but nothing ever told a caller the hotkey was actually pressed, which is a real
+  gap for the actual product behaviour (hotkey → open capture UI). **Follow-up for Codex:** wire
+  the existing `WM_HOTKEY` branch in `HotkeyService.WindowProc` to raise `HotkeyPressed` with the
+  pressed hotkey's `id` — everything needed (the message, the id space) is already there.
+  `DocShot.Core.Fakes.FakeHotkeyService` implements the new member and adds a
+  `SimulateHotkeyPress(id)` test hook so App can wire and test its own reaction without a real
+  global hotkey.
 - Keep `docs/WINDOWS_PORT_PLAN.md` and this file honest as Platform/App reality diverges from plan.
 
 ### Platform (Codex) - W0 risk spikes, then W1-W2 groundwork
@@ -158,6 +166,9 @@ UI/UX work and Platform's interop work stop blocking each other.
    candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on any of this - see
    "Parallelization" above. **Also unverified by compile** - Codex's machine has .NET runtimes but
    no SDK/MSBuild SDK targets (`MSB4236`); needs Antigravity or Noel to actually build it.
+   **Follow-up needed:** `IHotkeyService` gained a `HotkeyPressed` event (see Core's task list
+   above) - `HotkeyService.WindowProc`'s existing `WM_HOTKEY` branch is a no-op and needs to raise
+   it with the pressed hotkey's `id`.
 6. Implement `IRecordingSession`/`IRecordingSessionFactory` (video-only first, matching the macOS
    R1 gate - no audio, no GIF, until video-only start/stop/save/discard is solid).
 

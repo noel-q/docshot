@@ -181,21 +181,31 @@ UI/UX work and Platform's interop work stop blocking each other.
    new code that queries monitor geometry off the WPF UI thread.
 2. ~~Tray icon (`NotifyIcon`) + minimal settings window shell.~~ — done, PR #7
    (`H.NotifyIcon.Wpf`).
-3. Per-monitor selection overlay windows wired to `IWindowDiscoveryService`/`IScreenCaptureService`
-   — **start now**, against `DocShot.Core.Fakes` (Debug reference), don't wait for Platform's real
-   implementation. Swap to the real Platform services and re-verify on a device once PR from item
-   5/6 above lands. See "Parallelization" above.
-4. Annotation canvas rendering `AnnotationItem`/`AnnotationShape` from `DocShot.Core` - decide the
-   WPF drawing approach (SkiaSharp is recommended in `docs/WINDOWS_PORT_PLAN.md` §2 for parity with
-   the blur/pixelate redaction filters; raw `DrawingVisual` is the fallback if that adds too much
-   surface for a first pass). Fully unblocked today - this is pure Core-model consumption, no
-   Platform dependency at all.
-5. Recording confirmation UI and status HUD - can also start against `DocShot.Core.Fakes` once a
-   fake `IRecordingSession` is added there (flag to Claude if needed sooner than Platform's real
-   one lands); swap to the real one once Platform's item 6 is done.
-6. Settings UI - system audio on/off, cursor visibility, frame rate, recording shortcut, output
+3. ~~Per-monitor selection overlay windows wired to `IWindowDiscoveryService`/`IScreenCaptureService`~~
+   — done, against `DocShot.Core.Fakes` (Debug reference). Window hover-highlight (bounding box +
+   accent border + title/owner badge), click-to-select-window, click-and-drag for a custom region.
+   Still needs to be re-verified against the real Platform services once the WGC-backed capture
+   lands (item 5 above) - fakes prove the UI wiring, not the real capture path.
+4. ~~Annotation canvas rendering `AnnotationItem`/`AnnotationShape`~~ — done, all seven
+   `AnnotationShape` cases (arrow, rectangle, ellipse, text, highlighter, redaction) plus a
+   select/move tool, colour swatches, and snapshot-based undo/redo (`Ctrl+Z`/`Ctrl+Y`). Also wired
+   Copy (`IPasteboardWriter`, registered `"PNG"` + DIB fallback), Save (native `SaveFileDialog` via
+   `IFileWriter`), and Discard, matching the explicit-decision/no-silent-history rule in
+   `windows/docs/PARITY_CHECKLIST.md` §1.
+5. ~~Global capture hotkey wiring~~ — done. `App.xaml.cs` registers `Ctrl+Shift+S` and subscribes
+   `IHotkeyService.HotkeyPressed` to open the overlays; tested via `FakeHotkeyService.
+   SimulateHotkeyPress`.
+6. Recording confirmation UI and status HUD - still pending. Needs a fake `IRecordingSession` in
+   `DocShot.Core.Fakes` (not yet added - flag to Claude) or the real Platform one (Platform's item
+   6 above, also not yet done).
+7. Settings UI - system audio on/off, cursor visibility, frame rate, recording shortcut, output
    choice/GIF eligibility, permission/failure messaging. See `windows/docs/PARITY_CHECKLIST.md` §5
-   - the settings surface is exactly `RecordingOptions`'s fields, nothing invented.
+   - the settings surface is exactly `RecordingOptions`'s fields, nothing invented. Not started.
+
+**Verified 2026-07-28:** `dotnet test windows/DocShot.sln` on Antigravity's machine built all six
+projects clean (`DocShot.Core`, `DocShot.Core.Fakes`, `DocShot.Platform`, `DocShot.App`,
+`DocShot.Core.Tests`, `DocShot.App.Tests`) - the first full-solution build, including Platform.
+**116 tests passing, 0 failed** (Core 103, App 13).
 
 ## PR expectations
 

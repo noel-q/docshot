@@ -53,6 +53,10 @@ public readonly record struct RectD(double X, double Y, double Width, double Hei
 
     public bool IsEmpty => Width <= 0 || Height <= 0;
 
+    /// <summary>True when <paramref name="point"/> lies within this rectangle.</summary>
+    public bool Contains(PointD point) =>
+        point.X >= MinX && point.Y >= MinY && point.X <= MaxX && point.Y <= MaxY;
+
     /// <summary>True when <paramref name="other"/> lies entirely within this rectangle.</summary>
     public bool Contains(RectD other) =>
         other.MinX >= MinX && other.MinY >= MinY && other.MaxX <= MaxX && other.MaxY <= MaxY;

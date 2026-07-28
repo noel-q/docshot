@@ -316,6 +316,31 @@ defaulting to ZIP-first. `WORKSTREAMS.md` was also restructured the same day so 
 to wait on Platform's real service implementations to start W1 UI work — see its "Parallelization"
 section.
 
+**Update 2026-07-28 (fifth pass): W1 App UI substantially built, and Platform now proven to
+compile.** Claude added `IHotkeyService.HotkeyPressed` (found missing via code review of PR #6)
+plus `VideoProject.ValidateForExport()`. Antigravity wired the hotkey event end-to-end in
+`App.xaml.cs` (`Ctrl+Shift+S` opens the overlays), and built out the rest of W1's App-side surface
+against `DocShot.Core.Fakes`: per-monitor selection overlay with window hover-highlight and
+region-drag, capture display, and a full annotation canvas covering all seven `AnnotationShape`
+cases (arrow, rectangle, ellipse, text, highlighter, redaction, select/move) with undo/redo and
+Copy/Save/Discard wired to `IPasteboardWriter`/`IFileWriter` per the product rules in
+`PARITY_CHECKLIST.md` §1. Antigravity's machine ran `dotnet test` across the **whole solution**,
+including `DocShot.Platform` for the first time — **all six projects compiled clean**, which
+resolves the "unverified by compile" caveat on Codex's PR #6 groundwork (§5, spike 5 note).
+Solution-wide test count: **116 passing, 0 failed** (`DocShot.Core.Tests` 103,
+`DocShot.App.Tests` 13).
+
+**Branch topology note:** to get a consistent full-solution build, Antigravity merged
+`windows/core-bootstrap` into `windows/app-dpi-overlay-shell` and pushed the result back onto
+`windows/core-bootstrap` too — the two branches now point at the same commit (`0e52e55`). PR #5
+and PR #7 are effectively tracking the same branch content going forward; this is fine
+functionally (nothing broke, everything still tests green) but is a departure from the
+one-branch-per-lane plan in §8, worth being aware of before assuming the PRs are independent.
+
+Still not done for W1: a WGC-backed `IScreenCaptureService` (the current `GdiScreenCaptureService`
+is an explicitly-flagged fallback), `IRecordingSession`, and the App settings UI (cursor
+visibility, frame rate, shortcut configuration, GIF eligibility — `PARITY_CHECKLIST.md` §5).
+
 Full task breakdown per lane, including exactly what's ported vs. not yet, is in
 [`windows/docs/WORKSTREAMS.md`](../windows/docs/WORKSTREAMS.md).
 

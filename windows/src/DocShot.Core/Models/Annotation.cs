@@ -18,7 +18,7 @@ public enum RedactionStyle
 /// dependency (see <c>Primitives/Geometry.cs</c> for the same reasoning). That conversion belongs
 /// in <c>DocShot.App</c>, as a small extension method next to wherever WPF colours are used.
 /// </remarks>
-public readonly record struct RgbaColor(double Red, double Green, double Blue, double Alpha = 1.0)
+public readonly record struct RgbaColor(double R, double G, double B, double A = 1.0)
 {
     public static readonly RgbaColor Red = new(0.9, 0.2, 0.2);
     public static readonly RgbaColor Green = new(0.2, 0.8, 0.3);

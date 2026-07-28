@@ -158,9 +158,11 @@ public sealed class RecordingStateReducer
                 }
 
             case RecordingEvent.SaveRequested:
+            {
                 if (State is not RecordingState.AwaitingOutput awaiting || _isSavePanelOpen) return [];
                 _isSavePanelOpen = true;
                 return [new RecordingEffect.PresentSavePanel(awaiting.Recording)];
+            }
 
             case RecordingEvent.SaveCompleted e:
             {

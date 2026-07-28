@@ -44,8 +44,14 @@ public abstract record RecordingState
     public sealed record Starting(RecordingTarget Target) : RecordingState;
     public sealed record Recording(RecordingTarget Target, DateTimeOffset StartedAt) : RecordingState;
     public sealed record Stopping : RecordingState;
-    public sealed record AwaitingOutput(TemporaryRecording Recording) : RecordingState;
-    public sealed record ExportingGif(TemporaryRecording Recording) : RecordingState;
+    public sealed record AwaitingOutput(TemporaryRecording Recording) : RecordingState
+    {
+        public new TemporaryRecording Recording { get; init; } = Recording;
+    }
+    public sealed record ExportingGif(TemporaryRecording Recording) : RecordingState
+    {
+        public new TemporaryRecording Recording { get; init; } = Recording;
+    }
     public sealed record Failed(RecordingFailure Failure) : RecordingState;
 
     private RecordingState() { }
@@ -60,18 +66,42 @@ public abstract record RecordingState
 public abstract record RecordingEvent
 {
     public sealed record RequestRecording : RecordingEvent;
-    public sealed record PermissionResolved(bool Granted, RecordingSessionId Session) : RecordingEvent;
-    public sealed record TargetSelected(RecordingTarget Target, RecordingSessionId Session) : RecordingEvent;
-    public sealed record TargetRejected(RecordingTargetRejection Rejection, RecordingSessionId Session) : RecordingEvent;
+    public sealed record PermissionResolved(bool Granted, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
+    public sealed record TargetSelected(RecordingTarget Target, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
+    public sealed record TargetRejected(RecordingTargetRejection Rejection, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
     public sealed record SelectionCancelled : RecordingEvent;
     public sealed record ConfirmRecord : RecordingEvent;
     public sealed record ConfirmCancel : RecordingEvent;
-    public sealed record SessionStarted(DateTimeOffset At, RecordingSessionId Session) : RecordingEvent;
-    public sealed record SessionStartFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent;
+    public sealed record SessionStarted(DateTimeOffset At, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
+    public sealed record SessionStartFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
     public sealed record StopRequested : RecordingEvent;
-    public sealed record SessionStopped(TemporaryRecording Recording, RecordingSessionId Session) : RecordingEvent;
-    public sealed record SessionStopFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent;
-    public sealed record StreamFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent;
+    public sealed record SessionStopped(TemporaryRecording Recording, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
+    public sealed record SessionStopFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
+    public sealed record StreamFailed(RecordingFailure Failure, Uri? Url, RecordingSessionId Session) : RecordingEvent
+    {
+        public new RecordingSessionId Session { get; init; } = Session;
+    }
     public sealed record SaveRequested : RecordingEvent;
     public sealed record SaveCompleted(SaveResult Result) : RecordingEvent;
     public sealed record DiscardRequested : RecordingEvent;

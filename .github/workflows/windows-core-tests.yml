@@ -11,11 +11,13 @@ on:
     branches: [main]
     paths:
       - "windows/src/DocShot.Core/**"
+      - "windows/src/DocShot.Core.Fakes/**"
       - "windows/tests/DocShot.Core.Tests/**"
       - ".github/workflows/windows-core-tests.yml"
   pull_request:
     paths:
       - "windows/src/DocShot.Core/**"
+      - "windows/src/DocShot.Core.Fakes/**"
       - "windows/tests/DocShot.Core.Tests/**"
       - ".github/workflows/windows-core-tests.yml"
 

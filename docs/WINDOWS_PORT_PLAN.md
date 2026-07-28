@@ -193,6 +193,12 @@ as of 2026-07-28:
    sufficient. **Partially done** — PR #6 confirmed both formats land on the clipboard correctly
    (registered `"PNG"` plus `CF_DIB`). Still open: real paste verification into a logged-in
    Slack/Discord session, which needs a human, not just a clipboard-format probe.
+5. **Self-audio exclusion** — added 2026-07-28 on the macOS team's advice, not in the original
+   four. macOS's ScreenCaptureKit has a first-class "exclude this app's own audio" option; WASAPI
+   loopback has no equivalent on the surface PR #6 exercised. **Not started — treat as urgent,
+   ahead of the rest of W4.** Required acceptance test and fallback plan are in
+   [`windows/docs/PARITY_CHECKLIST.md`](../windows/docs/PARITY_CHECKLIST.md) §2. Don't claim R3/W4
+   parity without it passing.
 
 Spikes 2-4 are throwaway proofs at `windows/spikes/W0Platform` in PR #6 (Codex's worktree,
 `docshot-platform-w0`) — not folded into `DocShot.Platform` yet, which still has no
@@ -279,6 +285,17 @@ W0 spike 1 (see §5) and scaffolding a real `DocShot.App` shell (tray icon via `
 `dotnet test` across the solution now reports **100 tests passing, 0 failed**
 (`DocShot.Core.Tests` 93 + `DocShot.App.Tests` 7). Three PRs open against `main`: #5 (Core
 bootstrap), #6 (Platform W0 spikes, draft), #7 (App W0 spike + shell).
+
+**Update 2026-07-28 (fourth pass):** the macOS team reviewed the port and gave concrete parity
+guidance — folded into [`windows/docs/PARITY_CHECKLIST.md`](../windows/docs/PARITY_CHECKLIST.md),
+a one-pager Codex and Antigravity should test milestones against directly. Headlines: self-audio
+exclusion is a genuine new risk (spike 5 above, not previously identified), the editor data model
+was audited against the macOS source and confirmed portable (annotation type, source-time
+anchoring, segment IDs, trim/split semantics all match), `RegisterHotKey` is required over a
+keyboard hook, and W7's distribution path (ZIP vs. MSIX) is flagged as an open decision, currently
+defaulting to ZIP-first. `WORKSTREAMS.md` was also restructured the same day so App no longer has
+to wait on Platform's real service implementations to start W1 UI work — see its "Parallelization"
+section.
 
 Full task breakdown per lane, including exactly what's ported vs. not yet, is in
 [`windows/docs/WORKSTREAMS.md`](../windows/docs/WORKSTREAMS.md).

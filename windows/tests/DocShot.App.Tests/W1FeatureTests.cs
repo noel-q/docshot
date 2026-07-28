@@ -81,4 +81,19 @@ public class W1FeatureTests
         Assert.NotNull(fakePasteboard.LastWritten);
         Assert.Equal(testData, fakePasteboard.LastWritten);
     }
+
+    [Fact]
+    public void FakeHotkeyService_simulate_press_raises_HotkeyPressed_event()
+    {
+        AppServices.ResetToFakes();
+        var fakeHotkey = (FakeHotkeyService)AppServices.Hotkey;
+
+        int pressedId = -1;
+        fakeHotkey.HotkeyPressed += id => pressedId = id;
+
+        fakeHotkey.Register(101, 0, 0);
+        fakeHotkey.SimulateHotkeyPress(101);
+
+        Assert.Equal(101, pressedId);
+    }
 }

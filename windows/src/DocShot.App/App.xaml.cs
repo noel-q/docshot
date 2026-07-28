@@ -39,11 +39,26 @@ public partial class App : Application
 
         _notifyIcon.TrayLeftMouseDown += (s, args) => MenuTakeScreenshot_Click(s, args);
 
+        // Register default global capture hotkey (ID 101)
+        AppServices.Hotkey.Register(101, 0x0002 | 0x0004, 0x53); // Ctrl + Shift + S
+        AppServices.Hotkey.HotkeyPressed += OnHotkeyPressed;
+
         // Check if started with --spike flag to automatically launch settings/diagnostics
         if (e.Args.Length > 0 && e.Args[0] == "--spike")
         {
             ShowSettingsWindow();
         }
+    }
+
+    private void OnHotkeyPressed(int hotkeyId)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (hotkeyId == 101)
+            {
+                _overlayManager.ShowOverlays();
+            }
+        });
     }
 
     private void MenuTakeScreenshot_Click(object? sender, RoutedEventArgs e)

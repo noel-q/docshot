@@ -36,5 +36,7 @@ function Invoke-Cl([string]$Source, [string]$Exe, [string[]]$Libs) {
 Invoke-Cl "wgc_capture_probe.cpp" "wgc_capture_probe.exe" @("windowsapp.lib", "d3d11.lib", "dxgi.lib", "runtimeobject.lib", "user32.lib")
 Invoke-Cl "wasapi_mf_sync_probe.cpp" "wasapi_mf_sync_probe.exe" @("mfplat.lib", "mfreadwrite.lib", "mfuuid.lib", "d3d11.lib", "dxgi.lib", "gdi32.lib", "ole32.lib", "avrt.lib")
 Invoke-Cl "clipboard_png_probe.cpp" "clipboard_png_probe.exe" @("user32.lib", "gdi32.lib", "windowscodecs.lib", "ole32.lib")
+Invoke-Cl "external_tone_player.cpp" "external_tone_player.exe" @("winmm.lib")
+Invoke-Cl "self_audio_exclusion_probe.cpp" "self_audio_exclusion_probe.exe" @("ole32.lib", "avrt.lib", "winmm.lib", "runtimeobject.lib", "Mmdevapi.lib", "onecore.lib")
 
 Write-Host "Built probes in $out"

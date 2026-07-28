@@ -41,8 +41,24 @@ Not yet ported, and not expected to be — these need a concrete decoded-image/b
 a `DocShot.Platform` decision (SkiaSharp is the leading candidate; see
 `docs/WINDOWS_PORT_PLAN.md` §2): the macOS `DisplaySnapshot` struct itself (image + descriptor -
 `DisplayDescriptor` above is its portable half), and the image-sampling halves of `PixelSampler`
-and `DisplayGeometry.CropImage`. `DocShot.Platform` and `DocShot.App` are still empty placeholder
-projects with a `README.md` each - no capture, encode, hotkey, or UI code exists yet.
+and `DisplayGeometry.CropImage`.
+
+**Update 2026-07-28: Platform and App are no longer empty.** Codex opened
+[PR #6](https://github.com/noel-q/docshot/pull/6) (`windows/platform-w0-spikes`, draft) — W0
+spikes 2-4 (WGC capture, WASAPI+Media Foundation, clipboard PNG) run against real APIs, throwaway
+proofs at `windows/spikes/W0Platform`, not yet folded into `DocShot.Platform` itself. Two genuine
+new risks surfaced, not in the original plan: a static (non-animating) WGC capture target stops
+emitting frames after its initial burst (needs a forced-refresh/duplicate-last-frame strategy),
+and WASAPI loopback audio packets arrive *after* the first video frame (needs explicit
+initial-silence handling in the sink writer). Both are flagged for whoever writes the real
+`IRecordingSession` — see `docs/WINDOWS_PORT_PLAN.md` §5 for full detail.
+
+Antigravity opened [PR #7](https://github.com/noel-q/docshot/pull/7)
+(`windows/app-dpi-overlay-shell`) — W0 spike 1 done (`DisplayMonitorHelper`,
+`OverlayWindowManager`, `OverlayWindow`, `DpiRoundTripTests`, 0.00px DIP↔physical round-trip error
+across all tested scale factors) plus a real App shell: tray icon (`H.NotifyIcon.Wpf`), settings
+window, `DocShot.App.Tests` project. Solution-wide `dotnet test` is now **100 passing, 0 failed**
+(Core 93 + App 7).
 
 ## Branch naming
 
@@ -94,14 +110,13 @@ parallel lanes into a merge headache, so:
 
 ### Platform (Codex) - W0 risk spikes, then W1-W2 groundwork
 
-1. **Risk spike:** WGC still-frame and streaming capture against real windows, including
-   hardware-accelerated ones. Prove pixel dimensions match the selection exactly, odd dimensions
-   included - do not round, matching the macOS R1 decision.
-2. **Risk spike:** WASAPI loopback + Media Foundation sink writer on one shared clock. This is the
-   single biggest architecture gap from macOS (ScreenCaptureKit has no Windows equivalent that
-   captures video and audio on one stream) - see §2 and §5 of `docs/WINDOWS_PORT_PLAN.md`.
-3. **Risk spike:** clipboard PNG round-trip - register and write the `"PNG"` format plus a
-   CF_DIB fallback, verify against a transparency-aware consumer and a legacy bitmap-only one.
+1. ~~**Risk spike:** WGC still-frame and streaming capture~~ — done, [PR #6](https://github.com/noel-q/docshot/pull/6).
+2. ~~**Risk spike:** WASAPI loopback + Media Foundation sink writer~~ — done, PR #6. Two new
+   risks flagged for the real implementation (see above): static-target frame starvation, audio
+   initial-silence handling.
+3. **Risk spike (partially done):** clipboard PNG round-trip - `"PNG"` format + `CF_DIB` fallback
+   both verified landing on the clipboard in PR #6; real paste into a logged-in Slack/Discord
+   session still needs a human, not just a format probe.
 4. Implement `IWindowDiscoveryService` (`EnumWindows` + `DwmGetWindowAttribute(DWMWA_CLOAKED)` +
    shell-surface denylist), `IHotkeyService` (`RegisterHotKey`/`WM_HOTKEY` on a message-only
    window), `IScreenCaptureService` (still capture), and pick the bitmap type
@@ -112,11 +127,13 @@ parallel lanes into a merge headache, so:
 
 ### App (Antigravity) - W0 risk spike, then W1 UI
 
-1. **Risk spike:** mixed-DPI multi-monitor borderless overlay windows. Two-monitor, mixed-scale
-   test rig; prove a drag-selected rectangle round-trips to the correct source pixels on both
-   monitors. `ApplicationHighDpiMode=PerMonitorV2` is already set in `DocShot.App.csproj` - don't
-   remove it, and don't declare this spike done without an actual mixed-DPI setup to test on.
-2. Tray icon (`NotifyIcon`) + minimal settings window shell.
+1. ~~**Risk spike:** mixed-DPI multi-monitor borderless overlay windows~~ — done,
+   [PR #7](https://github.com/noel-q/docshot/pull/7). Tested on a real two-monitor, mixed-scale
+   rig (150%/100%); DIP↔physical round-trip error 0.00px across tested scale factors. Watch out
+   for the `SetProcessDpiAwarenessContext` gotcha noted in `docs/WINDOWS_PORT_PLAN.md` §5 in any
+   new code that queries monitor geometry off the WPF UI thread.
+2. ~~Tray icon (`NotifyIcon`) + minimal settings window shell.~~ — done, PR #7
+   (`H.NotifyIcon.Wpf`).
 3. Per-monitor selection overlay windows wired to `IWindowDiscoveryService`/`IScreenCaptureService`
    once Platform lands them.
 4. Annotation canvas rendering `AnnotationItem`/`AnnotationShape` from `DocShot.Core` - decide the

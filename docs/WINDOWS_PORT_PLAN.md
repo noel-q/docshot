@@ -158,10 +158,19 @@ as of 2026-07-28:
 1. **Mixed-DPI multi-monitor overlay windows.** Borderless transparent WPF windows, one per
    monitor, each reporting pixel-accurate selection coordinates when monitors have different
    scale factors (100%/125%/150%/200% mixes are common). This is WPF's worst-documented corner.
-   **In progress** — Antigravity implemented the spike plus an actual App tray/settings shell on
-   `windows/app-dpi-overlay-shell` (`DisplayMonitorHelper`, `OverlayWindowManager`,
-   `OverlayWindow`, a `DpiRoundTripTests` suite). Findings not yet written up here; update this
-   entry once they're reported.
+   **Done** — [PR #7](https://github.com/noel-q/docshot/pull/7) (`windows/app-dpi-overlay-shell`)
+   implemented `DisplayMonitorHelper`, `OverlayWindowManager`, `OverlayWindow`, and a
+   `DpiRoundTripTests` suite, plus a real App shell (tray icon, settings window). Test rig:
+   Display 1 (primary) 2560×1440 @ 150% scale (144 DPI, DIP bounds 1707×960), Display 2
+   (secondary) 1920×1080 @ 100% scale (96 DPI, DIP bounds 1920×1080 at offset x=-1920). Conversion
+   formula `X_phys = Math.Round(X_dip * ScaleFactor)` (and equivalently Y/W/H) round-trips with
+   0.00px error across 100/125/150/175/200% scale factors. **New finding, not anticipated in this
+   plan:** Win32 P/Invoke calls (`EnumDisplayMonitors`, `GetMonitorInfo`) made outside a
+   WPF-managed window thread return virtualized DIP bounds instead of physical bounds unless
+   `SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)` (or `-4`) is
+   explicitly set first — `DisplayMonitorHelper` now does this, but it's an easy trap to fall into
+   again in any new Platform/App code that queries monitor geometry. Full solution: 100 tests
+   passing (`DocShot.Core.Tests` 93, `DocShot.App.Tests` 7).
 2. **WGC still-frame and streaming capture against real windows**, including hardware-accelerated
    ones (browsers, other WPF/UWP apps) and DPI-scaled windows — pixel dimensions must match the
    selection exactly, odd dimensions included, never rounded. **Done** — [PR #6](https://github.com/noel-q/docshot/pull/6)
@@ -256,6 +265,20 @@ must not reuse a name already used by a static member or a base property in that
 worth remembering before porting the remaining models in §"Not yet ported" below. Fixed in
 `ccf937e`; `dotnet test` now reports **67 passed, 0 failed** for `DocShot.Core.Tests`. Branch
 pushed, [PR #5](https://github.com/noel-q/docshot/pull/5) open against `main`.
+
+**Update 2026-07-28 (later same day):** Claude's Core lane ported the remaining pure models
+(`MagnifierGrid`, `DisplayDescriptor`, `SnapshotPlan`, `RecordingRegionPlan`,
+`CaptureActivityPolicy`), bringing `DocShot.Core.Tests` to 93 passing. Codex opened
+[PR #6](https://github.com/noel-q/docshot/pull/6) (`windows/platform-w0-spikes`, draft), running
+W0 spikes 2-4 against real WGC/WASAPI/clipboard APIs — see §5 for findings, including two genuine
+new architecture risks (static-WGC-frame handling, audio initial-silence handling) for whoever
+implements the real `IRecordingSession`. Antigravity opened
+[PR #7](https://github.com/noel-q/docshot/pull/7) (`windows/app-dpi-overlay-shell`), closing out
+W0 spike 1 (see §5) and scaffolding a real `DocShot.App` shell (tray icon via `H.NotifyIcon.Wpf`,
+`OverlayWindow`/`OverlayWindowManager`, a settings window, `DocShot.App.Tests`). Combined,
+`dotnet test` across the solution now reports **100 tests passing, 0 failed**
+(`DocShot.Core.Tests` 93 + `DocShot.App.Tests` 7). Three PRs open against `main`: #5 (Core
+bootstrap), #6 (Platform W0 spikes, draft), #7 (App W0 spike + shell).
 
 Full task breakdown per lane, including exactly what's ported vs. not yet, is in
 [`windows/docs/WORKSTREAMS.md`](../windows/docs/WORKSTREAMS.md).

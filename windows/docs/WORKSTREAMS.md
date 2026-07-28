@@ -126,10 +126,18 @@ UI/UX work and Platform's interop work stop blocking each other.
   `Models/ColorSample.cs` and `Models/DisplayGeometry.cs`).
 - ~~`DocShot.Core.Fakes`~~ — done: in-memory fakes for all four capture-side service interfaces,
   unblocking App's W1 work from Platform's schedule. See "Parallelization" above.
-- Fast-follow, not blocking: a cheap `VideoProject.ValidateForExport()`-style pre-flight check
-  mirroring macOS's `VideoProjectExportError.emptyTimeline` case, so App/Platform can short-circuit
-  an obviously-invalid export before it reaches the encoder. See
-  `windows/docs/PARITY_CHECKLIST.md` §4 for the full portability audit this came out of.
+- ~~`VideoProject.ValidateForExport()`~~ — done, mirrors macOS's `emptyTimeline` export error;
+  throws `VideoProjectError.EmptyTimeline` for a zero-duration timeline, tested.
+- **Interface change, 2026-07-28 — flagging per the dependency-order rule since PR #6 already
+  depends on `IHotkeyService`:** added `event Action<int>? HotkeyPressed;` to `IHotkeyService`.
+  Code review of PR #6's `HotkeyService.cs` found its `WM_HOTKEY` case was a no-op - `Register`
+  could succeed but nothing ever told a caller the hotkey was actually pressed, which is a real
+  gap for the actual product behaviour (hotkey → open capture UI). **Follow-up for Codex:** wire
+  the existing `WM_HOTKEY` branch in `HotkeyService.WindowProc` to raise `HotkeyPressed` with the
+  pressed hotkey's `id` — everything needed (the message, the id space) is already there.
+  `DocShot.Core.Fakes.FakeHotkeyService` implements the new member and adds a
+  `SimulateHotkeyPress(id)` test hook so App can wire and test its own reaction without a real
+  global hotkey.
 - Keep `docs/WINDOWS_PORT_PLAN.md` and this file honest as Platform/App reality diverges from plan.
 
 ### Platform (Codex) - W0 risk spikes, then W1-W2 groundwork
@@ -141,20 +149,26 @@ UI/UX work and Platform's interop work stop blocking each other.
 3. **Risk spike (partially done):** clipboard PNG round-trip - `"PNG"` format + `CF_DIB` fallback
    both verified landing on the clipboard in PR #6; real paste into a logged-in Slack/Discord
    session still needs a human, not just a format probe.
-4. **New risk spike, urgent — added 2026-07-28 on the macOS team's advice:** self-audio exclusion.
-   WASAPI loopback captures everything on the system output, including DocShot's own alert
-   sounds; macOS's ScreenCaptureKit excludes the capturing app's own audio by default and Windows
-   has no equivalent proven yet. Investigate process-exclusive loopback capture
-   (`AUDIOCLIENT_ACTIVATION_PARAMS` / `PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) or a
-   mute-DocShot's-own-sounds-while-recording fallback. Required acceptance test in
-   `windows/docs/PARITY_CHECKLIST.md` §2 - don't mark W4 done without it passing. Sequence this
-   ahead of item 6 (`IRecordingSession`) if it changes the audio-capture approach.
-5. Implement `IWindowDiscoveryService` (`EnumWindows` + `DwmGetWindowAttribute(DWMWA_CLOAKED)` +
-   shell-surface denylist), `IHotkeyService` (`RegisterHotKey`/`WM_HOTKEY` on a message-only
-   window), `IScreenCaptureService` (still capture), and pick the bitmap type
+4. ~~**Risk spike, urgent:** self-audio exclusion~~ — done, PR #6. Process-exclusive WASAPI
+   loopback (`PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) confirmed working on Windows
+   build `26200.8875`: external audio captured, DocShot's own alert excluded, classic loopback
+   control captured the alert (proves the test itself is meaningful). Use process-exclusive
+   loopback, not classic, as the default in the real `IRecordingSession` audio path.
+5. **In progress:** `IWindowDiscoveryService`, `IHotkeyService`, `IScreenCaptureService`, and
+   `IPermissionService` all now have a first implementation on PR #6
+   (`WindowDiscoveryService.cs`, `HotkeyService.cs`, `GdiScreenCaptureService.cs`,
+   `WindowsPermissionService.cs`). **Caveat:** `GdiScreenCaptureService` is BitBlt/GDI-based, a
+   fallback/early-wiring path - it is *not* the WGC-backed implementation spike 2 above actually
+   validated for exact-dimension, hardware-accelerated-window capture. Don't let it become the
+   permanent `IScreenCaptureService` by default; a WGC-backed implementation still needs to land
+   before W1's capture-parity gate is met. Still need to pick the bitmap type
    `CapturedImage.Bgra32Pixels` gets wrapped in for actual rendering (SkiaSharp is the leading
-   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on this - see
-   "Parallelization" above.
+   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on any of this - see
+   "Parallelization" above. **Also unverified by compile** - Codex's machine has .NET runtimes but
+   no SDK/MSBuild SDK targets (`MSB4236`); needs Antigravity or Noel to actually build it.
+   **Follow-up needed:** `IHotkeyService` gained a `HotkeyPressed` event (see Core's task list
+   above) - `HotkeyService.WindowProc`'s existing `WM_HOTKEY` branch is a no-op and needs to raise
+   it with the pressed hotkey's `id`.
 6. Implement `IRecordingSession`/`IRecordingSessionFactory` (video-only first, matching the macOS
    R1 gate - no audio, no GIF, until video-only start/stop/save/discard is solid).
 

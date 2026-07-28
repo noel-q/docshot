@@ -104,6 +104,19 @@ public sealed class VideoProject : IEquatable<VideoProject>
         && _segments[0].SourceRange.Start == 0
         && Math.Abs(_segments[0].SourceRange.Duration - SourceDuration) < Epsilon;
 
+    /// <summary>
+    /// Cheap pre-flight check before handing this project to a real exporter. Mirrors macOS's
+    /// <c>VideoProjectExportError.emptyTimeline</c> case (see the portability audit in
+    /// <c>windows/docs/PARITY_CHECKLIST.md</c> §4) - genuinely encoder-specific failures
+    /// (unreadable source, composition failure, encode failure) still belong in
+    /// <c>DocShot.Platform</c>'s exporter, not here; this only catches the one thing Core already
+    /// knows for certain before an encoder ever gets involved.
+    /// </summary>
+    public void ValidateForExport()
+    {
+        if (TimelineDuration <= Epsilon) throw new VideoProjectException(new VideoProjectError.EmptyTimeline());
+    }
+
     public VideoSegment? Segment(Guid id) => _segments.FirstOrDefault(s => s.Id == id);
 
     /// <summary>Where a segment begins on the timeline, or <c>null</c> if it is not in this project.</summary>

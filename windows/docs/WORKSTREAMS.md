@@ -32,11 +32,17 @@ avoid when porting the remaining models below), pushed `windows/core-bootstrap`,
 [PR #5](https://github.com/noel-q/docshot/pull/5). `DocShot.Platform`/`DocShot.App` work can now
 build against a Core that's actually known to compile, not just carefully reviewed.
 
-Not yet ported (tracked here so it isn't silently dropped): `MagnifierGrid`, `DisplaySnapshot`,
-`RecordingRegionPlan`, `SnapshotPlan`, `CaptureActivityPolicy`, and the image-dependent halves of
-`PixelSampler`/`DisplayGeometry.CropImage` (these need a concrete bitmap type - see the Platform
-task list below for where that decision belongs). `DocShot.Platform` and `DocShot.App` are empty
-placeholder projects with a `README.md` each - no capture, encode, hotkey, or UI code exists yet.
+**Update 2026-07-28 (second pass):** the rest of the pure model layer is now ported too -
+`MagnifierGrid`, `DisplayDescriptor` (the pure half of macOS's `DisplaySnapshot.swift`),
+`SnapshotPlan`, `RecordingRegionPlan`, and `CaptureActivityPolicy`, each with its own test file.
+That's every macOS `duplicatedProductionSource` model except the genuinely image-dependent ones.
+
+Not yet ported, and not expected to be — these need a concrete decoded-image/bitmap type, which is
+a `DocShot.Platform` decision (SkiaSharp is the leading candidate; see
+`docs/WINDOWS_PORT_PLAN.md` §2): the macOS `DisplaySnapshot` struct itself (image + descriptor -
+`DisplayDescriptor` above is its portable half), and the image-sampling halves of `PixelSampler`
+and `DisplayGeometry.CropImage`. `DocShot.Platform` and `DocShot.App` are still empty placeholder
+projects with a `README.md` each - no capture, encode, hotkey, or UI code exists yet.
 
 ## Branch naming
 
@@ -74,8 +80,10 @@ parallel lanes into a merge headache, so:
 
 ### Core (Claude) - ongoing
 
-- Port the remaining pure models: `MagnifierGrid`, `DisplaySnapshot`, `RecordingRegionPlan`,
-  `SnapshotPlan`, `CaptureActivityPolicy`.
+- ~~Port the remaining pure models~~ — done: `MagnifierGrid`, `DisplayDescriptor`,
+  `RecordingRegionPlan`, `SnapshotPlan`, `CaptureActivityPolicy` all landed with tests. Still
+  unverified by a real `dotnet test` run as of this commit — same caveat as the bootstrap; check
+  the PR before trusting it compiles.
 - Decide and document where the image-sampling half of `PixelSampler`/`DisplayGeometry.CropImage`
   lives once Platform picks a bitmap library (almost certainly `DocShot.Platform`, since it needs
   a concrete decoded-image type Core deliberately doesn't depend on - see the doc comments in

@@ -141,20 +141,23 @@ UI/UX work and Platform's interop work stop blocking each other.
 3. **Risk spike (partially done):** clipboard PNG round-trip - `"PNG"` format + `CF_DIB` fallback
    both verified landing on the clipboard in PR #6; real paste into a logged-in Slack/Discord
    session still needs a human, not just a format probe.
-4. **New risk spike, urgent — added 2026-07-28 on the macOS team's advice:** self-audio exclusion.
-   WASAPI loopback captures everything on the system output, including DocShot's own alert
-   sounds; macOS's ScreenCaptureKit excludes the capturing app's own audio by default and Windows
-   has no equivalent proven yet. Investigate process-exclusive loopback capture
-   (`AUDIOCLIENT_ACTIVATION_PARAMS` / `PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) or a
-   mute-DocShot's-own-sounds-while-recording fallback. Required acceptance test in
-   `windows/docs/PARITY_CHECKLIST.md` §2 - don't mark W4 done without it passing. Sequence this
-   ahead of item 6 (`IRecordingSession`) if it changes the audio-capture approach.
-5. Implement `IWindowDiscoveryService` (`EnumWindows` + `DwmGetWindowAttribute(DWMWA_CLOAKED)` +
-   shell-surface denylist), `IHotkeyService` (`RegisterHotKey`/`WM_HOTKEY` on a message-only
-   window), `IScreenCaptureService` (still capture), and pick the bitmap type
+4. ~~**Risk spike, urgent:** self-audio exclusion~~ — done, PR #6. Process-exclusive WASAPI
+   loopback (`PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) confirmed working on Windows
+   build `26200.8875`: external audio captured, DocShot's own alert excluded, classic loopback
+   control captured the alert (proves the test itself is meaningful). Use process-exclusive
+   loopback, not classic, as the default in the real `IRecordingSession` audio path.
+5. **In progress:** `IWindowDiscoveryService`, `IHotkeyService`, `IScreenCaptureService`, and
+   `IPermissionService` all now have a first implementation on PR #6
+   (`WindowDiscoveryService.cs`, `HotkeyService.cs`, `GdiScreenCaptureService.cs`,
+   `WindowsPermissionService.cs`). **Caveat:** `GdiScreenCaptureService` is BitBlt/GDI-based, a
+   fallback/early-wiring path - it is *not* the WGC-backed implementation spike 2 above actually
+   validated for exact-dimension, hardware-accelerated-window capture. Don't let it become the
+   permanent `IScreenCaptureService` by default; a WGC-backed implementation still needs to land
+   before W1's capture-parity gate is met. Still need to pick the bitmap type
    `CapturedImage.Bgra32Pixels` gets wrapped in for actual rendering (SkiaSharp is the leading
-   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on this - see
-   "Parallelization" above.
+   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on any of this - see
+   "Parallelization" above. **Also unverified by compile** - Codex's machine has .NET runtimes but
+   no SDK/MSBuild SDK targets (`MSB4236`); needs Antigravity or Noel to actually build it.
 6. Implement `IRecordingSession`/`IRecordingSessionFactory` (video-only first, matching the macOS
    R1 gate - no audio, no GIF, until video-only start/stop/save/discard is solid).
 

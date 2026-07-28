@@ -195,15 +195,34 @@ as of 2026-07-28:
    Slack/Discord session, which needs a human, not just a clipboard-format probe.
 5. **Self-audio exclusion** — added 2026-07-28 on the macOS team's advice, not in the original
    four. macOS's ScreenCaptureKit has a first-class "exclude this app's own audio" option; WASAPI
-   loopback has no equivalent on the surface PR #6 exercised. **Not started — treat as urgent,
-   ahead of the rest of W4.** Required acceptance test and fallback plan are in
-   [`windows/docs/PARITY_CHECKLIST.md`](../windows/docs/PARITY_CHECKLIST.md) §2. Don't claim R3/W4
-   parity without it passing.
+   loopback has no equivalent on the surface PR #6 originally exercised. **Done** — PR #6's
+   `self_audio_exclusion_probe.cpp` confirmed process-exclusive WASAPI loopback
+   (`AUDIOCLIENT_ACTIVATION_PARAMS` / `PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) works
+   on Windows build `26200.8875`: an external 440 Hz tone was captured, the probe process's own
+   1200 Hz alert was not, and a classic (non-exclusive) loopback control captured the alert too —
+   proving the test methodology is sound, not just that the probe happened to record silence. The
+   required acceptance test in `windows/docs/PARITY_CHECKLIST.md` §2 now has a real pass. Whoever
+   builds the real `IRecordingSession` audio path should use process-exclusive loopback, not
+   classic loopback, as the default.
 
 Spikes 2-4 are throwaway proofs at `windows/spikes/W0Platform` in PR #6 (Codex's worktree,
-`docshot-platform-w0`) — not folded into `DocShot.Platform` yet, which still has no
-`IWindowDiscoveryService`/`IScreenCaptureService`/`IRecordingSession` implementation. That's
-correctly the next Platform-lane step now that the spikes have de-risked it.
+`docshot-platform-w0`); spike 5's probe lives alongside them. All five are now proven, closing W0
+entirely across all three lanes.
+
+**Update 2026-07-28: Platform groundwork has started, ahead of the spikes being folded in.**
+`WindowDiscoveryService.cs`, `HotkeyService.cs`, `WindowsPermissionService.cs`, and a
+`GdiScreenCaptureService.cs` now exist in `DocShot.Platform` on PR #6. **Important caveat, worth
+tracking as its own risk:** `GdiScreenCaptureService` uses the older BitBlt-style GDI capture API,
+not Windows.Graphics.Capture — it's explicitly a fallback/early-wiring path, not the implementation
+that was actually spike-validated for exact-dimension, hardware-accelerated-window capture (spike
+2 above, PR #6's original WGC proof). Don't let `GdiScreenCaptureService` become the permanent
+`IScreenCaptureService` implementation by default; a WGC-backed implementation still needs to
+replace or sit alongside it as the real primary backend before W1's capture-parity gate is met.
+`IRecordingSession` remains untouched. **Also unverified by compile** — Codex's machine has .NET
+runtimes but no .NET SDK/MSBuild SDK targets (`MSB4236: The SDK 'Microsoft.NET.Sdk' specified
+could not be found`), so these four C# files carry the same caveat every Core batch has carried:
+written and reasoned about carefully, not yet proven to build. Needs Antigravity (whose machine has
+successfully run `dotnet test` for the whole solution before) or Noel to verify.
 
 ---
 

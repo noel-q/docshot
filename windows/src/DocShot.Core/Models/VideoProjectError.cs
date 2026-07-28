@@ -27,6 +27,15 @@ public abstract record VideoProjectError
     /// <summary>The annotation's visible range does not overlap the segment it is attached to.</summary>
     public sealed record AnnotationOutsideSegment : VideoProjectError;
 
+    /// <summary>
+    /// The timeline has nothing to export - mirrors macOS's <c>VideoProjectExportError.emptyTimeline</c>
+    /// case (see <c>windows/docs/PARITY_CHECKLIST.md</c> §4's portability audit). Cheap enough to
+    /// check before an export ever reaches a real encoder, so <see cref="VideoProject.ValidateForExport"/>
+    /// exists purely so App/Platform can short-circuit here instead of surfacing an encoder-level
+    /// failure for something Core already knew was wrong.
+    /// </summary>
+    public sealed record EmptyTimeline : VideoProjectError;
+
     private VideoProjectError() { }
 
     public string Message => this switch
@@ -40,6 +49,7 @@ public abstract record VideoProjectError
         CannotRemoveLastSegment => "A project needs at least one clip. Discard the recording instead.",
         InvalidSegmentPosition => "That is not a valid position in the timeline.",
         AnnotationOutsideSegment => "An annotation has to be visible somewhere inside the clip it belongs to.",
+        EmptyTimeline => "There is nothing on the timeline to export.",
         _ => "Unknown video project error."
     };
 }

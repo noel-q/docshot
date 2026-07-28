@@ -20,6 +20,22 @@ public class VideoProjectTests
     }
 
     [Fact]
+    public void ValidateForExport_passes_for_a_normal_project()
+    {
+        var project = MakeProject();
+        var exception = Record.Exception(project.ValidateForExport);
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ValidateForExport_rejects_a_zero_duration_timeline()
+    {
+        var project = MakeProject(duration: 0);
+        var exception = Assert.Throws<VideoProjectException>(project.ValidateForExport);
+        Assert.IsType<VideoProjectError.EmptyTimeline>(exception.Error);
+    }
+
+    [Fact]
     public void Trim_replaces_the_segments_range_and_does_not_touch_the_original_instance()
     {
         var project = MakeProject();

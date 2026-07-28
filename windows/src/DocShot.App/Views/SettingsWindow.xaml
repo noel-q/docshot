@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="DocShot Settings"
-        Height="540" Width="680"
+        Height="580" Width="720"
         WindowStartupLocation="CenterScreen"
         Background="#1E1E2E"
         Foreground="#CDD6F4"
@@ -18,12 +18,12 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,20">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="DocShot" FontSize="22" FontWeight="Bold" Foreground="#89B4FA"/>
-                <TextBlock Text=" Settings &amp; Diagnostics" FontSize="22" FontWeight="SemiBold" Foreground="#CDD6F4"/>
+                <TextBlock Text=" Settings &amp; Recording Options" FontSize="22" FontWeight="SemiBold" Foreground="#CDD6F4"/>
             </StackPanel>
-            <TextBlock Text="Windows Port Scaffold — Mixed-DPI &amp; App Shell" FontSize="12" Foreground="#A6ADC8" Margin="0,4,0,0"/>
+            <TextBlock Text="Windows Port — PARITY_CHECKLIST §5 Behavior Contract" FontSize="12" Foreground="#A6ADC8" Margin="0,4,0,0"/>
         </StackPanel>
 
-        <!-- Tabbed / Sectioned Content -->
+        <!-- Tabbed Content -->
         <TabControl Grid.Row="1" Background="#181825" BorderBrush="#313244" BorderThickness="1">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
@@ -38,37 +38,112 @@
                 </Style>
             </TabControl.Resources>
 
-            <!-- Tab 1: General & Hotkeys -->
-            <TabItem Header="General">
-                <StackPanel Margin="20">
-                    <TextBlock Text="Shortcuts &amp; Behavior" FontSize="14" FontWeight="Bold" Foreground="#F5E0DC" Margin="0,0,0,12"/>
-
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="200"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="Capture Hotkey" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Global shortcut to trigger full-screen selection" FontSize="11" Foreground="#A6ADC8"/>
-                        </StackPanel>
-                        <TextBox Grid.Column="1" Text="Ctrl + Shift + S" IsReadOnly="True" Background="#313244" Foreground="#89B4FA"
-                                 BorderBrush="#45475A" Padding="8,6" HorizontalContentAlignment="Center" FontWeight="Bold"/>
-                    </Grid>
-
-                    <Separator Background="#313244" Margin="0,0,0,16"/>
-
-                    <CheckBox Content="Launch DocShot on Windows startup" Foreground="#CDD6F4" FontSize="13"/>
-                    <CheckBox Content="Play shutter sound on capture" Foreground="#CDD6F4" FontSize="13" Margin="0,10,0,0" IsChecked="True"/>
-                </StackPanel>
-            </TabItem>
-
-            <!-- Tab 2: DPI & Multi-Monitor Diagnostics -->
-            <TabItem Header="Multi-Monitor &amp; DPI">
+            <!-- Tab 1: Recording & Capture Settings -->
+            <TabItem Header="Recording Options">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="20">
+                        <TextBlock Text="Recording &amp; Capture Settings (RecordingOptions)" FontSize="14" FontWeight="Bold" Foreground="#F5E0DC" Margin="0,0,0,12"/>
+
+                        <!-- Audio Mode -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="System Audio Mode" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Audio off by default per product rules (PARITY_CHECKLIST.md §1)" FontSize="11" Foreground="#A6ADC8"/>
+                            </StackPanel>
+                            <ComboBox x:Name="AudioModeComboBox" Grid.Column="1" Background="#313244" Foreground="#CDD6F4" Padding="8,4">
+                                <ComboBoxItem Content="Audio Off (Default)" IsSelected="True"/>
+                                <ComboBoxItem Content="Capture System Audio"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Cursor Visibility -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Show Mouse Cursor" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Include mouse pointer overlay during capture and recording" FontSize="11" Foreground="#A6ADC8"/>
+                            </StackPanel>
+                            <CheckBox x:Name="ShowCursorCheckBox" Grid.Column="1" Content="Visible in output" IsChecked="True" Foreground="#CDD6F4" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <!-- Frame Rate -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Maximum Frame Rate" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="Target FPS for screen recording" FontSize="11" Foreground="#A6ADC8"/>
+                            </StackPanel>
+                            <ComboBox x:Name="FrameRateComboBox" Grid.Column="1" Background="#313244" Foreground="#CDD6F4" Padding="8,4">
+                                <ComboBoxItem Content="60 FPS (High Smoothness)" IsSelected="True"/>
+                                <ComboBoxItem Content="30 FPS (Standard)"/>
+                                <ComboBoxItem Content="15 FPS (Compact)"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <!-- Recording & Capture Shortcuts -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Capture Shortcut" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock x:Name="HotkeyStatusText" Text="Status: Registered (Ctrl+Shift+S)" FontSize="11" Foreground="#A6E3A1"/>
+                            </StackPanel>
+                            <TextBox Text="Ctrl + Shift + S" IsReadOnly="True" Background="#313244" Foreground="#89B4FA"
+                                     BorderBrush="#45475A" Padding="8,6" HorizontalContentAlignment="Center" FontWeight="Bold" Grid.Column="1"/>
+                        </Grid>
+
+                        <Separator Background="#313244" Margin="0,4,0,16"/>
+
+                        <!-- GIF Eligibility Guardrails Info Box -->
+                        <Border Background="#181825" CornerRadius="8" Padding="14,10" BorderBrush="#F9E2AF" BorderThickness="1">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="GIF Export Eligibility Guardrails (GifProfile.DocShotDefault):" FontWeight="Bold" Foreground="#F9E2AF" FontSize="12"/>
+                                </StackPanel>
+                                <TextBlock Text="• Maximum Duration: 15.0 seconds | Maximum File Size: 10 MB" Foreground="#CDD6F4" FontSize="11"/>
+                                <TextBlock Text="• Maximum Resolution: 960 px | Maximum FPS: 10 FPS | Audio: Silent" Foreground="#CDD6F4" FontSize="11" Margin="0,2,0,0"/>
+                                <TextBlock Text="Exceeding guardrails falls back to keeping MP4 output — never truncated or corrupt GIF." Foreground="#A6ADC8" FontSize="10" FontStyle="Italic" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab 2: Service Provider & Multi-Monitor Diagnostics -->
+            <TabItem Header="Platform Engine &amp; DPI">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
+                        <TextBlock Text="Services Engine Mode" FontSize="14" FontWeight="Bold" Foreground="#F5E0DC" Margin="0,0,0,8"/>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Active Platform Services Provider" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock x:Name="ServiceModeDesc" Text="Currently using DocShot.Core.Fakes (In-Memory Fakes)" FontSize="11" Foreground="#F9E2AF"/>
+                            </StackPanel>
+                            <Button x:Name="ToggleServiceModeBtn" Content="Switch to Win32 Platform" Click="ToggleServiceModeBtn_Click"
+                                    Background="#313244" Foreground="#89B4FA" FontWeight="Bold" Padding="10,6" BorderBrush="#89B4FA" BorderThickness="1" Grid.Column="1"/>
+                        </Grid>
+
+                        <Separator Background="#313244" Margin="0,0,0,16"/>
+
                         <TextBlock Text="Connected Display Monitors" FontSize="14" FontWeight="Bold" Foreground="#F5E0DC" Margin="0,0,0,8"/>
-                        <TextBlock Text="DocShot.App runs in PerMonitorV2 High DPI mode. Verify scale factors and DIP bounds below:" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,12"/>
+                        <TextBlock Text="DocShot.App runs in PerMonitorV2 High DPI mode. Connected displays:" FontSize="11" Foreground="#A6ADC8" Margin="0,0,0,12"/>
 
                         <!-- Monitors List -->
                         <ItemsControl x:Name="MonitorsListView">
@@ -109,7 +184,7 @@
                         </StackPanel>
 
                         <!-- Log / Results output -->
-                        <TextBox x:Name="SpikeOutputBox" Height="140" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                        <TextBox x:Name="SpikeOutputBox" Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                                  Background="#11111B" Foreground="#A6E3A1" FontFamily="Consolas" FontSize="11" Padding="8" IsReadOnly="True"
                                  Text="Click 'Run Automated DPI Verification' to test pixel round-trip conversion on all monitors."/>
                     </StackPanel>

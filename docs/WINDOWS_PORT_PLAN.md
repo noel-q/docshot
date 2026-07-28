@@ -152,28 +152,58 @@ start a milestone while its predecessor has failing automated or manual acceptan
 
 ## 5. Risk spikes to run before W1 (this is W0)
 
-Four things are genuinely unproven on Windows and shouldn't be discovered mid-milestone:
+Four things were genuinely unproven on Windows and shouldn't be discovered mid-milestone. Status
+as of 2026-07-28:
 
 1. **Mixed-DPI multi-monitor overlay windows.** Borderless transparent WPF windows, one per
    monitor, each reporting pixel-accurate selection coordinates when monitors have different
    scale factors (100%/125%/150%/200% mixes are common). This is WPF's worst-documented corner.
-   Spike: two-monitor mixed-DPI test rig, prove a drag-selected rectangle round-trips to the
-   correct source pixels on both monitors.
+   **Done** — [PR #7](https://github.com/noel-q/docshot/pull/7) (`windows/app-dpi-overlay-shell`)
+   implemented `DisplayMonitorHelper`, `OverlayWindowManager`, `OverlayWindow`, and a
+   `DpiRoundTripTests` suite, plus a real App shell (tray icon, settings window). Test rig:
+   Display 1 (primary) 2560×1440 @ 150% scale (144 DPI, DIP bounds 1707×960), Display 2
+   (secondary) 1920×1080 @ 100% scale (96 DPI, DIP bounds 1920×1080 at offset x=-1920). Conversion
+   formula `X_phys = Math.Round(X_dip * ScaleFactor)` (and equivalently Y/W/H) round-trips with
+   0.00px error across 100/125/150/175/200% scale factors. **New finding, not anticipated in this
+   plan:** Win32 P/Invoke calls (`EnumDisplayMonitors`, `GetMonitorInfo`) made outside a
+   WPF-managed window thread return virtualized DIP bounds instead of physical bounds unless
+   `SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)` (or `-4`) is
+   explicitly set first — `DisplayMonitorHelper` now does this, but it's an easy trap to fall into
+   again in any new Platform/App code that queries monitor geometry. Full solution: 100 tests
+   passing (`DocShot.Core.Tests` 93, `DocShot.App.Tests` 7).
 2. **WGC still-frame and streaming capture against real windows**, including hardware-accelerated
-   ones (browsers, other WPF/UWP apps) and DPI-scaled windows. Spike: capture a window and a
-   region, confirm no black frames, confirm pixel dimensions match the selection exactly (this is
-   the thing macOS explicitly decided *not* to round for odd dimensions — decide the same way
-   here rather than defaulting to "just pad it").
+   ones (browsers, other WPF/UWP apps) and DPI-scaled windows — pixel dimensions must match the
+   selection exactly, odd dimensions included, never rounded. **Done** — [PR #6](https://github.com/noel-q/docshot/pull/6)
+   validated against Edge, animated Chrome, a Calculator/UWP host, and Notepad: no black frames,
+   exact odd-dimension crops (`101x99`). **New finding, not anticipated in this plan:** a static
+   (non-animating) WGC capture target only emits its *initial* frames and then goes quiet — the
+   real `IScreenCaptureService`/`IRecordingSession` implementation needs to handle that (e.g. a
+   still-capture path can't just "wait for a frame," and a recording of a static window needs a
+   forced-refresh or duplicate-last-frame strategy). Flag this for whoever implements R1 recording.
 3. **WASAPI loopback + Media Foundation sink writer, synchronized on one clock.** This is the
-   biggest architectural gap from macOS (§2). Spike: record 60 seconds of video + system audio,
-   confirm playback sync in a real player, before promising a W4 timeline.
-4. **Clipboard PNG round-trip** into a transparency-aware consumer (e.g. Slack or Discord web) and
-   a bitmap-only legacy consumer, proving both the registered `"PNG"` format and a CF_DIB fallback
-   are needed and sufficient.
+   biggest architectural gap from macOS (§2). **Done** — PR #6 produced a playable MP4 (H.264 +
+   AAC) with clean decode, 60.000s video against a 60.0275s container duration. **New finding:**
+   loopback audio packets start arriving *after* the first video frame, so the writer needs
+   explicit initial-silence handling rather than assuming audio and video begin together — a
+   real, non-cosmetic difference from how the macOS `RecordingVideoWriter` anchors on "the first
+   valid sample of either type" (see `RECORDING_ARCHITECTURE.md`'s R3 section in the macOS docs).
+   Worth deciding during the real `DocShot.Platform` recording-session work, not by default.
+4. **Clipboard PNG round-trip** into a transparency-aware consumer and a bitmap-only legacy
+   consumer, proving both the registered `"PNG"` format and a CF_DIB fallback are needed and
+   sufficient. **Partially done** — PR #6 confirmed both formats land on the clipboard correctly
+   (registered `"PNG"` plus `CF_DIB`). Still open: real paste verification into a logged-in
+   Slack/Discord session, which needs a human, not just a clipboard-format probe.
+5. **Self-audio exclusion** — added 2026-07-28 on the macOS team's advice, not in the original
+   four. macOS's ScreenCaptureKit has a first-class "exclude this app's own audio" option; WASAPI
+   loopback has no equivalent on the surface PR #6 exercised. **Not started — treat as urgent,
+   ahead of the rest of W4.** Required acceptance test and fallback plan are in
+   [`windows/docs/PARITY_CHECKLIST.md`](../windows/docs/PARITY_CHECKLIST.md) §2. Don't claim R3/W4
+   parity without it passing.
 
-Each spike should produce a short throwaway proof (console app or minimal WPF shell) and a
-one-paragraph writeup of what broke, added to `docs/WINDOWS_TECHNICAL_BRIEF.md` once it exists —
-don't fold spike code into `DocShot.App` directly.
+Spikes 2-4 are throwaway proofs at `windows/spikes/W0Platform` in PR #6 (Codex's worktree,
+`docshot-platform-w0`) — not folded into `DocShot.Platform` yet, which still has no
+`IWindowDiscoveryService`/`IScreenCaptureService`/`IRecordingSession` implementation. That's
+correctly the next Platform-lane step now that the spikes have de-risked it.
 
 ---
 
@@ -241,6 +271,31 @@ must not reuse a name already used by a static member or a base property in that
 worth remembering before porting the remaining models in §"Not yet ported" below. Fixed in
 `ccf937e`; `dotnet test` now reports **67 passed, 0 failed** for `DocShot.Core.Tests`. Branch
 pushed, [PR #5](https://github.com/noel-q/docshot/pull/5) open against `main`.
+
+**Update 2026-07-28 (later same day):** Claude's Core lane ported the remaining pure models
+(`MagnifierGrid`, `DisplayDescriptor`, `SnapshotPlan`, `RecordingRegionPlan`,
+`CaptureActivityPolicy`), bringing `DocShot.Core.Tests` to 93 passing. Codex opened
+[PR #6](https://github.com/noel-q/docshot/pull/6) (`windows/platform-w0-spikes`, draft), running
+W0 spikes 2-4 against real WGC/WASAPI/clipboard APIs — see §5 for findings, including two genuine
+new architecture risks (static-WGC-frame handling, audio initial-silence handling) for whoever
+implements the real `IRecordingSession`. Antigravity opened
+[PR #7](https://github.com/noel-q/docshot/pull/7) (`windows/app-dpi-overlay-shell`), closing out
+W0 spike 1 (see §5) and scaffolding a real `DocShot.App` shell (tray icon via `H.NotifyIcon.Wpf`,
+`OverlayWindow`/`OverlayWindowManager`, a settings window, `DocShot.App.Tests`). Combined,
+`dotnet test` across the solution now reports **100 tests passing, 0 failed**
+(`DocShot.Core.Tests` 93 + `DocShot.App.Tests` 7). Three PRs open against `main`: #5 (Core
+bootstrap), #6 (Platform W0 spikes, draft), #7 (App W0 spike + shell).
+
+**Update 2026-07-28 (fourth pass):** the macOS team reviewed the port and gave concrete parity
+guidance — folded into [`windows/docs/PARITY_CHECKLIST.md`](../windows/docs/PARITY_CHECKLIST.md),
+a one-pager Codex and Antigravity should test milestones against directly. Headlines: self-audio
+exclusion is a genuine new risk (spike 5 above, not previously identified), the editor data model
+was audited against the macOS source and confirmed portable (annotation type, source-time
+anchoring, segment IDs, trim/split semantics all match), `RegisterHotKey` is required over a
+keyboard hook, and W7's distribution path (ZIP vs. MSIX) is flagged as an open decision, currently
+defaulting to ZIP-first. `WORKSTREAMS.md` was also restructured the same day so App no longer has
+to wait on Platform's real service implementations to start W1 UI work — see its "Parallelization"
+section.
 
 Full task breakdown per lane, including exactly what's ported vs. not yet, is in
 [`windows/docs/WORKSTREAMS.md`](../windows/docs/WORKSTREAMS.md).

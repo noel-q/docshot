@@ -11,7 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocShot.Platform", "src\Doc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocShot.App", "src\DocShot.App\DocShot.App.csproj", "{A1B2C3D4-0004-4B1A-9C1D-1000000000A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocShot.App.Tests", "tests\DocShot.App.Tests\DocShot.App.Tests.csproj", "{A1B2C3D4-0005-4B1A-9C1D-1000000000A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocShot.Core.Fakes", "src\DocShot.Core.Fakes\DocShot.Core.Fakes.csproj", "{A1B2C3D4-0005-4B1A-9C1D-1000000000A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocShot.App.Tests", "tests\DocShot.App.Tests\DocShot.App.Tests.csproj", "{A1B2C3D4-0006-4B1A-9C1D-1000000000A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{A1B2C3D4-0005-4B1A-9C1D-1000000000A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1B2C3D4-0005-4B1A-9C1D-1000000000A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1B2C3D4-0005-4B1A-9C1D-1000000000A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-0006-4B1A-9C1D-1000000000A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-0006-4B1A-9C1D-1000000000A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-0006-4B1A-9C1D-1000000000A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-0006-4B1A-9C1D-1000000000A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -52,4 +52,11 @@ public readonly record struct RectD(double X, double Y, double Width, double Hei
     }
 
     public bool IsEmpty => Width <= 0 || Height <= 0;
+
+    /// <summary>True when <paramref name="other"/> lies entirely within this rectangle.</summary>
+    public bool Contains(RectD other) =>
+        other.MinX >= MinX && other.MinY >= MinY && other.MaxX <= MaxX && other.MaxY <= MaxY;
+
+    /// <summary>True when this rectangle and <paramref name="other"/> share any area.</summary>
+    public bool Intersects(RectD other) => !Intersect(other).IsEmpty;
 }

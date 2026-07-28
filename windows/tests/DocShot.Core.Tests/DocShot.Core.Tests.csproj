@@ -21,6 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DocShot.Core\DocShot.Core.csproj" />
+    <!-- Smoke-tests the fakes themselves (FakesSmokeTests.cs) - App relies on these behaving
+         plausibly, so a broken fake should fail CI here, not surface as confusing App bugs. -->
+    <ProjectReference Include="..\..\src\DocShot.Core.Fakes\DocShot.Core.Fakes.csproj" />
   </ItemGroup>
 
 </Project>

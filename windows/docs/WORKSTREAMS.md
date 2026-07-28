@@ -6,6 +6,10 @@ three people/agents editing the same repo on the same day from colliding: if you
 outside your project, check whether the work actually belongs in someone else's lane before
 committing to it.
 
+Read [`windows/docs/PARITY_CHECKLIST.md`](PARITY_CHECKLIST.md) before starting any W1+ work - it's
+the behaviour contract (product rules, the new self-audio-exclusion risk, settings parity, editor
+model portability) every milestone gets tested against, not just this task list.
+
 | Lane | Owner | Project | Verifiable from |
 |---|---|---|---|
 | Core | Claude | `DocShot.Core`, `DocShot.Core.Tests` | Anywhere with a .NET 8 SDK - no Windows display needed |
@@ -32,11 +36,33 @@ avoid when porting the remaining models below), pushed `windows/core-bootstrap`,
 [PR #5](https://github.com/noel-q/docshot/pull/5). `DocShot.Platform`/`DocShot.App` work can now
 build against a Core that's actually known to compile, not just carefully reviewed.
 
-Not yet ported (tracked here so it isn't silently dropped): `MagnifierGrid`, `DisplaySnapshot`,
-`RecordingRegionPlan`, `SnapshotPlan`, `CaptureActivityPolicy`, and the image-dependent halves of
-`PixelSampler`/`DisplayGeometry.CropImage` (these need a concrete bitmap type - see the Platform
-task list below for where that decision belongs). `DocShot.Platform` and `DocShot.App` are empty
-placeholder projects with a `README.md` each - no capture, encode, hotkey, or UI code exists yet.
+**Update 2026-07-28 (second pass):** the rest of the pure model layer is now ported too -
+`MagnifierGrid`, `DisplayDescriptor` (the pure half of macOS's `DisplaySnapshot.swift`),
+`SnapshotPlan`, `RecordingRegionPlan`, and `CaptureActivityPolicy`, each with its own test file.
+That's every macOS `duplicatedProductionSource` model except the genuinely image-dependent ones.
+
+Not yet ported, and not expected to be — these need a concrete decoded-image/bitmap type, which is
+a `DocShot.Platform` decision (SkiaSharp is the leading candidate; see
+`docs/WINDOWS_PORT_PLAN.md` §2): the macOS `DisplaySnapshot` struct itself (image + descriptor -
+`DisplayDescriptor` above is its portable half), and the image-sampling halves of `PixelSampler`
+and `DisplayGeometry.CropImage`.
+
+**Update 2026-07-28: Platform and App are no longer empty.** Codex opened
+[PR #6](https://github.com/noel-q/docshot/pull/6) (`windows/platform-w0-spikes`, draft) — W0
+spikes 2-4 (WGC capture, WASAPI+Media Foundation, clipboard PNG) run against real APIs, throwaway
+proofs at `windows/spikes/W0Platform`, not yet folded into `DocShot.Platform` itself. Two genuine
+new risks surfaced, not in the original plan: a static (non-animating) WGC capture target stops
+emitting frames after its initial burst (needs a forced-refresh/duplicate-last-frame strategy),
+and WASAPI loopback audio packets arrive *after* the first video frame (needs explicit
+initial-silence handling in the sink writer). Both are flagged for whoever writes the real
+`IRecordingSession` — see `docs/WINDOWS_PORT_PLAN.md` §5 for full detail.
+
+Antigravity opened [PR #7](https://github.com/noel-q/docshot/pull/7)
+(`windows/app-dpi-overlay-shell`) — W0 spike 1 done (`DisplayMonitorHelper`,
+`OverlayWindowManager`, `OverlayWindow`, `DpiRoundTripTests`, 0.00px DIP↔physical round-trip error
+across all tested scale factors) plus a real App shell: tray icon (`H.NotifyIcon.Wpf`), settings
+window, `DocShot.App.Tests` project. Solution-wide `dotnet test` is now **100 passing, 0 failed**
+(Core 93 + App 7).
 
 ## Branch naming
 
@@ -70,52 +96,92 @@ parallel lanes into a merge headache, so:
    App depend on them, unless a real gap forces it - in which case, flag it before changing the
    interface, not after.
 
+## Parallelization (2026-07-28: speeding up W1)
+
+W0 proved App genuinely doesn't need to wait on Platform's *real* implementations to start real
+W1 work - it only needs something that satisfies `DocShot.Core.Services`. `DocShot.Core.Fakes`
+(new project, Claude's lane) exists for exactly this: in-memory implementations of
+`IWindowDiscoveryService`, `IScreenCaptureService`, `IPermissionService`, and `IHotkeyService`
+that return synthetic-but-plausible data with no Win32/WinRT calls at all. Reference it from
+`DocShot.App` in Debug builds and App can build, run, and demo the full W1 selection → capture →
+annotate → export flow today, in parallel with Codex writing the real Platform code behind the
+same interfaces - not sequentially after it.
+
+This is not a substitute for the real device-verified milestone gate in §4 of
+`docs/WINDOWS_PORT_PLAN.md` - swapping the fake registrations for Platform's real ones and
+re-verifying on a real machine is still required before W1 is actually done. It just means App's
+UI/UX work and Platform's interop work stop blocking each other.
+
 ## Task breakdown
 
 ### Core (Claude) - ongoing
 
-- Port the remaining pure models: `MagnifierGrid`, `DisplaySnapshot`, `RecordingRegionPlan`,
-  `SnapshotPlan`, `CaptureActivityPolicy`.
+- ~~Port the remaining pure models~~ — done: `MagnifierGrid`, `DisplayDescriptor`,
+  `RecordingRegionPlan`, `SnapshotPlan`, `CaptureActivityPolicy` all landed with tests. Still
+  unverified by a real `dotnet test` run as of this commit — same caveat as the bootstrap; check
+  the PR before trusting it compiles.
 - Decide and document where the image-sampling half of `PixelSampler`/`DisplayGeometry.CropImage`
   lives once Platform picks a bitmap library (almost certainly `DocShot.Platform`, since it needs
   a concrete decoded-image type Core deliberately doesn't depend on - see the doc comments in
   `Models/ColorSample.cs` and `Models/DisplayGeometry.cs`).
-- Get `dotnet test` actually green somewhere real and fix whatever the first compile finds -
-  treat this as the true "W0 bootstrap done" milestone, not this commit.
+- ~~`DocShot.Core.Fakes`~~ — done: in-memory fakes for all four capture-side service interfaces,
+  unblocking App's W1 work from Platform's schedule. See "Parallelization" above.
+- Fast-follow, not blocking: a cheap `VideoProject.ValidateForExport()`-style pre-flight check
+  mirroring macOS's `VideoProjectExportError.emptyTimeline` case, so App/Platform can short-circuit
+  an obviously-invalid export before it reaches the encoder. See
+  `windows/docs/PARITY_CHECKLIST.md` §4 for the full portability audit this came out of.
 - Keep `docs/WINDOWS_PORT_PLAN.md` and this file honest as Platform/App reality diverges from plan.
 
 ### Platform (Codex) - W0 risk spikes, then W1-W2 groundwork
 
-1. **Risk spike:** WGC still-frame and streaming capture against real windows, including
-   hardware-accelerated ones. Prove pixel dimensions match the selection exactly, odd dimensions
-   included - do not round, matching the macOS R1 decision.
-2. **Risk spike:** WASAPI loopback + Media Foundation sink writer on one shared clock. This is the
-   single biggest architecture gap from macOS (ScreenCaptureKit has no Windows equivalent that
-   captures video and audio on one stream) - see §2 and §5 of `docs/WINDOWS_PORT_PLAN.md`.
-3. **Risk spike:** clipboard PNG round-trip - register and write the `"PNG"` format plus a
-   CF_DIB fallback, verify against a transparency-aware consumer and a legacy bitmap-only one.
-4. Implement `IWindowDiscoveryService` (`EnumWindows` + `DwmGetWindowAttribute(DWMWA_CLOAKED)` +
+1. ~~**Risk spike:** WGC still-frame and streaming capture~~ — done, [PR #6](https://github.com/noel-q/docshot/pull/6).
+2. ~~**Risk spike:** WASAPI loopback + Media Foundation sink writer~~ — done, PR #6. Two new
+   risks flagged for the real implementation (see above): static-target frame starvation, audio
+   initial-silence handling.
+3. **Risk spike (partially done):** clipboard PNG round-trip - `"PNG"` format + `CF_DIB` fallback
+   both verified landing on the clipboard in PR #6; real paste into a logged-in Slack/Discord
+   session still needs a human, not just a format probe.
+4. **New risk spike, urgent — added 2026-07-28 on the macOS team's advice:** self-audio exclusion.
+   WASAPI loopback captures everything on the system output, including DocShot's own alert
+   sounds; macOS's ScreenCaptureKit excludes the capturing app's own audio by default and Windows
+   has no equivalent proven yet. Investigate process-exclusive loopback capture
+   (`AUDIOCLIENT_ACTIVATION_PARAMS` / `PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`) or a
+   mute-DocShot's-own-sounds-while-recording fallback. Required acceptance test in
+   `windows/docs/PARITY_CHECKLIST.md` §2 - don't mark W4 done without it passing. Sequence this
+   ahead of item 6 (`IRecordingSession`) if it changes the audio-capture approach.
+5. Implement `IWindowDiscoveryService` (`EnumWindows` + `DwmGetWindowAttribute(DWMWA_CLOAKED)` +
    shell-surface denylist), `IHotkeyService` (`RegisterHotKey`/`WM_HOTKEY` on a message-only
    window), `IScreenCaptureService` (still capture), and pick the bitmap type
    `CapturedImage.Bgra32Pixels` gets wrapped in for actual rendering (SkiaSharp is the leading
-   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2).
-5. Implement `IRecordingSession`/`IRecordingSessionFactory` (video-only first, matching the macOS
+   candidate - see `docs/WINDOWS_PORT_PLAN.md` §2). App doesn't need to wait on this - see
+   "Parallelization" above.
+6. Implement `IRecordingSession`/`IRecordingSessionFactory` (video-only first, matching the macOS
    R1 gate - no audio, no GIF, until video-only start/stop/save/discard is solid).
 
 ### App (Antigravity) - W0 risk spike, then W1 UI
 
-1. **Risk spike:** mixed-DPI multi-monitor borderless overlay windows. Two-monitor, mixed-scale
-   test rig; prove a drag-selected rectangle round-trips to the correct source pixels on both
-   monitors. `ApplicationHighDpiMode=PerMonitorV2` is already set in `DocShot.App.csproj` - don't
-   remove it, and don't declare this spike done without an actual mixed-DPI setup to test on.
-2. Tray icon (`NotifyIcon`) + minimal settings window shell.
+1. ~~**Risk spike:** mixed-DPI multi-monitor borderless overlay windows~~ — done,
+   [PR #7](https://github.com/noel-q/docshot/pull/7). Tested on a real two-monitor, mixed-scale
+   rig (150%/100%); DIP↔physical round-trip error 0.00px across tested scale factors. Watch out
+   for the `SetProcessDpiAwarenessContext` gotcha noted in `docs/WINDOWS_PORT_PLAN.md` §5 in any
+   new code that queries monitor geometry off the WPF UI thread.
+2. ~~Tray icon (`NotifyIcon`) + minimal settings window shell.~~ — done, PR #7
+   (`H.NotifyIcon.Wpf`).
 3. Per-monitor selection overlay windows wired to `IWindowDiscoveryService`/`IScreenCaptureService`
-   once Platform lands them.
+   — **start now**, against `DocShot.Core.Fakes` (Debug reference), don't wait for Platform's real
+   implementation. Swap to the real Platform services and re-verify on a device once PR from item
+   5/6 above lands. See "Parallelization" above.
 4. Annotation canvas rendering `AnnotationItem`/`AnnotationShape` from `DocShot.Core` - decide the
    WPF drawing approach (SkiaSharp is recommended in `docs/WINDOWS_PORT_PLAN.md` §2 for parity with
    the blur/pixelate redaction filters; raw `DrawingVisual` is the fallback if that adds too much
-   surface for a first pass).
-5. Recording confirmation UI and status HUD, once Platform's `IRecordingSession` exists.
+   surface for a first pass). Fully unblocked today - this is pure Core-model consumption, no
+   Platform dependency at all.
+5. Recording confirmation UI and status HUD - can also start against `DocShot.Core.Fakes` once a
+   fake `IRecordingSession` is added there (flag to Claude if needed sooner than Platform's real
+   one lands); swap to the real one once Platform's item 6 is done.
+6. Settings UI - system audio on/off, cursor visibility, frame rate, recording shortcut, output
+   choice/GIF eligibility, permission/failure messaging. See `windows/docs/PARITY_CHECKLIST.md` §5
+   - the settings surface is exactly `RecordingOptions`'s fields, nothing invented.
 
 ## PR expectations
 

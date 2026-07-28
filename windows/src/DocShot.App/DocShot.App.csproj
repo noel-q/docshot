@@ -24,4 +24,8 @@
     <ProjectReference Include="..\DocShot.Platform\DocShot.Platform.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+  </ItemGroup>
+
 </Project>

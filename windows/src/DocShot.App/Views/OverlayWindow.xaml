@@ -1,0 +1,82 @@
+<Window x:Class="DocShot.App.Views.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="DocShot Overlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="#22000000"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual">
+    <Canvas x:Name="OverlayCanvas" Background="Transparent"
+            MouseDown="OverlayCanvas_MouseDown"
+            MouseMove="OverlayCanvas_MouseMove"
+            MouseUp="OverlayCanvas_MouseUp">
+
+        <!-- Top Monitor Info Badge -->
+        <Border x:Name="MonitorBadge" Canvas.Top="20" Canvas.Left="20"
+                Background="#EE1E1E2E" CornerRadius="8" Padding="14,10"
+                BorderBrush="#4489B4FA" BorderThickness="1">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="BadgeTitle" Text="DISPLAY 1" FontWeight="Bold" Foreground="#F5E0DC" FontSize="14" />
+                    <Border x:Name="PrimaryTag" Margin="8,0,0,0" Background="#33A6E3A1" CornerRadius="4" Padding="6,2">
+                        <TextBlock Text="PRIMARY" Foreground="#A6E3A1" FontSize="10" FontWeight="Bold" />
+                    </Border>
+                </StackPanel>
+                <TextBlock x:Name="BadgeDetails" Text="Bounds: 2560x1440 | DPI: 144 (150% Scale)" Foreground="#CDD6F4" FontSize="12" Margin="0,4,0,0"/>
+                <TextBlock Text="Click and drag anywhere to test mixed-DPI source pixel round-trip" Foreground="#A6ADC8" FontSize="11" Margin="0,4,0,0" FontStyle="Italic" />
+            </StackPanel>
+        </Border>
+
+        <!-- Selection Rectangle -->
+        <Rectangle x:Name="SelectionBox"
+                   Stroke="#89B4FA"
+                   StrokeThickness="2"
+                   Fill="#2089B4FA"
+                   Visibility="Collapsed" />
+
+        <!-- Dimension Badge overlaying selection -->
+        <Border x:Name="DimensionBadge"
+                Background="#F51E1E2E"
+                CornerRadius="6"
+                Padding="10,6"
+                BorderBrush="#89B4FA"
+                BorderThickness="1"
+                Visibility="Collapsed">
+            <StackPanel x:Name="DimensionStack">
+                <TextBlock x:Name="DipDimText" Text="DIPs: 0 x 0" Foreground="#89B4FA" FontWeight="Bold" FontSize="12" />
+                <TextBlock x:Name="PhysDimText" Text="Source Pixels: 0 x 0" Foreground="#A6E3A1" FontWeight="SemiBold" FontSize="11" Margin="0,2,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Verification Result Card -->
+        <Border x:Name="ResultCard" Canvas.Bottom="30" Canvas.Left="20"
+                Background="#F5181825" CornerRadius="10" Padding="16,12"
+                BorderBrush="#A6E3A1" BorderThickness="1.5"
+                Visibility="Collapsed" Width="480">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBlock Text="DPI ROUND-TRIP PROOF RESULT:" FontWeight="Bold" Foreground="#CDD6F4" FontSize="13"/>
+                    <TextBlock x:Name="ResultStatusText" Text=" PASS" FontWeight="Bold" Foreground="#A6E3A1" FontSize="13"/>
+                </StackPanel>
+                <TextBlock x:Name="ResultDetailsText" Text="" Foreground="#BAC2DE" FontSize="11" TextWrapping="Wrap" FontFamily="Consolas"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Close Spike Overlay Button -->
+        <Button Canvas.Top="20" Canvas.Right="20" Padding="12,8" Background="#313244" Foreground="#CDD6F4"
+                BorderBrush="#45475A" BorderThickness="1" Click="CloseButton_Click" Cursor="Hand">
+            <Button.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="6"/>
+                </Style>
+            </Button.Resources>
+            <TextBlock Text="Close Overlay" FontWeight="SemiBold" FontSize="12"/>
+        </Button>
+    </Canvas>
+</Window>

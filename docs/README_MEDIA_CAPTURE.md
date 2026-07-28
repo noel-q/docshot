@@ -5,13 +5,14 @@ Recording permission. Keep personal notifications and other people's data out of
 
 ## Assets
 
-Save approved assets below `docs/media/` using these names:
+Save approved assets below `docs/media/` using these names. The three still images below are now
+captured; the walkthrough video remains optional:
 
 | File | Content | Target |
 | --- | --- | --- |
-| `menu-and-settings.png` | Menu-bar menu and Recording settings: `⌘⇧8`, audio toggle, cursor toggle, 30 fps. | 1600 × 1000 or wider |
-| `screenshot-editor.png` | Screenshot editor with a deliberately non-sensitive example and two annotations. | 1600 × 1000 or wider |
-| `video-editor.png` | Completed recording in the post-stop editor with timeline and one annotation visible. | 1600 × 1000 or wider |
+| `menu-and-settings.png` | Menu-bar menu and Recording settings: `⌘⇧8`, audio toggle, cursor toggle, 30 fps. | Captured |
+| `screenshot-editor.png` | Screenshot editor with a deliberately non-sensitive example and annotations. | Captured |
+| `video-editor.png` | Completed recording in the post-stop editor with timeline and an annotation visible. | Captured |
 | `docshot-demo.mp4` | 20–30 second silent walkthrough: launch → select → annotate → save/discard → record → edit. | 1440p or lower |
 
 ## Capture checklist

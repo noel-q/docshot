@@ -190,7 +190,8 @@ reachable path to the .NET SDK at all (installer domains network-blocked, no roo
 `apt-get install dotnet-sdk-8.0`), so the bootstrap commit's Core code is written and hand-reviewed
 but not yet compiler-verified — see §7. The architectural claim still holds ("Core needs no
 Windows machine, just a .NET SDK somewhere"); it just wasn't provable in this particular
-environment today. Also best placed to keep architecture docs, the milestone/gate discipline, and
+environment that day — confirmed right afterwards when Antigravity built it for real; see §7.
+Also best placed to keep architecture docs, the milestone/gate discipline, and
 the platform-mapping table (§2) up to date as reality diverges from plan, since that's
 read-and-reason-heavy work rather than click-and-observe work. Will not touch `DocShot.Platform` or
 `DocShot.App` beyond scaffolding project files and interfaces, since neither can be run or visually
@@ -227,16 +228,19 @@ fully pure Foundation-equivalent logic on macOS, plus `Annotation`, `ExportSize`
 builds against). `DocShot.Platform` and `DocShot.App` are placeholder projects with a `README.md`
 each, pointing at §9's workstream doc.
 
-**This has not been compiled.** The sandbox it was written in has no reachable path to the .NET
-SDK — the official installer domains are network-blocked, and there's no root to use
-`apt-get install dotnet-sdk-8.0`, which is otherwise sitting in Ubuntu's package index ready to go.
-The code was written and hand-reviewed carefully, including working through the trickier
-translation decisions (Swift's `mutating func ... throws` on a value type doesn't have a free C#
-equivalent — see the remarks on `VideoProject` in `windows/src/DocShot.Core/Models/VideoProject.cs`
-for how that was resolved), but "written correctly" and "compiles" are different claims and only
-one of them has been checked here. Running `dotnet test` for the first time — on Noel's machine, or
-whichever of Codex/Antigravity gets there first — is effectively still part of the W0 bootstrap,
-not a formality.
+**Update: compiled and green.** It was written in a sandbox with no reachable path to the .NET SDK
+(installer domains network-blocked, no root for `apt-get install dotnet-sdk-8.0`), so it went
+unverified through the bootstrap commit. Antigravity built it for real on 2026-07-28: three C#
+compiler errors, all record-property name collisions —
+[`RgbaColor`](../windows/src/DocShot.Core/Models/Annotation.cs)'s positional parameters
+(`Red`/`Green`/`Blue`/`Alpha`) collided with its own static swatch fields of the same names, and
+several `RecordingEvent`/`RecordingState` nested records' positional `Session`/`Recording`
+parameters hid the abstract base's same-named computed properties without the required `new`
+keyword. Both are the same underlying lesson: **a sealed record nested inside a closed hierarchy
+must not reuse a name already used by a static member or a base property in that hierarchy** —
+worth remembering before porting the remaining models in §"Not yet ported" below. Fixed in
+`ccf937e`; `dotnet test` now reports **67 passed, 0 failed** for `DocShot.Core.Tests`. Branch
+pushed, [PR #5](https://github.com/noel-q/docshot/pull/5) open against `main`.
 
 Full task breakdown per lane, including exactly what's ported vs. not yet, is in
 [`windows/docs/WORKSTREAMS.md`](../windows/docs/WORKSTREAMS.md).

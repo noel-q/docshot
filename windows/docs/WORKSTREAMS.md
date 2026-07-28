@@ -25,13 +25,12 @@ implementation will need to satisfy. xUnit tests exist for the highest-value pie
 `RecordingStateReducer` transition table, `VideoProject`'s mutation/undo semantics, `ExportSize`,
 `ColorSample`, `DisplayGeometry`, and `AnnotationShape`.
 
-**Important caveat: this has not been compiled or run.** The sandbox this was written in has no
-route to the .NET SDK (the installer domains are network-blocked and there's no root to use
-`apt-get install dotnet-sdk-8.0`, which is otherwise sitting right there in Ubuntu's package
-index). The code was written and reviewed carefully by hand, but `dotnet build` /
-`dotnet test` need to be run for real - on Noel's machine, or by whichever of Codex/Antigravity
-gets there first - before anyone builds on top of it. Treat the first `dotnet test` run as part of
-the bootstrap, not a given.
+**Update 2026-07-28: builds clean, 67/67 passing.** The bootstrap commit went unverified (the
+sandbox that wrote it had no route to the .NET SDK). Antigravity ran the first real build, fixed
+three record-property name collisions (see `docs/WINDOWS_PORT_PLAN.md` §7 for the exact pattern to
+avoid when porting the remaining models below), pushed `windows/core-bootstrap`, and opened
+[PR #5](https://github.com/noel-q/docshot/pull/5). `DocShot.Platform`/`DocShot.App` work can now
+build against a Core that's actually known to compile, not just carefully reviewed.
 
 Not yet ported (tracked here so it isn't silently dropped): `MagnifierGrid`, `DisplaySnapshot`,
 `RecordingRegionPlan`, `SnapshotPlan`, `CaptureActivityPolicy`, and the image-dependent halves of

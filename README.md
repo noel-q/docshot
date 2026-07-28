@@ -77,24 +77,35 @@ it is not notarised or distributed as a public installer.
 ### Create a local test package
 
 On a Mac with Xcode and the configured Apple Development signing identity, create a release-build
-ZIP with:
+drag-to-Applications DMG with:
+
+```bash
+./Scripts/package-development-dmg.sh
+```
+
+The result is `dist/DocShot-macos-development.dmg`. Open it, drag **DocShot** to the Applications
+shortcut, then eject the disk image. Testers do **not** need Xcode.
+
+For a ZIP instead, use:
 
 ```bash
 ./Scripts/package-development-app.sh
 ```
 
 The package is written to `dist/DocShot-macos-development.zip` and contains `DocShot.app`.
-The script refuses to overwrite an existing package and verifies its code signature before zipping.
-Use a fresh `dist/` directory or pass a custom output directory:
+Both scripts refuse to overwrite an existing package and verify the app's code signature before
+creating it. Use a fresh `dist/` directory or pass a custom output directory:
 
 ```bash
+./Scripts/package-development-dmg.sh /path/to/output
 ./Scripts/package-development-app.sh /path/to/output
 ```
 
-This is a **development testing package**, not a public release. It is signed with an Apple
-Development identity and is not notarised. A recipient may need to use Finder's **Open** action to
-accept macOS's warning. Do not redistribute it as a production installer; public distribution
-requires Developer ID signing, notarisation, and a release process that has not yet been added.
+These are **development testing packages**, not public releases. They are signed with an Apple
+Development identity and are not notarised. A recipient may need to use Finder's **Open** action to
+accept macOS's warning. A DMG improves installation, but does not remove that warning. Avoid
+redistributing either package as a production installer; warning-free public distribution requires
+Developer ID signing, notarisation, and a release process that has not yet been added.
 
 ## Verify
 

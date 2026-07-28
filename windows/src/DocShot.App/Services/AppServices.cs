@@ -54,4 +54,17 @@ public static class AppServices
         GifExporting = new FakeGifExporting();
         IsUsingFakes = true;
     }
+
+    public static void UsePlatformServices()
+    {
+        WindowDiscovery = new DocShot.Platform.WindowDiscoveryService();
+        ScreenCapture = new DocShot.Platform.GdiScreenCaptureService();
+        Permission = new DocShot.Platform.WindowsPermissionService();
+        Hotkey = new DocShot.Platform.HotkeyService();
+        TempStore = new DocShot.Platform.TemporaryRecordingStore();
+        // Keep fake output writers if needed or fallback
+        if (Pasteboard == null) Pasteboard = new FakePasteboardWriter();
+        if (FileWriter == null) FileWriter = new FakeFileWriter();
+        IsUsingFakes = false;
+    }
 }

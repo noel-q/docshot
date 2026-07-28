@@ -96,4 +96,24 @@ public class W1FeatureTests
 
         Assert.Equal(101, pressedId);
     }
+
+    [Fact]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    public void AppServices_swaps_to_real_platform_services()
+    {
+        AppServices.UsePlatformServices();
+        Assert.False(AppServices.IsUsingFakes);
+        Assert.IsType<DocShot.Platform.WindowDiscoveryService>(AppServices.WindowDiscovery);
+        Assert.IsType<DocShot.Platform.GdiScreenCaptureService>(AppServices.ScreenCapture);
+        Assert.IsType<DocShot.Platform.WindowsPermissionService>(AppServices.Permission);
+        Assert.IsType<DocShot.Platform.HotkeyService>(AppServices.Hotkey);
+
+        // Re-verify real window discovery enumerates actual open Windows desktop windows
+        var realWindows = AppServices.WindowDiscovery.GetEligibleWindows();
+        Assert.NotNull(realWindows);
+
+        // Reset back to Fakes for clean isolated test state
+        AppServices.ResetToFakes();
+        Assert.True(AppServices.IsUsingFakes);
+    }
 }

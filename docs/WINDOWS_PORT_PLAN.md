@@ -152,28 +152,43 @@ start a milestone while its predecessor has failing automated or manual acceptan
 
 ## 5. Risk spikes to run before W1 (this is W0)
 
-Four things are genuinely unproven on Windows and shouldn't be discovered mid-milestone:
+Four things were genuinely unproven on Windows and shouldn't be discovered mid-milestone. Status
+as of 2026-07-28:
 
 1. **Mixed-DPI multi-monitor overlay windows.** Borderless transparent WPF windows, one per
    monitor, each reporting pixel-accurate selection coordinates when monitors have different
    scale factors (100%/125%/150%/200% mixes are common). This is WPF's worst-documented corner.
-   Spike: two-monitor mixed-DPI test rig, prove a drag-selected rectangle round-trips to the
-   correct source pixels on both monitors.
+   **In progress** — Antigravity implemented the spike plus an actual App tray/settings shell on
+   `windows/app-dpi-overlay-shell` (`DisplayMonitorHelper`, `OverlayWindowManager`,
+   `OverlayWindow`, a `DpiRoundTripTests` suite). Findings not yet written up here; update this
+   entry once they're reported.
 2. **WGC still-frame and streaming capture against real windows**, including hardware-accelerated
-   ones (browsers, other WPF/UWP apps) and DPI-scaled windows. Spike: capture a window and a
-   region, confirm no black frames, confirm pixel dimensions match the selection exactly (this is
-   the thing macOS explicitly decided *not* to round for odd dimensions — decide the same way
-   here rather than defaulting to "just pad it").
+   ones (browsers, other WPF/UWP apps) and DPI-scaled windows — pixel dimensions must match the
+   selection exactly, odd dimensions included, never rounded. **Done** — [PR #6](https://github.com/noel-q/docshot/pull/6)
+   validated against Edge, animated Chrome, a Calculator/UWP host, and Notepad: no black frames,
+   exact odd-dimension crops (`101x99`). **New finding, not anticipated in this plan:** a static
+   (non-animating) WGC capture target only emits its *initial* frames and then goes quiet — the
+   real `IScreenCaptureService`/`IRecordingSession` implementation needs to handle that (e.g. a
+   still-capture path can't just "wait for a frame," and a recording of a static window needs a
+   forced-refresh or duplicate-last-frame strategy). Flag this for whoever implements R1 recording.
 3. **WASAPI loopback + Media Foundation sink writer, synchronized on one clock.** This is the
-   biggest architectural gap from macOS (§2). Spike: record 60 seconds of video + system audio,
-   confirm playback sync in a real player, before promising a W4 timeline.
-4. **Clipboard PNG round-trip** into a transparency-aware consumer (e.g. Slack or Discord web) and
-   a bitmap-only legacy consumer, proving both the registered `"PNG"` format and a CF_DIB fallback
-   are needed and sufficient.
+   biggest architectural gap from macOS (§2). **Done** — PR #6 produced a playable MP4 (H.264 +
+   AAC) with clean decode, 60.000s video against a 60.0275s container duration. **New finding:**
+   loopback audio packets start arriving *after* the first video frame, so the writer needs
+   explicit initial-silence handling rather than assuming audio and video begin together — a
+   real, non-cosmetic difference from how the macOS `RecordingVideoWriter` anchors on "the first
+   valid sample of either type" (see `RECORDING_ARCHITECTURE.md`'s R3 section in the macOS docs).
+   Worth deciding during the real `DocShot.Platform` recording-session work, not by default.
+4. **Clipboard PNG round-trip** into a transparency-aware consumer and a bitmap-only legacy
+   consumer, proving both the registered `"PNG"` format and a CF_DIB fallback are needed and
+   sufficient. **Partially done** — PR #6 confirmed both formats land on the clipboard correctly
+   (registered `"PNG"` plus `CF_DIB`). Still open: real paste verification into a logged-in
+   Slack/Discord session, which needs a human, not just a clipboard-format probe.
 
-Each spike should produce a short throwaway proof (console app or minimal WPF shell) and a
-one-paragraph writeup of what broke, added to `docs/WINDOWS_TECHNICAL_BRIEF.md` once it exists —
-don't fold spike code into `DocShot.App` directly.
+Spikes 2-4 are throwaway proofs at `windows/spikes/W0Platform` in PR #6 (Codex's worktree,
+`docshot-platform-w0`) — not folded into `DocShot.Platform` yet, which still has no
+`IWindowDiscoveryService`/`IScreenCaptureService`/`IRecordingSession` implementation. That's
+correctly the next Platform-lane step now that the spikes have de-risked it.
 
 ---
 

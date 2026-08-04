@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Antigravity's lane. The WPF shell: tray icon, per-monitor selection overlay windows, the
+    annotation canvas, the recording status HUD, and settings. Consumes DocShot.Core models and
+    DocShot.Platform's interface implementations; owns no Win32/WinRT calls of its own beyond
+    what WPF itself needs.
+
+    Placeholder only. See windows/docs/WORKSTREAMS.md for the task breakdown.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>DocShot.App</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocShot.Core\DocShot.Core.csproj" />
+    <ProjectReference Include="..\DocShot.Platform\DocShot.Platform.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug'">
+    <ProjectReference Include="..\DocShot.Core.Fakes\DocShot.Core.Fakes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+  </ItemGroup>
+
+</Project>

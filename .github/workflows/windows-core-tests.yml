@@ -1,0 +1,37 @@
+name: DocShot.Core tests
+
+# DocShot.Core is deliberately net8.0, not net8.0-windows (see windows/src/DocShot.Core/DocShot.Core.csproj),
+# so it needs no Windows machine to build or test - that's the whole point of the split documented
+# in docs/WINDOWS_PORT_PLAN.md §3. This is the one piece of CI that's genuinely free to add before
+# any Windows runner exists; DocShot.Platform and DocShot.App stay on manual device verification
+# for now (see windows/docs/WORKSTREAMS.md "PR expectations").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "windows/src/DocShot.Core/**"
+      - "windows/src/DocShot.Core.Fakes/**"
+      - "windows/tests/DocShot.Core.Tests/**"
+      - ".github/workflows/windows-core-tests.yml"
+  pull_request:
+    paths:
+      - "windows/src/DocShot.Core/**"
+      - "windows/src/DocShot.Core.Fakes/**"
+      - "windows/tests/DocShot.Core.Tests/**"
+      - ".github/workflows/windows-core-tests.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: dotnet test
+        working-directory: windows/tests/DocShot.Core.Tests
+        run: dotnet test --configuration Release

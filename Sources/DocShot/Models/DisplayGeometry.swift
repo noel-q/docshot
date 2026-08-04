@@ -67,6 +67,31 @@ public enum DisplayGeometry {
         }
         return CGRect(x: x, y: y, width: w, height: h)
     }
+
+    /// Converts a rectangle in an overlay's local, top-left-origin coordinate space into
+    /// global AppKit screen coordinates. AppKit screen frames are bottom-left-origin, while
+    /// SwiftUI's overlay coordinates increase down from the panel's top edge.
+    public static func overlayLocalToCocoaRect(_ localRect: CGRect, screenFrame: CGRect) -> CGRect {
+        let rect = normalizeRect(localRect)
+        return CGRect(
+            x: screenFrame.minX + rect.minX,
+            y: screenFrame.maxY - rect.maxY,
+            width: rect.width,
+            height: rect.height
+        )
+    }
+
+    /// Converts a global AppKit rectangle into an overlay's local, top-left-origin coordinate
+    /// space. This is the inverse of `overlayLocalToCocoaRect`.
+    public static func cocoaToOverlayLocalRect(_ cocoaRect: CGRect, screenFrame: CGRect) -> CGRect {
+        let rect = normalizeRect(cocoaRect)
+        return CGRect(
+            x: rect.minX - screenFrame.minX,
+            y: screenFrame.maxY - rect.maxY,
+            width: rect.width,
+            height: rect.height
+        )
+    }
     
     /// Converts a point in global Core Graphics screen space to a pixel coordinate inside a
     /// single display's captured image.

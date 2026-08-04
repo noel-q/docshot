@@ -35,12 +35,7 @@ struct RecordingSelectionOverlayView: View {
     }
 
     private func localRect(forCocoa cocoaRect: CGRect) -> CGRect {
-        CGRect(
-            x: cocoaRect.origin.x - screenFrame.origin.x,
-            y: cocoaRect.origin.y - screenFrame.origin.y,
-            width: cocoaRect.width,
-            height: cocoaRect.height
-        )
+        DisplayGeometry.cocoaToOverlayLocalRect(cocoaRect, screenFrame: screenFrame)
     }
 
     var body: some View {
@@ -199,11 +194,15 @@ struct RecordingSelectionOverlayView: View {
             return
         }
 
-        let cocoaRegion = CGRect(
-            x: min(start.x, end.x) + screenFrame.origin.x,
-            y: min(start.y, end.y) + screenFrame.origin.y,
+        let localRegion = CGRect(
+            x: min(start.x, end.x),
+            y: min(start.y, end.y),
             width: width,
             height: height
+        )
+        let cocoaRegion = DisplayGeometry.overlayLocalToCocoaRect(
+            localRegion,
+            screenFrame: screenFrame
         )
         coordinator.selectRegion(cocoaRegion)
     }

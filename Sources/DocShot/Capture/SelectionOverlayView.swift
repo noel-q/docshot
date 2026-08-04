@@ -45,12 +45,7 @@ public struct SelectionOverlayView: View {
     
     private func localRect(for cgRect: CGRect) -> CGRect {
         let cocoaGlobal = DisplayGeometry.cgToCocoaRect(cgRect, mainScreenHeight: mainScreenHeight)
-        return CGRect(
-            x: cocoaGlobal.origin.x - screenFrame.origin.x,
-            y: cocoaGlobal.origin.y - screenFrame.origin.y,
-            width: cocoaGlobal.width,
-            height: cocoaGlobal.height
-        )
+        return DisplayGeometry.cocoaToOverlayLocalRect(cocoaGlobal, screenFrame: screenFrame)
     }
 
     /// Fixed readout of the pixel under the cursor. Values are shown only; nothing is written
@@ -213,9 +208,16 @@ public struct SelectionOverlayView: View {
                                 onSelectWindow(window)
                             }
                         } else {
-                            let minX = min(start.x, end.x) + screenFrame.origin.x
-                            let minY = min(start.y, end.y) + screenFrame.origin.y
-                            let cocoaRegion = CGRect(x: minX, y: minY, width: width, height: height)
+                            let localRegion = CGRect(
+                                x: min(start.x, end.x),
+                                y: min(start.y, end.y),
+                                width: width,
+                                height: height
+                            )
+                            let cocoaRegion = DisplayGeometry.overlayLocalToCocoaRect(
+                                localRegion,
+                                screenFrame: screenFrame
+                            )
                             onSelectRegion(cocoaRegion)
                         }
                     }

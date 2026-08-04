@@ -31,6 +31,20 @@ public final class ScreenCaptureService: @unchecked Sendable {
     
     /// Bounded multi-display region capture with native pixel compositing.
     public func captureRegion(_ rectInCG: CGRect) async throws -> CGImage {
+        // The selector and `CGWindowListCreateImage` both use the global Core Graphics
+        // coordinate space. Prefer it for still regions so the rectangle the user sees is the
+        // rectangle that is sampled. ScreenCaptureKit's `sourceRect` is display-local and has
+        // produced shifted crops on some external-display arrangements.
+        if !includeCursor, let image = captureCGWindowListImage(rectInCG: rectInCG) {
+            return image
+        }
+
+        return try await captureRegionWithScreenCaptureKit(rectInCG)
+    }
+
+    /// ScreenCaptureKit fallback for cursor-inclusive captures and systems where the legacy
+    /// Core Graphics capture API is unavailable.
+    private func captureRegionWithScreenCaptureKit(_ rectInCG: CGRect) async throws -> CGImage {
         let screens = NSScreen.screens
         guard !screens.isEmpty else { throw CaptureError.noDisplayFound }
         
@@ -141,12 +155,19 @@ public final class ScreenCaptureService: @unchecked Sendable {
     
     /// Captures a single window by CGWindowID.
     public func captureWindow(windowID: CGWindowID, boundsInCG: CGRect) async throws -> CGImage {
+        // A desktop-independent window capture has no display-local source rect, so it avoids
+        // the offset problem that affects ScreenCaptureKit region captures. Request the output
+        // at the owning display's backing scale; the default configuration otherwise returns a
+        // 1x bitmap for some external displays.
         if #available(macOS 14.0, *) {
             do {
                 let shareable = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
                 if let scWindow = shareable.windows.first(where: { $0.windowID == windowID }) {
                     let filter = SCContentFilter(desktopIndependentWindow: scWindow)
                     let config = SCStreamConfiguration()
+                    let scale = backingScale(forWindowBoundsInCG: boundsInCG)
+                    config.width = max(1, Int((scWindow.frame.width * scale).rounded()))
+                    config.height = max(1, Int((scWindow.frame.height * scale).rounded()))
                     config.showsCursor = includeCursor // Respect cursor setting (default: false)
                     
                     return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
@@ -162,15 +183,36 @@ public final class ScreenCaptureService: @unchecked Sendable {
         
         return try await captureRegion(boundsInCG)
     }
+
+    /// Returns the scale at which a selected window should be rasterised. Window bounds from
+    /// discovery are in global Core Graphics points, while the captured bitmap must use the
+    /// owning display's backing pixels.
+    private func backingScale(forWindowBoundsInCG bounds: CGRect) -> CGFloat {
+        let mainScreenHeight = NSScreen.main?.frame.height ?? 1080
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+
+        guard let screen = NSScreen.screens.first(where: { screen in
+            DisplayGeometry.cocoaToCGRect(screen.frame, mainScreenHeight: mainScreenHeight).contains(center)
+        }) else {
+            return 1
+        }
+
+        return max(1, screen.backingScaleFactor)
+    }
     
     // MARK: - Core Graphics Legacy Compatibility Fallbacks
     
     @available(macOS, deprecated: 14.0, message: "Use ScreenCaptureKit SCScreenshotManager on macOS 14+")
     private func captureCGWindowListFallback(rectInCG: CGRect) throws -> CGImage {
-        if let cgImage = CGWindowListCreateImage(rectInCG, .optionOnScreenOnly, kCGNullWindowID, [.bestResolution]) {
+        if let cgImage = captureCGWindowListImage(rectInCG: rectInCG) {
             return cgImage
         }
         throw CaptureError.captureFailed("Legacy CoreGraphics region capture failed.")
+    }
+
+    @available(macOS, deprecated: 14.0, message: "Use ScreenCaptureKit SCScreenshotManager on macOS 14+")
+    private func captureCGWindowListImage(rectInCG: CGRect) -> CGImage? {
+        CGWindowListCreateImage(rectInCG, .optionOnScreenOnly, kCGNullWindowID, [.bestResolution])
     }
     
     @available(macOS, deprecated: 14.0, message: "Use ScreenCaptureKit SCScreenshotManager on macOS 14+")

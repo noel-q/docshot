@@ -72,4 +72,25 @@ struct DisplayGeometryTests {
         #expect(scaled.width == 200)
         #expect(scaled.height == 100)
     }
+
+    @Test("Overlay-local rectangles round-trip across a screen with an offset origin")
+    func testOverlayLocalAndCocoaRectConversion() {
+        // The screen is above and left of the main display. SwiftUI local coordinates start at
+        // its visual top-left; AppKit screen coordinates start at the global bottom-left.
+        let screenFrame = CGRect(x: -1440, y: 360, width: 1440, height: 900)
+        let localRect = CGRect(x: 120, y: 80, width: 400, height: 300)
+
+        let cocoaRect = DisplayGeometry.overlayLocalToCocoaRect(localRect, screenFrame: screenFrame)
+        #expect(cocoaRect == CGRect(x: -1320, y: 880, width: 400, height: 300))
+        #expect(DisplayGeometry.cocoaToOverlayLocalRect(cocoaRect, screenFrame: screenFrame) == localRect)
+    }
+
+    @Test("Overlay conversion maps the visual top edge to AppKit's maximum Y")
+    func testOverlayTopEdgeConversion() {
+        let screenFrame = CGRect(x: 0, y: 0, width: 1920, height: 1080)
+        let localRect = CGRect(x: 50, y: 0, width: 100, height: 200)
+
+        let cocoaRect = DisplayGeometry.overlayLocalToCocoaRect(localRect, screenFrame: screenFrame)
+        #expect(cocoaRect == CGRect(x: 50, y: 880, width: 100, height: 200))
+    }
 }

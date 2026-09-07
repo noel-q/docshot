@@ -1,0 +1,5 @@
+*.obj
+bin/
+*.mp4
+*.wav
+*.html

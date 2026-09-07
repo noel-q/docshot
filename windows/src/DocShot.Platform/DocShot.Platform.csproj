@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Codex's lane. net8.0-windows because this project is exactly the P/Invoke and WinRT interop
+    boundary: RegisterHotKey, EnumWindows/DWM, Windows.Graphics.Capture, Media Foundation,
+    WASAPI loopback, clipboard PNG format registration. It implements the interfaces declared in
+    DocShot.Core and must never be referenced by DocShot.Core.Tests directly - if a Core test
+    needs this project, the logic being tested is in the wrong project.
+
+    Placeholder only. See windows/docs/WORKSTREAMS.md for the task breakdown.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>DocShot.Platform</RootNamespace>
+    <UseWPF>false</UseWPF>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocShot.Core\DocShot.Core.csproj" />
+  </ItemGroup>
+
+</Project>

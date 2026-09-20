@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA0000012C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
+		DA0000022C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
+		DA0000032C50000000000001 /* LaunchAtLoginServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000022C50000000000001 /* LaunchAtLoginServiceTests.swift */; };
 		A00000912C50000000000001 /* VideoEditorMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000912C50000000000001 /* VideoEditorMath.swift */; };
 		4FF1ED9130111159009B2696 /* VideoEditorMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000912C50000000000001 /* VideoEditorMath.swift */; };
 		A00000922C50000000000001 /* VideoEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000922C50000000000001 /* VideoEditorViewModel.swift */; };
@@ -159,6 +162,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DB0000012C50000000000001 /* LaunchAtLoginService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LaunchAtLoginService.swift; path = Sources/DocShot/Services/LaunchAtLoginService.swift; sourceTree = "<group>"; };
+		DB0000022C50000000000001 /* LaunchAtLoginServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LaunchAtLoginServiceTests.swift; path = Tests/DocShotTests/LaunchAtLoginServiceTests.swift; sourceTree = "<group>"; };
 		B00000912C50000000000001 /* VideoEditorMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorMath.swift; path = Sources/DocShot/Editor/VideoEditorMath.swift; sourceTree = "<group>"; };
 		B00000922C50000000000001 /* VideoEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoEditorViewModel.swift; path = Sources/DocShot/Editor/VideoEditorViewModel.swift; sourceTree = "<group>"; };
 		B00000932C50000000000001 /* VideoPlayerPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoPlayerPreviewView.swift; path = Sources/DocShot/Editor/VideoPlayerPreviewView.swift; sourceTree = "<group>"; };
@@ -321,6 +326,7 @@
 				B00000062C50000000000001 /* WindowInfo.swift */,
 				B00000072C50000000000001 /* PermissionService.swift */,
 				B00000082C50000000000001 /* HotkeyService.swift */,
+				DB0000012C50000000000001 /* LaunchAtLoginService.swift */,
 				B00000092C50000000000001 /* WindowDiscoveryService.swift */,
 				B000000A2C50000000000001 /* ScreenCaptureService.swift */,
 				B000000B2C50000000000001 /* OutputService.swift */,
@@ -379,6 +385,7 @@
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
 				B000001A2C50000000000001 /* CropRenderingTests.swift */,
+				DB0000022C50000000000001 /* LaunchAtLoginServiceTests.swift */,
 				B000001C2C50000000000001 /* EditorResponsivenessTests.swift */,
 				B00000222C50000000000001 /* OutputFolderServiceTests.swift */,
 				B00000242C50000000000001 /* ExportSizeTests.swift */,
@@ -524,6 +531,7 @@
 				A00000062C50000000000001 /* WindowInfo.swift in Sources */,
 				A00000072C50000000000001 /* PermissionService.swift in Sources */,
 				A00000082C50000000000001 /* HotkeyService.swift in Sources */,
+				DA0000012C50000000000001 /* LaunchAtLoginService.swift in Sources */,
 				A00000092C50000000000001 /* WindowDiscoveryService.swift in Sources */,
 				A000000A2C50000000000001 /* ScreenCaptureService.swift in Sources */,
 				A000000B2C50000000000001 /* OutputService.swift in Sources */,
@@ -595,6 +603,7 @@
 				4FF1ED1B30111159009B2696 /* WindowInfo.swift in Sources */,
 				4FF1ED1C30111159009B2696 /* PermissionService.swift in Sources */,
 				4FF1ED1D30111159009B2696 /* HotkeyService.swift in Sources */,
+				DA0000022C50000000000001 /* LaunchAtLoginService.swift in Sources */,
 				4FF1ED1E30111159009B2696 /* OutputService.swift in Sources */,
 				4FF1ED1F30111159009B2696 /* ExportService.swift in Sources */,
 				4FF1ED2030111159009B2696 /* EditorViewModel.swift in Sources */,
@@ -607,6 +616,7 @@
 				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
 				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
 				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,
+				DA0000032C50000000000001 /* LaunchAtLoginServiceTests.swift in Sources */,
 				A000001C2C50000000000001 /* EditorResponsivenessTests.swift in Sources */,
 				A00000222C50000000000001 /* OutputFolderServiceTests.swift in Sources */,
 				A00000242C50000000000001 /* ExportSizeTests.swift in Sources */,

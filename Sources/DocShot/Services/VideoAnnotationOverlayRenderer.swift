@@ -9,9 +9,8 @@ import AppKit
 /// pixels — so the same `AnnotationItem` values drawn over a still are drawn over a frame here,
 /// with the same y-flip applied once at the drawing boundary.
 ///
-/// Redactions are deliberately not drawn here: blurring and pixelating have to sample the frame
-/// underneath, so the exporter applies them as Core Image filters before this overlay is
-/// composited on top.
+/// Redactions are deliberately not drawn here; the exporter applies an opaque fill directly to
+/// the frame before this overlay is composited on top.
 public final class VideoAnnotationOverlayRenderer: @unchecked Sendable {
 
     public init() {}
@@ -111,8 +110,8 @@ public final class VideoAnnotationOverlayRenderer: @unchecked Sendable {
         annotations: [AnnotationItem],
         pixelSize: CGSize
     ) -> CIImage {
-        let redactions = annotations.compactMap { annotation -> (CGRect, RedactionStyle)? in
-            if case .redaction(let rect, let style) = annotation.type { return (rect, style) }
+        let redactions = annotations.compactMap { annotation -> CGRect? in
+            if case .redaction(let rect) = annotation.type { return rect }
             return nil
         }
         guard !redactions.isEmpty else { return image }
@@ -120,7 +119,7 @@ public final class VideoAnnotationOverlayRenderer: @unchecked Sendable {
         let bounds = CGRect(origin: .zero, size: pixelSize)
         var result = image
 
-        for (rect, style) in redactions {
+        for rect in redactions {
             let normalized = DisplayGeometry.normalizeRect(rect).intersection(bounds)
             guard !normalized.isNull, normalized.width > 0, normalized.height > 0 else { continue }
 
@@ -132,24 +131,8 @@ public final class VideoAnnotationOverlayRenderer: @unchecked Sendable {
                 height: normalized.height
             )
 
-            let region = result.cropped(to: ciRect)
-            let filtered: CIImage?
-            switch style {
-            case .blur:
-                let filter = CIFilter(name: "CIGaussianBlur")
-                filter?.setValue(region.clampedToExtent(), forKey: kCIInputImageKey)
-                filter?.setValue(15.0, forKey: kCIInputRadiusKey)
-                filtered = filter?.outputImage?.cropped(to: ciRect)
-            case .pixelate:
-                let filter = CIFilter(name: "CIPixellate")
-                filter?.setValue(region.clampedToExtent(), forKey: kCIInputImageKey)
-                filter?.setValue(16.0, forKey: kCIInputScaleKey)
-                filtered = filter?.outputImage?.cropped(to: ciRect)
-            }
-
-            if let filtered {
-                result = filtered.composited(over: result)
-            }
+            let solidCover = CIImage(color: .black).cropped(to: ciRect)
+            result = solidCover.composited(over: result)
         }
 
         return result

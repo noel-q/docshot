@@ -58,9 +58,9 @@ get wrong.
 - Segments are rendered in timeline order into an `AVMutableComposition`. Audio is inserted only
   when the source has an audio track; a silent recording never gains an invented one.
 - Annotation overlays are composited per frame through
-  `AVMutableVideoComposition(asset:applyingCIFiltersWithHandler:)`. Redactions are Core Image
-  filters applied to the frame beneath; vector annotations are drawn into a transparent overlay
-  and composited on top, using the screenshot editor's coordinate convention.
+  `AVMutableVideoComposition(asset:applyingCIFiltersWithHandler:)`. Redactions are opaque black
+  Core Image fills applied to the frame beneath; vector annotations are drawn into a transparent
+  overlay and composited on top, using the screenshot editor's coordinate convention.
 - Output goes to `TemporaryRecordingStore` first and comes back as a `TemporaryRecording`, so the
   existing save panel handles the user's explicit Save with no new output path.
 - A failure or cancellation removes the partial export and leaves the original recording exactly

@@ -96,4 +96,32 @@ struct CropRenderingTests {
             Issue.record("Failed to read pixel at (90, 90)")
         }
     }
+
+    @Test("Redactions flatten to opaque black pixels")
+    func testRedactionConcealsPixels() throws {
+        let baseImage = createWhiteTestImage(width: 100, height: 100)
+        let redaction = AnnotationItem(
+            type: .redaction(rect: CGRect(x: 20, y: 20, width: 40, height: 40)),
+            color: .black,
+            strokeWidth: 0
+        )
+
+        guard let pngData = ImageRenderer.shared.renderFlattenedPNG(
+            baseImage: baseImage,
+            annotations: [redaction]
+        ), let image = NSImage(data: pngData)?.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            Issue.record("Failed to render redacted PNG")
+            return
+        }
+
+        let concealed = try #require(getPixelColor(cgImage: image, x: 40, y: 40))
+        #expect(concealed.r == 0)
+        #expect(concealed.g == 0)
+        #expect(concealed.b == 0)
+
+        let uncovered = try #require(getPixelColor(cgImage: image, x: 80, y: 80))
+        #expect(uncovered.r > 200)
+        #expect(uncovered.g > 200)
+        #expect(uncovered.b > 200)
+    }
 }

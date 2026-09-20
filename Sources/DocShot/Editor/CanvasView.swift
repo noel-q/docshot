@@ -37,17 +37,13 @@ public struct CanvasView: View {
                         .frame(width: displayedWidth, height: displayedHeight)
                         .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 4)
                     
-                    // Render Redactions
+                    // A redaction must completely conceal its contents. Visual effects such as
+                    // blur and pixelation are not a safe substitute.
                     ForEach(viewModel.annotations) { item in
-                        if case .redaction(let rect, let style) = item.type {
+                        if case .redaction(let rect) = item.type {
                             let norm = DisplayGeometry.normalizeRect(rect)
                             Rectangle()
-                                .fill(style == .blur ? Color.gray.opacity(0.85) : Color.black.opacity(0.9))
-                                .overlay(
-                                    Text(style == .blur ? "BLURRED" : "REDACTED")
-                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                        .foregroundColor(.white.opacity(0.7))
-                                )
+                                .fill(Color.black)
                                 .frame(width: norm.width * canvasScale, height: norm.height * canvasScale)
                                 .position(
                                     x: (norm.origin.x + norm.width / 2) * canvasScale,
@@ -223,7 +219,7 @@ public struct CanvasView: View {
                             case .redaction:
                                 if width > 5 && height > 5 {
                                     let item = AnnotationItem(
-                                        type: .redaction(rect: shapeRect, style: viewModel.redactionStyle),
+                                        type: .redaction(rect: shapeRect),
                                         color: .black,
                                         strokeWidth: 0
                                     )

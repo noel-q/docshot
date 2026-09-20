@@ -79,7 +79,8 @@ public final class ImageRenderer: @unchecked Sendable {
         let height = activeImage.height
         let imageBounds = CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height))
         
-        // 3. Apply CIFilter Redactions onto cropped base image
+        // 3. Apply opaque redactions onto the cropped base image. Covered pixels must not remain
+        // visible, so blur and pixelation are intentionally not available.
         let imageWithRedactions = applyRedactions(baseImage: activeImage, annotations: shiftedAnnotations, bounds: imageBounds) ?? activeImage
         
         // 4. Draw vector annotations on top using CGContext
@@ -169,9 +170,9 @@ public final class ImageRenderer: @unchecked Sendable {
     }
 
     private func applyRedactions(baseImage: CGImage, annotations: [AnnotationItem], bounds: CGRect) -> CGImage? {
-        let redactions = annotations.compactMap { item -> (CGRect, RedactionStyle)? in
-            if case .redaction(let rect, let style) = item.type {
-                return (rect, style)
+        let redactions = annotations.compactMap { item -> CGRect? in
+            if case .redaction(let rect) = item.type {
+                return rect
             }
             return nil
         }
@@ -181,29 +182,13 @@ public final class ImageRenderer: @unchecked Sendable {
         let ciImage = CIImage(cgImage: baseImage)
         var resultCI = ciImage
         
-        for (rect, style) in redactions {
+        for rect in redactions {
             let norm = DisplayGeometry.normalizeRect(rect).intersection(bounds)
             if norm.width <= 0 || norm.height <= 0 { continue }
             
             let ciRect = CGRect(x: norm.origin.x, y: bounds.height - norm.origin.y - norm.height, width: norm.width, height: norm.height)
-            let croppedCI = resultCI.cropped(to: ciRect)
-            var filteredCI: CIImage?
-            
-            if style == .blur {
-                let filter = CIFilter(name: "CIGaussianBlur")
-                filter?.setValue(croppedCI, forKey: kCIInputImageKey)
-                filter?.setValue(15.0, forKey: kCIInputRadiusKey)
-                filteredCI = filter?.outputImage?.cropped(to: ciRect)
-            } else {
-                let filter = CIFilter(name: "CIPixellate")
-                filter?.setValue(croppedCI, forKey: kCIInputImageKey)
-                filter?.setValue(16.0, forKey: kCIInputScaleKey)
-                filteredCI = filter?.outputImage?.cropped(to: ciRect)
-            }
-            
-            if let filtered = filteredCI {
-                resultCI = filtered.composited(over: resultCI)
-            }
+            let solidCover = CIImage(color: .black).cropped(to: ciRect)
+            resultCI = solidCover.composited(over: resultCI)
         }
         
         let ciContext = CIContext()

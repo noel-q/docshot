@@ -39,6 +39,7 @@
     "Sources/DocShot/Models/WindowInfo.swift",
     "Sources/DocShot/Services/ExportService.swift",
     "Sources/DocShot/Services/HotkeyService.swift",
+    "Sources/DocShot/Services/LaunchAtLoginService.swift",
     "Sources/DocShot/Services/OutputFolderService.swift",
     "Sources/DocShot/Services/OutputService.swift",
     "Sources/DocShot/Services/PermissionService.swift",

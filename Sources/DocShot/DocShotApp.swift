@@ -1,7 +1,6 @@
 import SwiftUI
 import AppKit
 import Carbon
-import ServiceManagement
 
 @main
 struct DocShotApp: App {
@@ -60,8 +59,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        registerForLaunchAtLogin()
-
         // Register Carbon Global Hotkey from saved preset
         HotkeyService.shared.registerPreset(HotkeyService.shared.currentPreset) {
             AppDelegate.startScreenshotCaptureIfAllowed()
@@ -79,18 +76,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // A previous run that ended abnormally can leave a partial recording behind. Only
             // DocShot's own temporary recordings directory is swept.
             RecordingCoordinator.shared.purgeOrphanTemporaries()
-        }
-    }
-
-    /// Keep the menu-bar utility available after the user signs in to macOS.
-    private func registerForLaunchAtLogin() {
-        let loginItem = SMAppService.mainApp
-        guard loginItem.status == .notRegistered else { return }
-
-        do {
-            try loginItem.register()
-        } catch {
-            NSLog("DocShot could not register for launch at login: %@", error.localizedDescription)
         }
     }
 

@@ -22,7 +22,7 @@ It has no account, cloud upload, history library, analytics, or background sync.
 
 - Global capture shortcut: `⌘⇧6` by default, configurable in Settings.
 - Detect an application window on hover or drag an exact region across displays.
-- Add arrows, shapes, text, highlights, blur/pixelate redactions, crop, undo, and redo.
+- Add arrows, shapes, text, highlights, opaque black redactions, crop, undo, and redo.
 - Copy PNG, Save with a native panel, or Discard without touching disk or clipboard.
 - Export at native, 50%, 200%, or a custom aspect-locked size.
 

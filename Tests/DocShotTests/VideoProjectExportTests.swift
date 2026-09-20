@@ -369,6 +369,56 @@ struct VideoProjectExportTests {
         )
     }
 
+    /// Reads one source-coordinate pixel from an exported frame. Unlike averaging, this makes a
+    /// redaction test prove the covered pixels are black while nearby footage remains visible.
+    private func colourAt(
+        _ url: URL,
+        atSeconds seconds: TimeInterval,
+        point: CGPoint
+    ) throws -> RGB {
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
+        generator.appliesPreferredTrackTransform = true
+
+        let image = try generator.copyCGImage(
+            at: CMTime(seconds: seconds, preferredTimescale: 600),
+            actualTime: nil
+        )
+        guard point.x >= 0, point.x < CGFloat(image.width),
+              point.y >= 0, point.y < CGFloat(image.height) else {
+            throw HarnessError.context
+        }
+
+        var pixel = [UInt8](repeating: 0, count: 4)
+        guard let context = CGContext(
+            data: &pixel,
+            width: 1,
+            height: 1,
+            bitsPerComponent: 8,
+            bytesPerRow: 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            throw HarnessError.context
+        }
+        let imageWidth = CGFloat(image.width)
+        let imageHeight = CGFloat(image.height)
+        let drawRect = CGRect(
+            x: -point.x,
+            y: -(imageHeight - 1 - point.y),
+            width: imageWidth,
+            height: imageHeight
+        )
+        context.draw(image, in: drawRect)
+
+        return RGB(
+            red: Double(pixel[0]) / 255.0,
+            green: Double(pixel[1]) / 255.0,
+            blue: Double(pixel[2]) / 255.0
+        )
+    }
+
     private enum HarnessError: Error {
         case pixelBuffer(CVReturn)
         case context
@@ -385,6 +435,22 @@ struct VideoProjectExportTests {
         #expect(
             actual.isClose(to: expected),
             "At \(seconds)s expected \(expected.description), got \(actual.description)",
+            sourceLocation: sourceLocation
+        )
+    }
+
+    private func expectPixelColour(
+        _ url: URL,
+        at seconds: TimeInterval,
+        point: CGPoint,
+        isNear expected: RGB,
+        tolerance: Double = 0.15,
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) throws {
+        let actual = try colourAt(url, atSeconds: seconds, point: point)
+        #expect(
+            actual.isClose(to: expected, tolerance: tolerance),
+            "At \(seconds)s, pixel \(point), expected \(expected.description), got \(actual.description)",
             sourceLocation: sourceLocation
         )
     }
@@ -527,6 +593,42 @@ struct VideoProjectExportTests {
         try expectColour(exported.url, at: 0.5, isNear: .yellow)
         try expectColour(exported.url, at: 1.5, isNear: .green)
         try expectColour(exported.url, at: 2.5, isNear: .blue)
+    }
+
+    @Test("Video redactions export as opaque black and leave the source recording unchanged")
+    func testExportCompositesOpaqueRedaction() async throws {
+        let (store, root) = makeStore()
+        let source = try await makeSourceMovie(withAudio: false)
+        defer {
+            try? FileManager.default.removeItem(at: root)
+            try? FileManager.default.removeItem(at: source.url)
+        }
+
+        let coveredPoint = CGPoint(x: 160, y: 120)
+        let uncoveredPoint = CGPoint(x: 20, y: 20)
+        try expectPixelColour(source.url, at: 0.5, point: coveredPoint, isNear: .red)
+
+        var project = VideoProject(
+            sourceURL: source.url,
+            sourceDuration: source.duration,
+            sourcePixelSize: Self.size,
+            hasSourceAudio: false
+        )
+        try project.addAnnotation(VideoAnnotation(
+            segmentID: project.segments[0].id,
+            sourceRange: VideoTimeRange(start: 0, duration: source.duration),
+            item: AnnotationItem(
+                type: .redaction(rect: CGRect(x: 80, y: 60, width: 160, height: 120)),
+                color: .black,
+                strokeWidth: 0
+            )
+        ))
+
+        let exported = try await AVFoundationVideoProjectExporter(store: store).export(project)
+
+        try expectPixelColour(exported.url, at: 0.5, point: coveredPoint, isNear: RGB(red: 0, green: 0, blue: 0))
+        try expectPixelColour(exported.url, at: 0.5, point: uncoveredPoint, isNear: .red)
+        try expectPixelColour(source.url, at: 0.5, point: coveredPoint, isNear: .red)
     }
 
     // MARK: - Audio

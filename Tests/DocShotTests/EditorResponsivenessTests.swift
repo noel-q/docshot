@@ -30,8 +30,8 @@ struct EditorResponsivenessTests {
             strokeWidth: 4.0
         )
         
-        let blurItem = AnnotationItem(
-            type: .redaction(rect: CGRect(x: 150, y: 150, width: 100, height: 100), style: .blur),
+        let redactionItem = AnnotationItem(
+            type: .redaction(rect: CGRect(x: 150, y: 150, width: 100, height: 100)),
             color: .black,
             strokeWidth: 0
         )
@@ -39,7 +39,7 @@ struct EditorResponsivenessTests {
         // Invoke production ExportService boundary (as called by EditorView.performCopy and EditorView.performSave)
         let pngData = await ExportService.shared.exportPNG(
             baseImage: baseImage,
-            annotations: [rectItem, blurItem],
+            annotations: [rectItem, redactionItem],
             cropRect: CGRect(x: 50, y: 50, width: 400, height: 400)
         )
         

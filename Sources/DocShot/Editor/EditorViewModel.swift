@@ -11,7 +11,6 @@ public final class EditorViewModel: ObservableObject {
     @Published public var activeTool: AnnotationTool = .arrow
     @Published public var selectedColor: CodableColor = .red
     @Published public var selectedStrokeWidth: CGFloat = 4.0
-    @Published public var redactionStyle: RedactionStyle = .blur
     @Published public var cropRect: CGRect?
 
     /// Output size for the next Copy/Save. Editing always stays at native resolution, and this

@@ -313,7 +313,7 @@ private struct CanvasOverlayView: View {
         case .highlighter:
             type = .highlighter(points: [startSource, endSource])
         case .redaction:
-            type = .redaction(rect: rectSource, style: .blur)
+            type = .redaction(rect: rectSource)
         case .text, .select, .crop:
             return
         }
@@ -411,7 +411,7 @@ private struct CanvasOverlayView: View {
             }
             context.stroke(path, with: .color(color.opacity(0.5)), lineWidth: strokeWidth * 3)
 
-        case .redaction(let rect, _):
+        case .redaction(let rect):
             let viewRect = VideoEditorMath.sourceToViewRect(rect: rect, viewSize: viewSize, sourcePixelSize: sourcePixelSize)
             context.fill(Path(viewRect), with: .color(.black.opacity(0.85)))
         }

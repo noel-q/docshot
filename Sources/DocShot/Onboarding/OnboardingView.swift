@@ -55,7 +55,7 @@ public struct OnboardingView: View {
                         icon: "pencil.and.outline",
                         title: "Annotation & Redaction Editor",
                         subtitle: "Annotate before committing any file or clipboard output.",
-                        details: "Use Arrow, Rectangle, Ellipse, Text, Highlighter, Blur/Pixelate Redaction, and Crop. Full Undo/Redo (⌘Z / ⇧⌘Z) lets you adjust annotations freely. Output only occurs when clicking Copy PNG or Save."
+                        details: "Use Arrow, Rectangle, Ellipse, Text, Highlighter, opaque Redaction, and Crop. Full Undo/Redo (⌘Z / ⇧⌘Z) lets you adjust annotations freely. Output only occurs when clicking Copy PNG or Save."
                     )
                 case 3:
                     VStack(spacing: 14) {

@@ -6,6 +6,7 @@ public struct SettingsView: View {
     @State private var selectedPresetID: Int = HotkeyService.shared.currentPreset.id
     @State private var registrationError: String? = HotkeyService.shared.lastError
     @State private var isShowingCustomShortcutRecorder = false
+    @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
     @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
     @State private var recordSystemAudio: Bool = UserDefaults.standard.bool(forKey: "DocShotRecordSystemAudio")
     @State private var recordCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotRecordIncludeCursor")
@@ -42,6 +43,30 @@ public struct SettingsView: View {
                 .help("Re-open first-launch onboarding guide")
             }
             
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("App Launch")
+                    .font(.system(size: 13, weight: .semibold))
+                Toggle(isOn: Binding(
+                    get: { launchAtLoginService.isEnabled },
+                    set: { launchAtLoginService.setEnabled($0) }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Launch DocShot at login")
+                            .font(.system(size: 13, weight: .medium))
+                        Text("Off by default. Turning this off removes DocShot from Login Items.")
+                            .font(.system(size: 11))
+                            .foregroundColor(DesignTokens.secondaryText)
+                    }
+                }
+                if let errorMessage = launchAtLoginService.errorMessage {
+                    Text(errorMessage)
+                        .font(.system(size: 11))
+                        .foregroundColor(.red)
+                }
+            }
+
             Divider()
 
             VStack(alignment: .leading, spacing: 8) {
@@ -327,6 +352,7 @@ public struct SettingsView: View {
         .frame(width: 520, height: 570)
         .background(DesignTokens.windowBackground)
         .onAppear {
+            launchAtLoginService.refresh()
             hasPermission = PermissionService.shared.hasScreenCaptureAccess()
             registrationError = HotkeyService.shared.lastError
             includeCursor = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")

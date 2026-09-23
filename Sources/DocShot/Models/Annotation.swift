@@ -2,11 +2,6 @@ import Foundation
 import CoreGraphics
 import SwiftUI
 
-public enum RedactionStyle: String, Codable, Sendable, CaseIterable {
-    case blur
-    case pixelate
-}
-
 public struct CodableColor: Codable, Equatable, Sendable {
     public var red: Double
     public var green: Double
@@ -55,7 +50,7 @@ public enum AnnotationType: Codable, Equatable, Sendable {
     case ellipse(rect: CGRect, isFilled: Bool)
     case text(rect: CGRect, text: String, fontSize: CGFloat)
     case highlighter(points: [CGPoint])
-    case redaction(rect: CGRect, style: RedactionStyle)
+    case redaction(rect: CGRect)
 }
 
 public struct AnnotationItem: Identifiable, Equatable, Sendable {
@@ -80,7 +75,7 @@ public struct AnnotationItem: Identifiable, Equatable, Sendable {
             let minY = min(start.y, end.y)
             let maxY = max(start.y, end.y)
             return CGRect(x: minX, y: minY, width: max(maxX - minX, 10), height: max(maxY - minY, 10))
-        case .rectangle(let rect, _), .ellipse(let rect, _), .redaction(let rect, _):
+        case .rectangle(let rect, _), .ellipse(let rect, _), .redaction(let rect):
             return DisplayGeometry.normalizeRect(rect)
         case .text(let rect, _, _):
             return DisplayGeometry.normalizeRect(rect)
@@ -123,10 +118,9 @@ public struct AnnotationItem: Identifiable, Equatable, Sendable {
         case .highlighter(let points):
             let newPoints = points.map { CGPoint(x: $0.x + delta.width, y: $0.y + delta.height) }
             type = .highlighter(points: newPoints)
-        case .redaction(let rect, let style):
+        case .redaction(let rect):
             type = .redaction(
-                rect: CGRect(x: rect.origin.x + delta.width, y: rect.origin.y + delta.height, width: rect.width, height: rect.height),
-                style: style
+                rect: CGRect(x: rect.origin.x + delta.width, y: rect.origin.y + delta.height, width: rect.width, height: rect.height)
             )
         }
     }

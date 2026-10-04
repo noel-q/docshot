@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Deliberately net8.0, not net8.0-windows: this project must stay buildable and testable on
+    any OS with no WPF, no Win32 P/Invoke, and no WinRT projection. That is what lets
+    DocShot.Core.Tests run with `dotnet test` anywhere - including a machine with no Windows
+    display at all - instead of needing the same "hostless test bundle" workaround the macOS
+    build needed for its Xcode target. See windows/docs/WINDOWS_TECHNICAL_BRIEF.md.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>DocShot.Core</RootNamespace>
+    <AssemblyName>DocShot.Core</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

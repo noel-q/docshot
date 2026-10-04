@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    In-memory implementations of every DocShot.Core.Services interface, with no Win32/WinRT calls
+    at all. Exists so DocShot.App can build, run, and demo the full capture -> annotate -> export
+    UI flow without waiting on DocShot.Platform's real implementations - see the
+    "Parallelization" section of windows/docs/WORKSTREAMS.md for why this exists and how it's
+    meant to be used (a Debug-only ProjectReference from DocShot.App, swapped for the real
+    Platform services before any milestone is actually verified).
+
+    Deliberately net8.0, matching DocShot.Core, not net8.0-windows: these fakes have no Windows
+    dependency either, so this project is just as portable/testable as Core itself.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>DocShot.Core.Fakes</RootNamespace>
+    <AssemblyName>DocShot.Core.Fakes</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DocShot.Core\DocShot.Core.csproj" />
+  </ItemGroup>
+
+</Project>

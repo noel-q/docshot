@@ -95,7 +95,8 @@ const warnings = [];
 if (!stateText) warnings.push(`${statePath} not found. Create it from the STATUS template (Definition of done, Next action, Blocker, Human-only tail).`);
 else {
   if (!next.length) warnings.push(`${statePath} has no next action. A handoff without one next action is not usable.`);
-  const newestOther = recent.find((r) => r.p !== statePath);
+  const freshnessIgnore = new Set(['.gitignore', 'AGENTS.md', 'CLAUDE.md', 'handoff.config.json', 'tools/handoff.mjs']);
+  const newestOther = recent.find((r) => r.p !== statePath && !freshnessIgnore.has(r.p));
   if (newestOther && stateMtime < newestOther.m - 10 * 60000) warnings.push(`${statePath} is older than the newest changed file (${newestOther.p}). It may be stale: refresh it before handing over.`);
 }
 

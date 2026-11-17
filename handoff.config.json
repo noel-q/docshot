@@ -1,0 +1,16 @@
+{
+  "state": "STATUS.md",
+  "readFirst": [
+    "AGENTS.md",
+    "STATUS.md",
+    "HANDOFF.md"
+  ],
+  "recentMinutes": 60,
+  "ignore": [],
+  "checks": [
+    {
+      "name": "test-parity-audit",
+      "cmd": "Scripts/audit-test-parity.sh"
+    }
+  ]
+}

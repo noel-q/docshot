@@ -66,6 +66,11 @@
 		C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600003C0600000000000A1 /* PreviewThumbnail.swift */; };
 		C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600005C0600000000000A1 /* PreviewThumbnailController.swift */; };
 		C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */; };
+		C0700001C0700000000000A1 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700003C0700000000000A1 /* ColorTheme.swift */; };
+		C0700002C0700000000000A1 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700003C0700000000000A1 /* ColorTheme.swift */; };
+		C0700004C0700000000000A1 /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700006C0700000000000A1 /* ThemeController.swift */; };
+		C0700005C0700000000000A1 /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700006C0700000000000A1 /* ThemeController.swift */; };
+		C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700008C0700000000000A1 /* ColorThemeTests.swift */; };
 		A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000172C50000000000001 /* EditorViewModelTests.swift */; };
 		A00000182C50000000000001 /* PermissionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000182C50000000000001 /* PermissionWindowController.swift */; };
 		A00000192C50000000000001 /* OutputServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000192C50000000000001 /* OutputServiceTests.swift */; };
@@ -213,6 +218,9 @@
 		C0600003C0600000000000A1 /* PreviewThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnail.swift; path = Sources/DocShot/Models/PreviewThumbnail.swift; sourceTree = "<group>"; };
 		C0600005C0600000000000A1 /* PreviewThumbnailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailController.swift; path = Sources/DocShot/Capture/PreviewThumbnailController.swift; sourceTree = "<group>"; };
 		C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailTests.swift; path = Tests/DocShotTests/PreviewThumbnailTests.swift; sourceTree = "<group>"; };
+		C0700003C0700000000000A1 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorTheme.swift; path = Sources/DocShot/Models/ColorTheme.swift; sourceTree = "<group>"; };
+		C0700006C0700000000000A1 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ThemeController.swift; path = Sources/DocShot/Design/ThemeController.swift; sourceTree = "<group>"; };
+		C0700008C0700000000000A1 /* ColorThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorThemeTests.swift; path = Tests/DocShotTests/ColorThemeTests.swift; sourceTree = "<group>"; };
 		B00000172C50000000000001 /* EditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewModelTests.swift; path = Tests/DocShotTests/EditorViewModelTests.swift; sourceTree = "<group>"; };
 		B00000182C50000000000001 /* PermissionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionWindowController.swift; path = Sources/DocShot/Services/PermissionWindowController.swift; sourceTree = "<group>"; };
 		B00000192C50000000000001 /* OutputServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputServiceTests.swift; path = Tests/DocShotTests/OutputServiceTests.swift; sourceTree = "<group>"; };
@@ -332,6 +340,8 @@
 				C0500003C0500000000000A1 /* GlobalShortcut.swift */,
 				C0600003C0600000000000A1 /* PreviewThumbnail.swift */,
 				C0600005C0600000000000A1 /* PreviewThumbnailController.swift */,
+				C0700003C0700000000000A1 /* ColorTheme.swift */,
+				C0700006C0700000000000A1 /* ThemeController.swift */,
 				B00000042C50000000000001 /* CaptureState.swift */,
 				B00000052C50000000000001 /* DisplayGeometry.swift */,
 				B00000232C50000000000001 /* ExportSize.swift */,
@@ -408,6 +418,7 @@
 				C050000BC0500000000000A1 /* SettingsLayoutTests.swift */,
 				C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */,
 				C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */,
+				C0700008C0700000000000A1 /* ColorThemeTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
 				B000001A2C50000000000001 /* CropRenderingTests.swift */,
@@ -545,6 +556,8 @@
 				C0500002C0500000000000A1 /* GlobalShortcut.swift in Sources */,
 				C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
 				C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */,
+				C0700002C0700000000000A1 /* ColorTheme.swift in Sources */,
+				C0700005C0700000000000A1 /* ThemeController.swift in Sources */,
 				A00000042C50000000000001 /* CaptureState.swift in Sources */,
 				A00000052C50000000000001 /* DisplayGeometry.swift in Sources */,
 				A00000232C50000000000001 /* ExportSize.swift in Sources */,
@@ -620,6 +633,8 @@
 				4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */,
 				C0500001C0500000000000A1 /* GlobalShortcut.swift in Sources */,
 				C0600001C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
+				C0700001C0700000000000A1 /* ColorTheme.swift in Sources */,
+				C0700004C0700000000000A1 /* ThemeController.swift in Sources */,
 				4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */,
 				4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */,
 				4FF1ED2630111159009B2696 /* ExportSize.swift in Sources */,
@@ -649,6 +664,7 @@
 				C050000AC0500000000000A1 /* SettingsLayoutTests.swift in Sources */,
 				C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */,
 				C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */,
+				C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */,
 				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
 				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
 				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,

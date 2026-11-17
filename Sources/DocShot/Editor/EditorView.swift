@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct EditorView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: EditorViewModel
     public var onClose: () -> Void
     

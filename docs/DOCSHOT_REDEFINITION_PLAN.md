@@ -126,6 +126,7 @@ Each milestone is designed, built and verified on its own, the same gate the rec
 | C1 | `ClipboardKit` core: models, SQLite store, de-duplication, retention, exclusion rules, reducer. No UI. | Unit tests for every rule in 4.2 and 4.3, passing in SwiftPM and Xcode. |
 | C0.5 | Shortcut rework from section 13: one rebindable registry for every global shortcut, new defaults, conflict warning in Settings, single-key tool shortcuts in the editor. Ships before any clipboard work because it also fixes today's conflicts. | All global shortcuts rebindable and persisted; old bindings migrated; no default collides with the list in 13.2. |
 | C0.6 | Preview thumbnail after a screenshot (section 7). Added 17 November 2026 at Noel's request. Starts only after C0.5 is committed, with its own short plan first. | Copy, Discard, Edit and Save all work from the thumbnail; only Edit opens the full editor; nothing is written to disk before Save; recording flow unchanged. |
+| C0.7 | Colour themes (section 7). Added 17 November 2026 at Noel's request, after C0.6 and before the C0 spikes, so the clipboard window is built on theme-aware colours. Starts with its own short plan and swatches. | Four themes selectable in Settings, applied at once, no relaunch; each works in light and dark mode; captures, exports and annotation colours unchanged. |
 | C2 | Watcher, main window with read-only history, copy back to the clipboard, Settings toggle, pause, clear. | History survives relaunch; concealed and excluded copies never appear; capture unchanged with the toggle off. |
 | C3 | Paste into the previous app, pinning, search, keyboard navigation. | Paste works in a browser, a terminal and a native text field; degrades cleanly without Accessibility. |
 | C4 | Captures section: recent screenshots, recording references. | Reopen, re-copy and save all work; Discard plus Clear leaves nothing on disk. |
@@ -150,6 +151,7 @@ Windows ports a frozen feature set, so every capture feature added now is one mo
 |---|---|---|
 | OCR (Vision, local) | In, as C4a | Cheap on macOS, and makes image items searchable in history. |
 | Preview thumbnail after capture | In, as C0.6 (added 17 November 2026) | Noel's request after using C0.5: most captures only need Copy or Save, so the full editor should not open every time. |
+| Colour themes | In, as C0.7 (added 17 November 2026) | Noel's request after using C0.6. Colours already come from one file (`DesignTokens.swift`), so the change is contained. |
 | Float on screen (was "pin to screen") | In, as C4b | Small, and fits the "quiet tool" idea. Renamed so it is not confused with pinned history items. |
 | Step counter annotation | Out for now | Nice to have; adds editor and export surface on both platforms. |
 | Pixelate redaction | Out for now | Opaque redaction is safer and already shipped. |
@@ -170,6 +172,16 @@ Windows ports a frozen feature set, so every capture feature added now is one mo
 5. Copy and Save from the thumbnail use the full captured size; export size options stay in the editor.
 6. Built in this session by Opus 5.5 on `feature/c0.6-preview-thumbnail` (cut from `feature/c0.5-shortcuts`); Fable reviews the diff; Noel runs the device checks before any commit.
 
+**Colour themes scope (decided by Noel, 17 November 2026).** Four themes: Graphite (today's look, teal accent, the default), Slate (blue accent), Moss (green accent) and Ember (amber accent). A theme changes only DocShot's own interface: window and card backgrounds, borders, accent and secondary text. Annotation colours, screenshots, exports and recordings are never affected. Each theme works in light and dark mode and follows the macOS setting; it never forces one. Chosen in a new Appearance section in Settings with a swatch per theme, applied at once with no relaunch; no new global shortcut. Exact colours are confirmed from swatches in the C0.7 short plan before any build.
+
+**Colour themes plan (agreed by Noel, 17 November 2026).**
+1. Colours as shown to Noel. Graphite is today's look unchanged: dark #1A1D20 / #24272B / #3D4045, accent #4FB89F, secondary text #8A8F98; light uses the standard macOS surfaces with the same accent. Slate: dark #181C22 / #222831 / #3A4350, accent #6EA8FE; light #EEF1F5 / #FFFFFF / #D3DAE3, accent #2F6FD6. Moss: dark #171C18 / #212823 / #39443B, accent #7BC47F; light #EEF2EC / #FFFFFF / #D2DCCF, accent #2E8540. Ember: dark #1E1A17 / #29231F / #453B33, accent #E3A84C; light #F5F1EA / #FFFFFF / #E2D8CA, accent #A86A12. Values can still be tuned after the device run.
+2. Slate, Moss and Ember tint their light-mode surfaces; Graphite keeps the plain macOS ones.
+3. The DocShot mark keeps its brand amber and graphite in every theme.
+4. The preview thumbnail's background follows the theme's card colour.
+5. Areas that show media (video player backdrop, timeline track) stay neutral dark in every theme.
+6. Built in this session on `feature/c0.7-themes` (cut from `feature/c0.6-preview-thumbnail`); Fable reviews the diff; Noel runs the device checks; the plan edits go into the C0.7 commit.
+
 ## 8. Stability bar ("dream stability", written down)
 
 macOS is done, and Windows may start, when all of these hold:
@@ -188,6 +200,7 @@ macOS is done, and Windows may start, when all of these hold:
   - **Core:** port `ClipboardKit` models and rules to `DocShot.Core`.
   - **Platform:** clipboard change listener (Windows has a real notification, so no polling), respect the Windows "exclude from clipboard history" format, send paste to the previous window.
   - **App:** the same three-section main window, opened from the tray or a hotkey.
+  - **Themes:** the four colour themes from C0.7, with the same light and dark behaviour.
 - Two known gaps must be fixed, not carried: the HUD Pause button that only pauses the timer, and the Show Cursor setting that has no effect.
 - Windows 11 already ships a basic clipboard history on Win+V. The DocShot version has to earn its place through search, pinning and capture integration.
 
@@ -216,7 +229,7 @@ macOS is done, and Windows may start, when all of these hold:
 | macOS tightens pasteboard access | C0 spike on the current OS before any build work; polling reads only on change. |
 | A secret lands in history | Concealed markers, app exclusions, pause, and tests for each. |
 | Accessibility permission is refused or reset | Paste degrades to copy-only; never blocks the rest of the app. |
-| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. One exception so far: the preview thumbnail, added by Noel on 17 November 2026. |
+| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. Two exceptions so far, both added by Noel on 17 November 2026: the preview thumbnail (C0.6) and colour themes (C0.7). |
 
 ## 13. Shortcuts
 

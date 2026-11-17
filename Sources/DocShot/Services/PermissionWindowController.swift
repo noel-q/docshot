@@ -7,6 +7,8 @@ public final class PermissionAlertModel: ObservableObject {
 }
 
 public struct PermissionAlertView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject public var model: PermissionAlertModel
     public var onOpenSettings: () -> Void
     public var onRestart: () -> Void

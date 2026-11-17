@@ -4,6 +4,8 @@ import AppKit
 /// Compact export-size selector for the editor action bar. Shows the dimensions the next
 /// Copy/Save will produce, with presets and a custom width/height popover.
 public struct ExportSizeControl: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: EditorViewModel
 
     @State private var isPopoverPresented = false

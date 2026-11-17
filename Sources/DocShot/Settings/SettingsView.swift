@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct SettingsView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @State private var hasPermission: Bool = PermissionService.shared.hasScreenCaptureAccess()
     @ObservedObject private var hotkeyService = HotkeyService.shared
     @State private var registrationError: String? = HotkeyService.shared.lastError
@@ -47,6 +49,25 @@ public struct SettingsView: View {
                 .help("Re-open first-launch onboarding guide")
             }
             
+            Divider()
+
+            // Appearance (C0.7)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Appearance")
+                    .font(.system(size: 13, weight: .semibold))
+                HStack(spacing: 12) {
+                    ForEach(ColorTheme.allCases) { theme in
+                        ThemeSwatchButton(theme: theme, isSelected: themeController.theme == theme) {
+                            themeController.select(theme)
+                        }
+                    }
+                }
+                Text("Changes DocShot's own windows only. Captures, exports and annotation colours stay the same, and light or dark follows macOS.")
+                    .font(.system(size: 11))
+                    .foregroundColor(DesignTokens.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             Divider()
 
             VStack(alignment: .leading, spacing: 8) {
@@ -165,7 +186,7 @@ public struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(folderPathDisplay)
                                 .font(.system(size: 11, design: .monospaced))
-                                .foregroundColor(DesignTokens.secondaryText)
+                                .foregroundColor(DesignTokens.textOnDarkTile)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                                 .padding(6)
@@ -383,5 +404,55 @@ public struct SettingsView: View {
                 folderPathDisplay = "No folder selected"
             }
         }
+    }
+}
+
+/// One theme in the Appearance section, drawn in the current light or dark mode so it shows
+/// what picking it would look like.
+private struct ThemeSwatchButton: View {
+    let theme: ColorTheme
+    let isSelected: Bool
+    let action: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let surfaces = theme.surfaces(isDark: colorScheme == .dark)
+        let accent = Color(nsColor: NSColor(themeRGB: surfaces.accent))
+
+        Button(action: action) {
+            VStack(spacing: 6) {
+                ZStack(alignment: .bottomTrailing) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(color(surfaces.windowBackground, fallback: .windowBackgroundColor))
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(color(surfaces.cardBackground, fallback: .controlBackgroundColor))
+                        .padding(6)
+                    Circle()
+                        .fill(accent)
+                        .frame(width: 12, height: 12)
+                        .padding(11)
+                }
+                .frame(width: 88, height: 52)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(
+                            isSelected ? accent : color(surfaces.border, fallback: .separatorColor),
+                            lineWidth: isSelected ? 2 : 1
+                        )
+                )
+                Text(theme.displayName)
+                    .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("\(theme.displayName): \(theme.summary)")
+        .accessibilityLabel(theme.displayName)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func color(_ rgb: ThemeRGB?, fallback: NSColor) -> Color {
+        rgb.map { Color(nsColor: NSColor(themeRGB: $0)) } ?? Color(nsColor: fallback)
     }
 }

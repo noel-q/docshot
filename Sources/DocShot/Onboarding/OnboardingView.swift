@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct OnboardingView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @State private var currentStep: Int = 0
     @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
     @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
@@ -122,7 +124,7 @@ public struct OnboardingView: View {
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(folderPathDisplay)
                                             .font(.system(size: 11, design: .monospaced))
-                                            .foregroundColor(DesignTokens.secondaryText)
+                                            .foregroundColor(DesignTokens.textOnDarkTile)
                                             .lineLimit(1)
                                             .truncationMode(.middle)
                                             .padding(6)

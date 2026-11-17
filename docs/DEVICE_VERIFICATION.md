@@ -182,6 +182,28 @@ and need a real run. The Copy, Return and ⌘C, and New capture rows overwrite t
 | Full-screen app | User-reported pass (17 Nov 2026) | Over a full-screen app the thumbnail appears on top of it. |
 | Recording flow unchanged | User-reported pass (17 Nov 2026) | A recording still goes to the video editor with no thumbnail. |
 
+## C0.7 Colour Themes
+
+Run by Noel on 17 November 2026 (debug build from this branch, his Mac); he reported every row as passing. Build from `feature/c0.7-themes`. Automated tests (`ColorThemeTests`,
+both toolchains) cover the palettes, Graphite matching the old values, contrast of the new
+themes, saving and loading the choice, and the controller; how the colours actually look and
+whether open windows redraw need a real run. Picking a theme saves it in DocShot's own
+preferences (`DocShotColorTheme` in `com.docshot.app`); choose Graphite at the end to return
+to the default.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| Graphite unchanged | User-reported pass (17 Nov 2026) | With Graphite selected, Settings, the editor, the preview thumbnail and the onboarding guide look as they did before, in dark and in light mode (apart from the thumbnail, which now uses the card colour instead of a frosted background). |
+| Appearance section | User-reported pass (17 Nov 2026) | Settings shows Appearance near the top with four swatches: Graphite, Slate, Moss, Ember. The selected one has an accent outline; hovering shows its description. The header and privacy notice are still reachable by scrolling. |
+| Applies at once | User-reported pass (17 Nov 2026) | Picking Slate, Moss or Ember changes Settings immediately: background, cards, accent and secondary text. No relaunch. |
+| Open editor follows | User-reported pass (17 Nov 2026) | With an image editor open and annotated, change the theme in Settings: the editor's accent and backgrounds change, and its annotations, tool and crop are untouched. |
+| Thumbnail follows | User-reported pass (17 Nov 2026) | After a theme change, the next screenshot's thumbnail uses that theme's card colour and border. |
+| Light and dark | User-reported pass (17 Nov 2026) | Switching macOS between light and dark (System Settings > Appearance) with a new theme selected swaps between its light and dark colours; the theme never forces a mode. |
+| Readable text | User-reported pass (17 Nov 2026) | In each theme and both modes, secondary text and accent controls are easy to read, including the folder path in Settings (Use a default folder) and the "Src:" line on video timeline segments. |
+| Saved across relaunch | User-reported pass (17 Nov 2026) | Quit and relaunch: the chosen theme is still applied and selected in Settings. |
+| What must not change | User-reported pass (17 Nov 2026) | Annotation colours, copied and saved images, recordings, the DocShot mark, the video player backdrop and the timeline track look the same in every theme. |
+| Video editor | User-reported pass (17 Nov 2026) | In the video editor, controls, the scrubber and the selected segment use the theme accent; unselected segments stay graphite. |
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

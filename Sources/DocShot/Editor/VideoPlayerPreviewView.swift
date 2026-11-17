@@ -201,6 +201,8 @@ private final class AVPlayerContainerView: NSView {
 // MARK: - Canvas Overlay View
 
 private struct CanvasOverlayView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject var themeController = ThemeController.shared
     @ObservedObject var viewModel: VideoEditorViewModel
     let viewSize: CGSize
 

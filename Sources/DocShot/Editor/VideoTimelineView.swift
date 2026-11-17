@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct VideoTimelineView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: VideoEditorViewModel
 
     public init(viewModel: VideoEditorViewModel) {
@@ -228,6 +230,8 @@ public struct VideoTimelineView: View {
 // MARK: - Segment Card View
 
 private struct SegmentCardView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject var themeController = ThemeController.shared
     let segment: VideoSegment
     let index: Int
     let totalSegments: Int
@@ -254,7 +258,7 @@ private struct SegmentCardView: View {
 
             Text("Src: \(String(format: "%.1f", segment.sourceRange.start))s - \(String(format: "%.1f", segment.sourceRange.end))s")
                 .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(DesignTokens.secondaryText)
+                .foregroundColor(DesignTokens.textOnDarkTile)
 
             Text("Duration: \(String(format: "%.1f", segment.duration))s")
                 .font(.system(size: 10, weight: .medium))

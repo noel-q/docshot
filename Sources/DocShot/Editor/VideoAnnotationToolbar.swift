@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct VideoAnnotationToolbar: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: VideoEditorViewModel
 
     private let availableColors: [CodableColor] = [

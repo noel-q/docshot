@@ -14,12 +14,13 @@
 - 2026-11-14: Settings window clipping fixed on the branch. Tests only, not yet seen in the app.
 - 2026-11-17: Noel looked at the fixed build: shortcuts look good, Settings liked. No row-by-row results. Inherited.
 - 2026-11-17: C0.6 preview thumbnail committed on feature/c0.6-preview-thumbnail, local only. Fable review and re-review: no check contradicted; six defects found and fixed. swift test 278 and xcodebuild test 279 pass with the three hotkey suites skipped; parity audit OK. Noel ran the 18 device checks: all pass (user-reported).
+- 2026-11-17: C0.7 colour themes committed on feature/c0.7-themes, local only. Fable review: one defect found and fixed. swift test 290 and xcodebuild test 291 pass with the hotkey suites skipped; parity audit OK. Noel ran the 10 device checks: all pass (user-reported).
+- 2026-11-17: Colour themes added as C0.7 on Noel's say: Graphite (default), Slate, Moss, Ember; interface only; light and dark; picked in Settings. Plan only. Verified in session.
 - 2026-11-17: Preview thumbnail added to the plan as C0.6 on Noel's say (plan §§2, 6, 7, 12). Short plan agreed by Noel the same day (six answers, plan §7). Verified.
 - macOS V1 done; origin/main 291a4a4, tag macos-v1.0.0. Inherited.
 
 ## Left
 - C0.5: remaining device checks (rows marked Not run).
-- Colour themes (Noel, 17 Nov): proposed as C0.7, before the C0 spikes; six questions open.
 - C0 spikes, then C1 to C4, C4a OCR, C4b Float, freeze, C5 (plan §6).
 - Merge the three windows/* branches into main; Windows work stays paused.
 - Update PRODUCT_BRIEF.md, README.md and BACKLOG.md (plan §11), after the C0.5 commit.
@@ -28,7 +29,7 @@
 - None.
 
 ## Next action
-- Noel answers the six colour-theme questions (when, scope, light and dark, which themes, Settings, plan bookkeeping); then write the short C0.7 plan with swatches before building. Do not merge or push without Noel's say.
+- Noel runs the remaining C0.5 device checks (rows marked Not run in docs/DEVICE_VERIFICATION.md); then write the short plan for the C0 spikes (plan §6) and show it to Noel before building. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

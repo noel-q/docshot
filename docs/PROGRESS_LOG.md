@@ -33,6 +33,31 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Noel ran the 18 C0.6 device checks on the debug build and reported all passing
   (user-reported; one screenshot shows the thumbnail in place). He then asked for a few
   colour themes besides the default; not yet scoped.
+- C0.6 committed as bc269ce on `feature/c0.6-preview-thumbnail`, local only.
+- Colour themes agreed as C0.7 (six answers): after C0.6 and before the C0 spikes;
+  four themes (Graphite default, Slate, Moss, Ember); interface colours only; light and
+  dark mode following macOS; chosen in a new Appearance section in Settings; second
+  exception to the freeze rule; Windows must match. Written into plan sections 6, 7, 9
+  and 12. Proposed colour values shown to Noel as swatches; not yet confirmed.
+- C0.7 colour themes built on `feature/c0.7-themes` (cut from bc269ce), uncommitted.
+  New: `Models/ColorTheme.swift` (palettes, contrast maths, store), `Design/ThemeController.swift`
+  (current theme; a lock-guarded copy read by the dynamic colours), `ColorThemeTests`
+  (25 cases). The five interface tokens in `DesignTokens` now follow theme and mode; Graphite
+  resolves to the old values. Eleven views observe the controller, plus the preview thumbnail,
+  whose background moved from a frosted material to the theme card colour. Settings has an
+  Appearance section with four swatches.
+- Fable reviewed C0.7: checks 1, 4, 6, 7 proven in code; 2 and 5 proven in code but need a look
+  on device; 3 partly questioned because the scrubber and selected segment follow the accent,
+  which matches decision 5 (only media backdrops and the track stay neutral). One defect,
+  confirmed and fixed: themed grey text on fixed graphite tiles lost contrast in light mode
+  (Settings and onboarding folder path, timeline "Src:" line); those now use a fixed text
+  colour, with a test. Noted, not fixed: a test writes the process-wide current theme (it
+  restores it); unselected timeline segments already used standard text colours on the dark
+  tile before C0.7, which is low-contrast in light mode.
+- After the fix: `swift test` 290 and `xcodebuild test` 291 pass with the hotkey suites
+  skipped; parity audit OK. The fix itself is not re-reviewed. Not run in the app.
+- Noel ran the 10 C0.7 device checks on the debug build and reported all passing
+  (user-reported).
 - A Fable session also wrote here this morning (commits e5288d4 and c7389af, plus an
   uncommitted STATUS.md line). Noel made this session the only writer.
 

@@ -232,6 +232,8 @@ public final class PreviewThumbnailController: NSObject {
 }
 
 struct PreviewThumbnailView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject var themeController = ThemeController.shared
     let image: CGImage
     let imageSize: CGSize
     @ObservedObject var model: PreviewThumbnailModel
@@ -276,7 +278,11 @@ struct PreviewThumbnailView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(.regularMaterial)
+                .fill(DesignTokens.cardBackground)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(DesignTokens.borderAdaptive, lineWidth: 1)
         )
     }
 }

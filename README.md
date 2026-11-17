@@ -20,15 +20,16 @@ It has no account, cloud upload, history library, analytics, or background sync.
 
 ### Screenshots
 
-- Global capture shortcut: `⌘⇧6` by default, configurable in Settings.
+- Global capture shortcut: `⌃⌥⌘S` by default, rebindable in Settings.
 - Detect an application window on hover or drag an exact region across displays.
 - Add arrows, shapes, text, highlights, opaque black redactions, crop, undo, and redo.
+- Pick tools with single keys (V, A, R, O, T, H, X, C); Return copies and closes.
 - Copy PNG, Save with a native panel, or Discard without touching disk or clipboard.
 - Export at native, 50%, 200%, or a custom aspect-locked size.
 
 ### Screen recordings
 
-- Start recording with `⌘⇧8` or the menu-bar action.
+- Start or stop recording with `⌃⌥⌘R` (rebindable in Settings) or the menu-bar action.
 - Select a window or a single-display region, then explicitly confirm before the stream starts.
 - Save H.264 MP4 locally, or discard the temporary take.
 - System audio is opt-in and off by default; cursor capture has its own recording preference.

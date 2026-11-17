@@ -23,6 +23,7 @@
     "Sources/DocShot/Models/DisplayGeometry.swift",
     "Sources/DocShot/Models/DisplaySnapshot.swift",
     "Sources/DocShot/Models/ExportSize.swift",
+    "Sources/DocShot/Models/GlobalShortcut.swift",
     "Sources/DocShot/Models/MagnifierGrid.swift",
     "Sources/DocShot/Models/PixelSampler.swift",
     "Sources/DocShot/Models/RecordingFailure.swift",
@@ -84,6 +85,12 @@
   ],
 
   "swiftPackageOnlySuites": [
+    {
+      "suite": "Settings Layout Tests",
+      "file": "Tests/DocShotTests/SettingsLayoutTests.swift",
+      "testCount": 1,
+      "reason": "SettingsView is app-only: the hostless Xcode test bundle links no app binary, so the view has nothing to link against there."
+    },
     {
       "suite": "CaptureCoordinator Escape Lifecycle Tests",
       "file": "Tests/DocShotTests/TemporaryEscapeHotkeyTests.swift",

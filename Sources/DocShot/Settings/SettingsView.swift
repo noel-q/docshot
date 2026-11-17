@@ -3,9 +3,9 @@ import AppKit
 
 public struct SettingsView: View {
     @State private var hasPermission: Bool = PermissionService.shared.hasScreenCaptureAccess()
-    @State private var selectedPresetID: Int = HotkeyService.shared.currentPreset.id
+    @ObservedObject private var hotkeyService = HotkeyService.shared
     @State private var registrationError: String? = HotkeyService.shared.lastError
-    @State private var isShowingCustomShortcutRecorder = false
+    @State private var recorderAction: ShortcutAction?
     @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
     @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
     @State private var recordSystemAudio: Bool = UserDefaults.standard.bool(forKey: "DocShotRecordSystemAudio")
@@ -23,6 +23,10 @@ public struct SettingsView: View {
     public init() {}
     
     public var body: some View {
+        // The sections are taller than a small display, and their height changes with
+        // permission and folder state, so the content scrolls inside a fixed window. A
+        // plain fixed height used to clip the header and the privacy notice.
+        ScrollView {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             HStack(spacing: 12) {
@@ -72,15 +76,6 @@ public struct SettingsView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Recording")
                     .font(.system(size: 13, weight: .semibold))
-                HStack {
-                    Text("Global shortcut")
-                    Spacer()
-                    Text(HotkeyService.shared.recordingPreset.shortcutDisplay)
-                        .font(.system(size: 13, design: .monospaced))
-                    Text("Records screen")
-                        .font(.system(size: 11))
-                        .foregroundColor(DesignTokens.secondaryText)
-                }
                 Toggle(isOn: $recordSystemAudio) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Include system audio in recordings")
@@ -237,48 +232,19 @@ public struct SettingsView: View {
             
             // Global Hotkey Section
             VStack(alignment: .leading, spacing: 8) {
-                Text("Global Capture Shortcut")
+                Text("Global Shortcuts")
                     .font(.system(size: 13, weight: .semibold))
-                
-                HStack(spacing: 12) {
-                    Text("Shortcut:")
-                        .font(.system(size: 13))
-                    
-                    Picker("", selection: $selectedPresetID) {
-                        ForEach(HotkeyPreset.presets) { preset in
-                            Text(preset.label).tag(preset.id)
-                        }
-                        Divider()
-                        Text("Custom…").tag(HotkeyPreset.customID)
-                    }
-                    .pickerStyle(.menu)
-                    .frame(width: 220)
-                    .onChange(of: selectedPresetID) { _, newID in
-                        if newID == HotkeyPreset.customID {
-                            isShowingCustomShortcutRecorder = true
-                            return
-                        }
-                        if let preset = HotkeyPreset.presets.first(where: { $0.id == newID }) {
-                            let success = HotkeyService.shared.registerPreset(preset) {
-                                CaptureCoordinator.shared.startCapture()
-                            }
-                            registrationError = success ? nil : HotkeyService.shared.lastError
-                        }
-                    }
+
+                ForEach(ShortcutAction.allCases.filter(\.isRegistrable)) { action in
+                    shortcutRow(for: action)
                 }
 
-                if HotkeyService.shared.currentPreset.id == HotkeyPreset.customID {
-                    Text("Using custom shortcut: \(HotkeyService.shared.currentPreset.shortcutDisplay)")
-                        .font(.system(size: 11))
-                        .foregroundColor(DesignTokens.secondaryText)
-                }
-                
                 if let error = registrationError {
                     Text("⚠️ \(error)")
                         .font(.system(size: 11))
                         .foregroundColor(.red)
                 } else {
-                    Text("Shortcut selection is automatically saved and active globally.")
+                    Text("Shortcuts are saved automatically and active globally.")
                         .font(.system(size: 11))
                         .foregroundColor(DesignTokens.secondaryText)
                 }
@@ -345,11 +311,10 @@ public struct SettingsView: View {
                     .font(.system(size: 11))
                     .foregroundColor(DesignTokens.secondaryText)
             }
-            
-            Spacer()
         }
         .padding(24)
-        .frame(width: 520, height: 570)
+        }
+        .frame(width: 520, height: 620)
         .background(DesignTokens.windowBackground)
         .onAppear {
             launchAtLoginService.refresh()
@@ -368,20 +333,39 @@ public struct SettingsView: View {
             hasPermission = PermissionService.shared.hasScreenCaptureAccess()
             validateFolder()
         }
-        .sheet(isPresented: $isShowingCustomShortcutRecorder, onDismiss: {
-            selectedPresetID = HotkeyService.shared.currentPreset.id
-        }) {
-            CustomShortcutRecorder(currentShortcut: HotkeyService.shared.currentPreset) { keyCode, modifiers, keyDisplay in
-                let success = HotkeyService.shared.registerCustomShortcut(
-                    keyCode: keyCode,
-                    modifiers: modifiers,
-                    keyDisplay: keyDisplay
-                ) {
-                    CaptureCoordinator.shared.startCapture()
-                }
-                registrationError = success ? nil : HotkeyService.shared.lastError
-                selectedPresetID = HotkeyService.shared.currentPreset.id
+        .sheet(item: $recorderAction) { action in
+            CustomShortcutRecorder(
+                title: "Set \(action.title) Shortcut",
+                currentDisplay: hotkeyService.binding(for: action).shortcutDisplay
+            ) { keyCode, modifiers, keyDisplay in
+                let success = hotkeyService.setBinding(
+                    ShortcutBinding(keyCode: keyCode, modifiers: modifiers, keyDisplay: keyDisplay),
+                    for: action
+                )
+                registrationError = success ? nil : hotkeyService.lastError
             }
+        }
+    }
+
+    /// One row per global shortcut: the current chord, the recorder, and reset to default.
+    private func shortcutRow(for action: ShortcutAction) -> some View {
+        HStack(spacing: 12) {
+            Text(action.title)
+                .font(.system(size: 13))
+            Spacer()
+            Text(hotkeyService.binding(for: action).shortcutDisplay)
+                .font(.system(size: 13, design: .monospaced))
+            Button("Change…") {
+                recorderAction = action
+            }
+            .controlSize(.small)
+            Button("Reset") {
+                let success = hotkeyService.resetToDefault(action)
+                registrationError = success ? nil : hotkeyService.lastError
+            }
+            .controlSize(.small)
+            .disabled(hotkeyService.isUsingDefault(action))
+            .help("Reset to \(action.defaultBinding.shortcutDisplay)")
         }
     }
     

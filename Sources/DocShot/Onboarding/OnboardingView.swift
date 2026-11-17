@@ -3,7 +3,6 @@ import AppKit
 
 public struct OnboardingView: View {
     @State private var currentStep: Int = 0
-    @State private var selectedPresetID: Int = HotkeyService.shared.currentPreset.id
     @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
     @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
     @State private var folderPathDisplay: String = OutputFolderService.shared.displayPath ?? "No folder selected"
@@ -39,7 +38,7 @@ public struct OnboardingView: View {
                         icon: "viewfinder",
                         title: "Welcome to DocShot",
                         subtitle: "Fast, local-first macOS screenshot capture & annotation utility.",
-                        details: "DocShot runs in your macOS menu bar and triggers instantly via the global hotkey (⌘⇧6 by default). Output is strictly explicit: no auto-saves, cloud uploads, or accounts."
+                        details: "DocShot runs in your macOS menu bar and triggers instantly via the global hotkey (\(HotkeyService.shared.binding(for: .screenshot).shortcutDisplay), changeable in Settings). Output is strictly explicit: no auto-saves, cloud uploads, or accounts."
                     )
                 case 1:
                     stepView(
@@ -178,20 +177,11 @@ public struct OnboardingView: View {
                                 Text("Global Shortcut:")
                                     .font(.system(size: 12, weight: .semibold))
                                 Spacer()
-                                Picker("", selection: $selectedPresetID) {
-                                    ForEach(HotkeyPreset.presets) { preset in
-                                        Text(preset.label).tag(preset.id)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 180)
-                                .onChange(of: selectedPresetID) { _, newID in
-                                    if let preset = HotkeyPreset.presets.first(where: { $0.id == newID }) {
-                                        HotkeyService.shared.registerPreset(preset) {
-                                            CaptureCoordinator.shared.startCapture()
-                                        }
-                                    }
-                                }
+                                Text(HotkeyService.shared.binding(for: .screenshot).shortcutDisplay)
+                                    .font(.system(size: 12, design: .monospaced))
+                                Text("Change in Settings")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(DesignTokens.secondaryText)
                             }
                             
                             Toggle(isOn: $includeCursor) {

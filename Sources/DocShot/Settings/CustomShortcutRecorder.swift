@@ -3,7 +3,8 @@ import Carbon
 import SwiftUI
 
 struct CustomShortcutRecorder: View {
-    let currentShortcut: HotkeyPreset
+    let title: String
+    let currentDisplay: String
     let onSave: (UInt32, UInt32, String) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -22,15 +23,15 @@ struct CustomShortcutRecorder: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Set Custom Capture Shortcut")
+            Text(title)
                 .font(.headline)
 
-            Text("Press one key with one or two modifiers. A custom shortcut can contain at most three keys in total.")
+            Text("Press one key with one to three modifiers.")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
             ShortcutCaptureField(
-                display: captured?.display ?? currentShortcut.shortcutDisplay,
+                display: captured?.display ?? currentDisplay,
                 onCapture: { keyCode, modifiers, keyDisplay in
                     captured = CapturedShortcut(
                         keyCode: keyCode,
@@ -125,8 +126,8 @@ private final class ShortcutCaptureNSView: NSView {
             activeModifiers.contains(.shift)
         ].filter { $0 }.count
 
-        guard modifierCount > 0, modifierCount <= 2 else {
-            onInvalid?("Use one or two modifiers with a single key.")
+        guard modifierCount > 0, modifierCount <= 3 else {
+            onInvalid?("Use one to three modifiers with a single key.")
             return
         }
 

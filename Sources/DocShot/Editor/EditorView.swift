@@ -10,6 +10,7 @@ public struct EditorView: View {
     @State private var isExporting: Bool = false
     @State private var outputStatus: String?
     @State private var exportIssue: String?
+    @State private var keyMonitor: Any?
     
     public init(viewModel: EditorViewModel, onClose: @escaping () -> Void) {
         self.viewModel = viewModel
@@ -44,7 +45,7 @@ public struct EditorView: View {
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(viewModel.activeTool == tool ? DesignTokens.primaryAccent : Color.clear, lineWidth: 1)
                         )
-                        .help(tool.rawValue)
+                        .help(tool.tooltip)
                     }
                 }
                 .padding(4)
@@ -217,13 +218,15 @@ public struct EditorView: View {
                 .buttonStyle(.plain)
                 .disabled(isExporting)
                 .keyboardShortcut("c", modifiers: [.command])
-                .help("Copy flattened PNG to clipboard (⌘C)")
+                .help("Copy flattened PNG to clipboard (⌘C). Return copies and closes.")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(DesignTokens.windowBackground)
         }
         .frame(minWidth: 700, minHeight: 500)
+        .onAppear { installKeyMonitor() }
+        .onDisappear { removeKeyMonitor() }
         .alert(isPresented: $showErrorAlert) {
             Alert(
                 title: Text("Export Failure"),
@@ -256,7 +259,46 @@ public struct EditorView: View {
         }
     }
 
-    private func performCopy() {
+    /// Tool keys and Return act only while the canvas has focus: the editor window is key,
+    /// nothing is presented over it, and no text field is being edited.
+    private func installKeyMonitor() {
+        removeKeyMonitor()
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            guard let window = EditorWindowController.shared.currentWindow,
+                  event.window === window,
+                  window.attachedSheet == nil,
+                  !isExporting else {
+                return event
+            }
+
+            let command = EditorKeyCommand.resolve(
+                characters: event.charactersIgnoringModifiers,
+                keyCode: event.keyCode,
+                hasCommandModifiers: !event.modifierFlags.intersection([.command, .option, .control]).isEmpty,
+                isEditingText: window.firstResponder is NSText
+            )
+
+            switch command {
+            case .selectTool(let tool):
+                viewModel.activeTool = tool
+                return nil
+            case .copyAndClose:
+                performCopy(closeOnSuccess: true)
+                return nil
+            case nil:
+                return event
+            }
+        }
+    }
+
+    private func removeKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+        keyMonitor = nil
+    }
+
+    private func performCopy(closeOnSuccess: Bool = false) {
         guard !isExporting else { return }
         isExporting = true
         outputStatus = nil
@@ -269,7 +311,12 @@ public struct EditorView: View {
             guard let data = pngData else { return }
 
             if OutputService.shared.copyToClipboard(pngData: data) {
-                // Show success status and retain editor window open (Discard is explicit exit path)
+                if closeOnSuccess {
+                    // Return is the one-key exit: the copy has landed, so close.
+                    self.onClose()
+                    return
+                }
+                // Cmd+C and the button keep the editor open (Discard is the explicit exit path)
                 self.outputStatus = "Copied to clipboard"
             } else {
                 self.errorMessage = "Failed to copy screenshot to the clipboard."

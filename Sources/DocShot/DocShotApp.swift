@@ -21,12 +21,12 @@ struct DocShotApp: App {
 
     var body: some Scene {
         MenuBarExtra("DocShot", systemImage: "viewfinder") {
-            Button("Capture Screenshot (\(hotkeyService.currentPreset.shortcutDisplay))") {
+            Button("Capture Screenshot (\(hotkeyService.binding(for: .screenshot).shortcutDisplay))") {
                 CaptureCoordinator.shared.startCapture()
             }
             .disabled(!activityPolicy.allowsScreenshotCapture)
 
-            Button("Record Screen...") {
+            Button("Record Screen... (\(hotkeyService.binding(for: .record).shortcutDisplay))") {
                 RecordingCoordinator.shared.startRecording()
             }
             .disabled(!activityPolicy.allowsRecordingCapture)
@@ -62,11 +62,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         registerForLaunchAtLogin()
 
-        // Register Carbon Global Hotkey from saved preset
-        HotkeyService.shared.registerPreset(HotkeyService.shared.currentPreset) {
+        // Register the global shortcuts from the table. `openWindow` is defined there but
+        // stays unregistered until the window it opens exists.
+        HotkeyService.shared.register(.screenshot) {
             AppDelegate.startScreenshotCaptureIfAllowed()
         }
-        HotkeyService.shared.registerRecordingHotkey {
+        HotkeyService.shared.register(.record) {
             let policy = CaptureActivityPolicy.evaluate(captureState: CaptureCoordinator.shared.state, recordingState: RecordingCoordinator.shared.state)
             guard policy.allowsRecordingCapture else { NSSound.beep(); return }
             RecordingCoordinator.shared.startRecording()
@@ -130,8 +131,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             defer: false
         )
         window.title = "DocShot Settings"
-        window.center()
+        // The hosting view sizes the window to the settings content, so centre afterwards.
         window.contentView = NSHostingView(rootView: SettingsView())
+        window.center()
         window.isReleasedWhenClosed = false
 
         self.settingsWindow = window

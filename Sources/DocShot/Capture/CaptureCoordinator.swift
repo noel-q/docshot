@@ -24,6 +24,14 @@ public final class CaptureCoordinator: ObservableObject {
     private var selectionGeneration = 0
     private var isRefreshingSnapshots = false
 
+    /// The app that was frontmost when the capture was requested. The preview thumbnail hands
+    /// focus back to it after anything that brings DocShot forward.
+    private var focusReturnApp: NSRunningApplication?
+
+    /// The "Discard current …?" prompt is up. A second capture request while it is modal
+    /// must not stack another prompt on top.
+    private var isConfirmingDiscard = false
+
     /// Owns the temporary global Escape registration used while a snapshot is pending.
     /// Injectable so the lifecycle can be tested without registering a real system hotkey.
     public var escapeSession = PendingEscapeSession(handler: HotkeyService.shared)
@@ -56,8 +64,15 @@ public final class CaptureCoordinator: ObservableObject {
     public func startCapture() {
         switch state {
         case .idle, .cancelled:
+            recordFocusReturnApp()
             beginCaptureRequest()
         case .editing:
+            // A press that only beeps must not touch the recorded app either.
+            guard !isConfirmingDiscard, !PreviewThumbnailController.shared.isBusy else {
+                NSSound.beep()
+                return
+            }
+            recordFocusReturnApp()
             confirmDiscardAndStartNewCapture()
         case .permissionRequired, .selecting, .capturing:
             return
@@ -92,20 +107,50 @@ public final class CaptureCoordinator: ObservableObject {
         }
     }
 
+    /// Nil when DocShot itself is in front (Settings or the editor open, say): then there is
+    /// no other app to hand focus back to, and an older one must not be reused.
+    private func recordFocusReturnApp() {
+        let frontmost = NSWorkspace.shared.frontmostApplication
+        focusReturnApp = frontmost?.processIdentifier == ProcessInfo.processInfo.processIdentifier
+            ? nil
+            : frontmost
+    }
+
     /// A new capture replaces the current editor session, so require an explicit confirmation
     /// before closing it. Cancelling this alert intentionally leaves the editor untouched.
     private func confirmDiscardAndStartNewCapture() {
+        isConfirmingDiscard = true
+        defer { isConfirmingDiscard = false }
+
         NSApp.activate(ignoringOtherApps: true)
+
+        let thumbnailShowing = PreviewThumbnailController.shared.isShowing
 
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Discard Current Edits?"
-        alert.informativeText = "Starting a new capture will discard the screenshot and annotations currently open in DocShot."
+        if thumbnailShowing {
+            alert.messageText = "Discard Current Screenshot?"
+            alert.informativeText = "Starting a new capture will discard the screenshot waiting in the DocShot preview."
+        } else {
+            alert.messageText = "Discard Current Edits?"
+            alert.informativeText = "Starting a new capture will discard the screenshot and annotations currently open in DocShot."
+        }
         alert.addButton(withTitle: "Cancel")
         alert.addButton(withTitle: "Start New Capture")
 
-        guard alert.runModal() == .alertSecondButtonReturn else { return }
+        guard alert.runModal() == .alertSecondButtonReturn else {
+            // Cancel leaves the capture where it was. With the thumbnail up, focus goes back to
+            // the user's app and the thumbnail gets its keys again; the editor stays as before.
+            if thumbnailShowing {
+                PreviewThumbnailController.shared.resumeAfterInterruption()
+            }
+            return
+        }
 
+        if thumbnailShowing {
+            PreviewThumbnailController.shared.dismiss()
+            finishEditing()
+        }
         EditorWindowController.shared.closeEditor()
         beginCaptureRequest()
     }
@@ -327,7 +372,9 @@ public final class CaptureCoordinator: ObservableObject {
             
             do {
                 let cgImage = try await ScreenCaptureService.shared.captureWindow(windowID: window.id, boundsInCG: window.boundsInCG)
-                openEditor(with: cgImage)
+                let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+                let cocoaRect = DisplayGeometry.cgToCocoaRect(window.boundsInCG, mainScreenHeight: primaryHeight)
+                presentCapture(cgImage, capturedRect: cocoaRect)
             } catch {
                 self.handleCaptureError("Failed to capture window: \(error.localizedDescription)")
             }
@@ -346,7 +393,7 @@ public final class CaptureCoordinator: ObservableObject {
             
             do {
                 let cgImage = try await ScreenCaptureService.shared.captureRegion(cgRect)
-                openEditor(with: cgImage)
+                presentCapture(cgImage, capturedRect: cocoaRect)
             } catch {
                 self.handleCaptureError("Failed to capture region: \(error.localizedDescription)")
             }
@@ -365,9 +412,13 @@ public final class CaptureCoordinator: ObservableObject {
         alert.runModal()
     }
     
-    private func openEditor(with image: CGImage) {
+    /// A finished screenshot goes to the preview thumbnail first (C0.6). The state is
+    /// `.editing` until the thumbnail or the editor it opens is done with the capture.
+    private func presentCapture(_ image: CGImage, capturedRect: CGRect) {
         self.state = .editing
-        EditorWindowController.shared.presentEditor(with: image)
+        let centre = CGPoint(x: capturedRect.midX, y: capturedRect.midY)
+        let screen = NSScreen.screens.first { $0.frame.contains(centre) } ?? NSScreen.main
+        PreviewThumbnailController.shared.present(image: image, on: screen, focusReturnApp: focusReturnApp)
     }
     
     public func finishEditing() {

@@ -154,6 +154,34 @@ capture (Copy, Discard, Edit, Save) is wanted before the full editor opens.
 | Video editor and overlay unchanged | Not run | In the video editor `⌘K`, Space, `⌘Z`, Delete, `⌘S`, Escape behave as before and plain letters do nothing. In the capture overlay Escape cancels and `R` refreshes. |
 | Escape before the overlay | Not run | Escape pressed right after the screenshot chord still cancels the pending capture. |
 
+## C0.6 Preview Thumbnail
+
+Run by Noel on 17 November 2026 (debug build from this branch, his Mac); he reported every row as passing. Build from `feature/c0.6-preview-thumbnail`. Automated tests
+(`PreviewThumbnailTests`, both toolchains) cover the key map, button order, thumbnail
+sizing and placement maths only; the panel, focus, clipboard and save flows are app-only
+and need a real run. The Copy, Return and ⌘C, and New capture rows overwrite the clipboard.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| Thumbnail appears | User-reported pass (17 Nov 2026); also seen in Noel's screenshot: thumbnail bottom-right with Copy, Save, Edit and Discard icons. | After ⌃⌥⌘S and a region or window pick, a small preview with Copy, Save, Edit and Discard appears bottom-right of the display the screenshot came from, clear of the Dock. The editor does not open. |
+| Focus stays put | User-reported pass (17 Nov 2026) | The app you were in stays frontmost (its name in the menu bar unchanged) while the thumbnail is up. |
+| Copy | User-reported pass (17 Nov 2026) | The Copy button puts the full-size PNG on the clipboard and the thumbnail closes. |
+| Return and ⌘C | User-reported pass (17 Nov 2026) | Each copies and closes, without clicking the thumbnail first. |
+| Save | User-reported pass (17 Nov 2026) | Save button or ⌘S opens the save panel; saving writes a full-size PNG, closes the thumbnail and returns focus to your app. Cancel keeps the thumbnail, and Return still works on it afterwards. |
+| Discard | User-reported pass (17 Nov 2026) | Discard button or Escape closes the thumbnail; nothing on the clipboard or disk changes. |
+| Edit | User-reported pass (17 Nov 2026) | Edit button or clicking the image opens today's editor with the screenshot; the thumbnail closes; the editor's Copy, Save and Discard behave as before. |
+| New capture while up | User-reported pass (17 Nov 2026) | ⌃⌥⌘S with the thumbnail up asks "Discard Current Screenshot?". Cancel keeps the thumbnail (Return still copies, and focus then returns to your app); Start New Capture closes it and opens the overlay. |
+| Capture during Save | User-reported pass (17 Nov 2026) | With the thumbnail's save panel open, ⌃⌥⌘S only beeps: no prompt, no overlay. Saving or cancelling then behaves as in the Save row. |
+| No stacked prompts | User-reported pass (17 Nov 2026) | With the "Discard Current Screenshot?" prompt up, pressing ⌃⌥⌘S again only beeps; there is never a second prompt. |
+| Focus after a beep | User-reported pass (17 Nov 2026) | Thumbnail up: press ⌃⌥⌘S (prompt), press it again (beep only), choose Start New Capture, take a screenshot and Copy it. Focus goes back to the app you started in. |
+| Started from the editor | User-reported pass (17 Nov 2026) | Known behaviour, accepted: with the editor open, start a new capture and Copy from the new thumbnail. DocShot stays the active app with no window until you click elsewhere, as the editor flow does today. |
+| Started from Settings | User-reported pass (17 Nov 2026) | With DocShot Settings in front, take a screenshot and Copy it: Settings stays in front and no other app is brought forward. |
+| Recording while up | User-reported pass (17 Nov 2026) | ⌃⌥⌘R with the thumbnail up does nothing (beep); after the thumbnail is closed it starts recording. |
+| Tooltips | User-reported pass (17 Nov 2026) | Hovering each button shows its name and key, for example "Save (⌘S)". |
+| Second display | User-reported pass (17 Nov 2026) | A screenshot taken on the second display puts the thumbnail on that display. |
+| Full-screen app | User-reported pass (17 Nov 2026) | Over a full-screen app the thumbnail appears on top of it. |
+| Recording flow unchanged | User-reported pass (17 Nov 2026) | A recording still goes to the video editor with no thumbnail. |
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

@@ -24,6 +24,7 @@
     "Sources/DocShot/Models/DisplaySnapshot.swift",
     "Sources/DocShot/Models/ExportSize.swift",
     "Sources/DocShot/Models/GlobalShortcut.swift",
+    "Sources/DocShot/Models/PreviewThumbnail.swift",
     "Sources/DocShot/Models/MagnifierGrid.swift",
     "Sources/DocShot/Models/PixelSampler.swift",
     "Sources/DocShot/Models/RecordingFailure.swift",
@@ -54,6 +55,7 @@
 
   "appOnlyProductionSources": [
     "Sources/DocShot/Capture/CaptureCoordinator.swift",
+    "Sources/DocShot/Capture/PreviewThumbnailController.swift",
     "Sources/DocShot/Capture/MagnifierView.swift",
     "Sources/DocShot/Capture/SelectionOverlayView.swift",
     "Sources/DocShot/Capture/SelectionOverlayWindow.swift",

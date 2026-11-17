@@ -5,6 +5,37 @@ its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-17
 
+- C0.6 preview thumbnail built by this session (Opus 5.5) on
+  `feature/c0.6-preview-thumbnail`, cut from `feature/c0.5-shortcuts` at c7389af.
+  Uncommitted. New: `Models/PreviewThumbnail.swift` (key map, button order, layout;
+  in both test targets), `Capture/PreviewThumbnailController.swift` (non-activating
+  panel; app-only), `PreviewThumbnailTests` (11 tests). `CaptureCoordinator` now shows
+  the thumbnail instead of the editor and keeps the state `editing` until it is resolved.
+  Tests: `swift test` 278 and `xcodebuild test` 279 passed with
+  `HotkeyServiceTableTests`, `TemporaryEscapeHotkeyTests` and
+  `CaptureCoordinatorEscapeLifecycleTests` skipped, because they register real system
+  hotkeys. Parity audit OK. Not run in the app. Verified (tests only).
+- Fable reviewed the C0.6 diff (read-only subagent, review-against-diff). Proven in code:
+  checks 1-6, 9, 10 (tests not run by the reviewer); not proven until a device run: 7 (focus)
+  and 8 (placement); contradicted: none. Four defects found, all confirmed in the code and
+  fixed: a capture hotkey during the thumbnail's save panel could let the old save finish the
+  new capture (now beeps); the discard prompt could stack (now beeps); a stale focus target
+  when DocShot itself was in front (now cleared); Cancel on the prompt left DocShot in front
+  (now hands focus back). After the fixes: `swift test` 278 and `xcodebuild test` 279 pass
+  with the hotkey suites skipped; parity audit OK. The fixes themselves are not re-reviewed.
+- Fable re-reviewed the four fixes: all four fixed. It found two new defects, both
+  confirmed and fixed: a blocked (beeping) capture press could wipe the app focus returns
+  to (now recorded only on paths that start a capture or show the prompt); the error alert
+  did not count as busy (now it does). A third finding is accepted as known behaviour: a
+  capture started from the editor leaves DocShot active after Copy, as today's editor flow
+  does. After these fixes: `swift test` 278 and `xcodebuild test` 279 pass with the hotkey
+  suites skipped; parity audit OK. These last two fixes are not re-reviewed.
+- Noel ran the 18 C0.6 device checks on the debug build and reported all passing
+  (user-reported; one screenshot shows the thumbnail in place). He then asked for a few
+  colour themes besides the default; not yet scoped.
+- A Fable session also wrote here this morning (commits e5288d4 and c7389af, plus an
+  uncommitted STATUS.md line). Noel made this session the only writer.
+
 - Commit 1 made on `feature/c0.5-shortcuts`: f3be4d4, handoff files, plan and this log.
   Local only, not pushed. Verified (git log).
 - Plan approved after two grilling rounds; all section 10 decisions settled and written

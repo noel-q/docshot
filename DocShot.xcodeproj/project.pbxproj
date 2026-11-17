@@ -62,6 +62,10 @@
 		C0500006C0500000000000A1 /* AnnotationToolKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */; };
 		C050000AC0500000000000A1 /* SettingsLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C050000BC0500000000000A1 /* SettingsLayoutTests.swift */; };
 		C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */; };
+		C0600001C0600000000000A1 /* PreviewThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600003C0600000000000A1 /* PreviewThumbnail.swift */; };
+		C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600003C0600000000000A1 /* PreviewThumbnail.swift */; };
+		C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600005C0600000000000A1 /* PreviewThumbnailController.swift */; };
+		C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */; };
 		A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000172C50000000000001 /* EditorViewModelTests.swift */; };
 		A00000182C50000000000001 /* PermissionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000182C50000000000001 /* PermissionWindowController.swift */; };
 		A00000192C50000000000001 /* OutputServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000192C50000000000001 /* OutputServiceTests.swift */; };
@@ -206,6 +210,9 @@
 		C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationToolKeyTests.swift; path = Tests/DocShotTests/AnnotationToolKeyTests.swift; sourceTree = "<group>"; };
 		C050000BC0500000000000A1 /* SettingsLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsLayoutTests.swift; path = Tests/DocShotTests/SettingsLayoutTests.swift; sourceTree = "<group>"; };
 		C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HotkeyServiceTableTests.swift; path = Tests/DocShotTests/HotkeyServiceTableTests.swift; sourceTree = "<group>"; };
+		C0600003C0600000000000A1 /* PreviewThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnail.swift; path = Sources/DocShot/Models/PreviewThumbnail.swift; sourceTree = "<group>"; };
+		C0600005C0600000000000A1 /* PreviewThumbnailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailController.swift; path = Sources/DocShot/Capture/PreviewThumbnailController.swift; sourceTree = "<group>"; };
+		C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailTests.swift; path = Tests/DocShotTests/PreviewThumbnailTests.swift; sourceTree = "<group>"; };
 		B00000172C50000000000001 /* EditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewModelTests.swift; path = Tests/DocShotTests/EditorViewModelTests.swift; sourceTree = "<group>"; };
 		B00000182C50000000000001 /* PermissionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionWindowController.swift; path = Sources/DocShot/Services/PermissionWindowController.swift; sourceTree = "<group>"; };
 		B00000192C50000000000001 /* OutputServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputServiceTests.swift; path = Tests/DocShotTests/OutputServiceTests.swift; sourceTree = "<group>"; };
@@ -323,6 +330,8 @@
 				B00000022C50000000000001 /* Annotation.swift */,
 				B00000032C50000000000001 /* AnnotationTool.swift */,
 				C0500003C0500000000000A1 /* GlobalShortcut.swift */,
+				C0600003C0600000000000A1 /* PreviewThumbnail.swift */,
+				C0600005C0600000000000A1 /* PreviewThumbnailController.swift */,
 				B00000042C50000000000001 /* CaptureState.swift */,
 				B00000052C50000000000001 /* DisplayGeometry.swift */,
 				B00000232C50000000000001 /* ExportSize.swift */,
@@ -398,6 +407,7 @@
 				C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */,
 				C050000BC0500000000000A1 /* SettingsLayoutTests.swift */,
 				C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */,
+				C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
 				B000001A2C50000000000001 /* CropRenderingTests.swift */,
@@ -533,6 +543,8 @@
 				A00000022C50000000000001 /* Annotation.swift in Sources */,
 				A00000032C50000000000001 /* AnnotationTool.swift in Sources */,
 				C0500002C0500000000000A1 /* GlobalShortcut.swift in Sources */,
+				C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
+				C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */,
 				A00000042C50000000000001 /* CaptureState.swift in Sources */,
 				A00000052C50000000000001 /* DisplayGeometry.swift in Sources */,
 				A00000232C50000000000001 /* ExportSize.swift in Sources */,
@@ -607,6 +619,7 @@
 				4FF1ED1730111159009B2696 /* Annotation.swift in Sources */,
 				4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */,
 				C0500001C0500000000000A1 /* GlobalShortcut.swift in Sources */,
+				C0600001C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
 				4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */,
 				4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */,
 				4FF1ED2630111159009B2696 /* ExportSize.swift in Sources */,
@@ -635,6 +648,7 @@
 				C0500006C0500000000000A1 /* AnnotationToolKeyTests.swift in Sources */,
 				C050000AC0500000000000A1 /* SettingsLayoutTests.swift in Sources */,
 				C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */,
+				C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */,
 				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
 				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
 				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,

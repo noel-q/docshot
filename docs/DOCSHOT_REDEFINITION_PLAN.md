@@ -162,6 +162,14 @@ Windows ports a frozen feature set, so every capture feature added now is one mo
 
 **Preview thumbnail scope.** After a screenshot is taken, a small window shows a thumbnail of it with four icon buttons: Copy, Discard, Edit and Save. Only Edit opens the full editor used today; the other three finish the capture from the thumbnail. Decided by Noel, 17 November 2026. Proposed, to be confirmed in the slice's short plan before any build: screenshots only, recordings keep today's flow; the thumbnail stays until one of the four actions is taken, with no timed dismissal, because a silent timeout would be a Discard nobody chose (principle 5); Escape discards, as in the editor; no new global shortcut and no new setting; nothing is written to disk before Save. One more item for Windows to port.
 
+**Preview thumbnail plan (agreed by Noel, 17 November 2026).** The "proposed" items above are confirmed. In addition:
+1. A new screenshot while the thumbnail is up asks before discarding it, as the editor does today.
+2. Recording stays blocked until the thumbnail is resolved, as with the editor; the capture state stays `editing` while it is up.
+3. The thumbnail takes keyboard focus without activating DocShot. Return and Cmd+C copy and close, Cmd+S saves, Escape discards, clicking the image opens the editor. Focus returns to the previous app afterwards.
+4. It appears in the bottom-right corner of the display the screenshot came from, clear of the Dock.
+5. Copy and Save from the thumbnail use the full captured size; export size options stay in the editor.
+6. Built in this session by Opus 5.5 on `feature/c0.6-preview-thumbnail` (cut from `feature/c0.5-shortcuts`); Fable reviews the diff; Noel runs the device checks before any commit.
+
 ## 8. Stability bar ("dream stability", written down)
 
 macOS is done, and Windows may start, when all of these hold:

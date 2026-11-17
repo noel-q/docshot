@@ -13,12 +13,13 @@
 - 2026-11-17: C0.5 shortcut rework committed as e5288d4 on feature/c0.5-shortcuts, local only, not merged or pushed. Tests passed on the last run; device checks partly done (docs/DEVICE_VERIFICATION.md). Verified.
 - 2026-11-14: Settings window clipping fixed on the branch. Tests only, not yet seen in the app.
 - 2026-11-17: Noel looked at the fixed build: shortcuts look good, Settings liked. No row-by-row results. Inherited.
-- 2026-11-17: Preview thumbnail added to the plan as C0.6 on Noel's say (plan §§2, 6, 7, 12). Plan only, nothing built. Verified.
+- 2026-11-17: C0.6 preview thumbnail committed on feature/c0.6-preview-thumbnail, local only. Fable review and re-review: no check contradicted; six defects found and fixed. swift test 278 and xcodebuild test 279 pass with the three hotkey suites skipped; parity audit OK. Noel ran the 18 device checks: all pass (user-reported).
+- 2026-11-17: Preview thumbnail added to the plan as C0.6 on Noel's say (plan §§2, 6, 7, 12). Short plan agreed by Noel the same day (six answers, plan §7). Verified.
 - macOS V1 done; origin/main 291a4a4, tag macos-v1.0.0. Inherited.
 
 ## Left
 - C0.5: remaining device checks (rows marked Not run).
-- C0.6 preview thumbnail (plan §7), after the C0.5 commit.
+- Colour themes (Noel, 17 Nov): proposed as C0.7, before the C0 spikes; six questions open.
 - C0 spikes, then C1 to C4, C4a OCR, C4b Float, freeze, C5 (plan §6).
 - Merge the three windows/* branches into main; Windows work stays paused.
 - Update PRODUCT_BRIEF.md, README.md and BACKLOG.md (plan §11), after the C0.5 commit.
@@ -27,7 +28,7 @@
 - None.
 
 ## Next action
-- Write the short plan for C0.6 (preview thumbnail, plan §7) and show it to Noel before building. Do not merge feature/c0.5-shortcuts to main or push without Noel's say.
+- Noel answers the six colour-theme questions (when, scope, light and dark, which themes, Settings, plan bookkeeping); then write the short C0.7 plan with swatches before building. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

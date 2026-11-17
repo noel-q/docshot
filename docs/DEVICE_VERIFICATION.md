@@ -99,7 +99,7 @@ The owner-approved GIF profile is 15 seconds maximum, 10 fps, 960 px maximum lon
 
 ## C0.5 Shortcut Rework
 
-Not yet run on device. Automated tests cover the default table, override persistence,
+All rows passed by 17 November 2026: Noel ran the remaining rows himself on the C0.7 debug build and reported every one passing (user-reported); earlier agent-run evidence is kept below. Automated tests cover the default table, override persistence,
 migration, the tool key map and its guards, and (in `HotkeyServiceTableTests`, against the
 real system hotkey table over scratch preferences) rebinding, persistence across a new
 service, reset, a refused duplicate chord and rollback when the system rejects a chord.
@@ -132,27 +132,27 @@ capture (Copy, Discard, Edit, Save) is wanted before the full editor opens.
 | Check | Status | Expected result |
 | --- | --- | --- |
 | Migration on this Mac | Agent-run pass (14 Nov 2026, debug build, driven through accessibility). Saved preset 2 became custom `⇧⌘7`; legacy keys removed; Record showed `⌃⌥⌘R`. | Before first launch of the new build, note the old screenshot shortcut. After launch: if it was the old default `⌘⇧6`, Settings shows `⌃⌥⌘S`; if it was a custom shortcut or another preset, that chord is still shown and still works. Recording shows `⌃⌥⌘R`. |
-| Old shortcuts released | Not run | With DocShot running, `⌘⇧8` makes a bulleted list and `⌘⇧7` a numbered list in Google Docs, Slack or Notion; `⌘⇧6` does nothing in DocShot (unless kept by migration). |
-| Screenshot default | Not run | `⌃⌥⌘S` from another frontmost app opens the capture overlay. The menu bar item shows the same chord. |
-| Record default | Not run | `⌃⌥⌘R` starts the recording flow; pressed again during a recording it stops it. The menu bar item shows the same chord. |
-| One-hand reach | Not run | Both chords are comfortable with the left hand alone on the keyboard in use. |
-| Open-window shortcut absent | Automated (`testOpenWindowIsNotRegistered`); not run on device | `⌃⌥⌘V` does nothing in DocShot and still reaches the frontmost app. |
-| Rebind screenshot | Service logic automated; rebind through the Settings UI agent-run for Record only (below) | Settings > Change… records a new chord, including a three-modifier one. The new chord works at once, the old one stops, and the menu bar title updates. |
-| Rebind record | Agent-run pass (14 Nov 2026, debug build, driven through accessibility). Recorder titled "Set Record (start or stop) Shortcut" accepted `⌃⌥⌘G`; row, Reset button and saved override updated. Whether the new chord fires system-wide was not pressed. | Same as above for Record. |
-| Persistence | Saved override read back from preferences (agent-run); relaunch covered by `HotkeyServiceTableTests`; an actual quit and relaunch not run | Quit and relaunch: both rebound chords are still shown and still work. |
+| Old shortcuts released | User-reported pass (17 Nov 2026) | With DocShot running, `⌘⇧8` makes a bulleted list and `⌘⇧7` a numbered list in Google Docs, Slack or Notion; `⌘⇧6` does nothing in DocShot (unless kept by migration). |
+| Screenshot default | User-reported pass (17 Nov 2026) | `⌃⌥⌘S` from another frontmost app opens the capture overlay. The menu bar item shows the same chord. |
+| Record default | User-reported pass (17 Nov 2026) | `⌃⌥⌘R` starts the recording flow; pressed again during a recording it stops it. The menu bar item shows the same chord. |
+| One-hand reach | User-reported pass (17 Nov 2026) | Both chords are comfortable with the left hand alone on the keyboard in use. |
+| Open-window shortcut absent | User-reported pass (17 Nov 2026). Earlier: Automated (`testOpenWindowIsNotRegistered`); not run on device | `⌃⌥⌘V` does nothing in DocShot and still reaches the frontmost app. |
+| Rebind screenshot | User-reported pass (17 Nov 2026). Earlier: Service logic automated; rebind through the Settings UI agent-run for Record only (below) | Settings > Change… records a new chord, including a three-modifier one. The new chord works at once, the old one stops, and the menu bar title updates. |
+| Rebind record | User-reported pass (17 Nov 2026). Earlier: Agent-run pass (14 Nov 2026, debug build, driven through accessibility). Recorder titled "Set Record (start or stop) Shortcut" accepted `⌃⌥⌘G`; row, Reset button and saved override updated. Whether the new chord fires system-wide was not pressed. | Same as above for Record. |
+| Persistence | User-reported pass (17 Nov 2026). Earlier: Saved override read back from preferences (agent-run); relaunch covered by `HotkeyServiceTableTests`; an actual quit and relaunch not run | Quit and relaunch: both rebound chords are still shown and still work. |
 | Reset to default | Agent-run pass (14 Nov 2026, debug build, driven through accessibility). Reset returned both rows to defaults, cleared the saved overrides and disabled itself. | Reset returns the row to `⌃⌥⌘S` or `⌃⌥⌘R`, the default works again, and Reset is disabled while the default is in use. |
-| Chord already in use | Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the other DocShot action: red line "⌃⌥⌘G is already used by Record (start or stop)", Screenshot unchanged. A chord owned by another app: automated in `HotkeyServiceTableTests` only. | Rebinding to a chord another app has registered globally, or to the other DocShot action's chord, shows the red error line; the previous chord keeps working. |
-| Recorder validation | Not run | A key with no modifier, or with Shift only, is refused with the existing message. |
-| Settings window not clipped | Not run | The header with the Guide… button is visible at the top, and scrolling reaches the privacy notice at the bottom. |
-| Onboarding | Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the first page, which shows the current chord and "changeable in Settings". The settings page of the guide was not opened. | The Guide shows the current screenshot chord as text with "Change in Settings"; there is no preset menu. |
-| Tool keys | Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for R, X and T (toolbar highlight followed). V, A, O, H, C covered by `AnnotationToolKeyTests` only. | In the image editor, `V A R O T H X C` select Select, Arrow, Rectangle, Ellipse, Text, Highlighter, Redaction and Crop; the toolbar highlight follows. |
+| Chord already in use | User-reported pass (17 Nov 2026). Earlier: Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the other DocShot action: red line "⌃⌥⌘G is already used by Record (start or stop)", Screenshot unchanged. A chord owned by another app: automated in `HotkeyServiceTableTests` only. | Rebinding to a chord another app has registered globally, or to the other DocShot action's chord, shows the red error line; the previous chord keeps working. |
+| Recorder validation | User-reported pass (17 Nov 2026) | A key with no modifier, or with Shift only, is refused with the existing message. |
+| Settings window not clipped | User-reported pass (17 Nov 2026) | The header with the Guide… button is visible at the top, and scrolling reaches the privacy notice at the bottom. |
+| Onboarding | User-reported pass (17 Nov 2026). Earlier: Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the first page, which shows the current chord and "changeable in Settings". The settings page of the guide was not opened. | The Guide shows the current screenshot chord as text with "Change in Settings"; there is no preset menu. |
+| Tool keys | User-reported pass (17 Nov 2026). Earlier: Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for R, X and T (toolbar highlight followed). V, A, O, H, C covered by `AnnotationToolKeyTests` only. | In the image editor, `V A R O T H X C` select Select, Arrow, Rectangle, Ellipse, Text, Highlighter, Redaction and Crop; the toolbar highlight follows. |
 | Tooltips | Agent-run pass (14 Nov 2026, debug build, driven through accessibility). All eight tools expose "Name (Key)" help text. | Hovering each tool shows its name with the key, for example "Arrow (A)". |
 | Typing is not hijacked | Agent-run pass (14 Nov 2026, debug build, driven through accessibility). "rcx" went into the text annotation, the tool stayed on Text, and Return committed the text with the editor still open. | While a text annotation is being typed, letters such as `r`, `c`, `x` go into the text and the tool does not change; Return commits the text and does not copy or close. |
-| Export size fields | Not run | While the custom width or height field has the cursor, tool keys type nothing into the canvas and change no tool. Clicking the canvas makes the tool keys work again. |
-| Return copies and closes | Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the success path: PNG on the clipboard and the editor closed. The invalid-size path was not run. | With the canvas focused, Return puts the flattened PNG on the clipboard and closes the editor. With an invalid export size, Return shows the size error and the editor stays open. |
-| Existing editor keys | Not run | `⌘C` copies and keeps the editor open; `⌘S`, `⌘Z`, `⇧⌘Z`, Delete and Escape behave as before. |
-| Video editor and overlay unchanged | Not run | In the video editor `⌘K`, Space, `⌘Z`, Delete, `⌘S`, Escape behave as before and plain letters do nothing. In the capture overlay Escape cancels and `R` refreshes. |
-| Escape before the overlay | Not run | Escape pressed right after the screenshot chord still cancels the pending capture. |
+| Export size fields | User-reported pass (17 Nov 2026) | While the custom width or height field has the cursor, tool keys type nothing into the canvas and change no tool. Clicking the canvas makes the tool keys work again. |
+| Return copies and closes | User-reported pass (17 Nov 2026). Earlier: Agent-run pass (14 Nov 2026, debug build, driven through accessibility) for the success path: PNG on the clipboard and the editor closed. The invalid-size path was not run. | With the canvas focused, Return puts the flattened PNG on the clipboard and closes the editor. With an invalid export size, Return shows the size error and the editor stays open. |
+| Existing editor keys | User-reported pass (17 Nov 2026) | `⌘C` copies and keeps the editor open; `⌘S`, `⌘Z`, `⇧⌘Z`, Delete and Escape behave as before. |
+| Video editor and overlay unchanged | User-reported pass (17 Nov 2026) | In the video editor `⌘K`, Space, `⌘Z`, Delete, `⌘S`, Escape behave as before and plain letters do nothing. In the capture overlay Escape cancels and `R` refreshes. |
+| Escape before the overlay | User-reported pass (17 Nov 2026) | Escape pressed right after the screenshot chord still cancels the pending capture. |
 
 ## C0.6 Preview Thumbnail
 

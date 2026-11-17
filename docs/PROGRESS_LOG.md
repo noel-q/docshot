@@ -58,6 +58,9 @@ its original evidence label (verified, inherited, assumed, unknown).
   skipped; parity audit OK. The fix itself is not re-reviewed. Not run in the app.
 - Noel ran the 10 C0.7 device checks on the debug build and reported all passing
   (user-reported).
+- C0.7 committed as 5fb8e7f on `feature/c0.7-themes`, local only.
+- Noel ran the 18 remaining C0.5 device checks on the C0.7 debug build: all pass
+  (user-reported). Every C0.5 row is now passed.
 - A Fable session also wrote here this morning (commits e5288d4 and c7389af, plus an
   uncommitted STATUS.md line). Noel made this session the only writer.
 

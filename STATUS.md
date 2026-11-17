@@ -10,7 +10,7 @@
 - 2026-11-17: Plan approved; all §10 decisions settled (plan §§2, 4.2, 4.5, 5, 6, 7, 10). Build lane: Opus 5.5 High builds, Fable reviews. Verified in session.
 - 2026-11-17: Handoff files, plan and progress log committed as f3be4d4, local only. Verified.
 - 2026-11-14: Redefinition plan agreed: docs/DOCSHOT_REDEFINITION_PLAN.md. Verified.
-- 2026-11-17: C0.5 shortcut rework committed as e5288d4 on feature/c0.5-shortcuts, local only, not merged or pushed. Tests passed on the last run; device checks partly done (docs/DEVICE_VERIFICATION.md). Verified.
+- 2026-11-17: C0.5 shortcut rework committed as e5288d4 on feature/c0.5-shortcuts, local only, not merged or pushed. Tests passed on the last run; all device checks now pass (the last 18 user-reported on 17 Nov). Verified.
 - 2026-11-14: Settings window clipping fixed on the branch. Tests only, not yet seen in the app.
 - 2026-11-17: Noel looked at the fixed build: shortcuts look good, Settings liked. No row-by-row results. Inherited.
 - 2026-11-17: C0.6 preview thumbnail committed on feature/c0.6-preview-thumbnail, local only. Fable review and re-review: no check contradicted; six defects found and fixed. swift test 278 and xcodebuild test 279 pass with the three hotkey suites skipped; parity audit OK. Noel ran the 18 device checks: all pass (user-reported).
@@ -20,7 +20,6 @@
 - macOS V1 done; origin/main 291a4a4, tag macos-v1.0.0. Inherited.
 
 ## Left
-- C0.5: remaining device checks (rows marked Not run).
 - C0 spikes, then C1 to C4, C4a OCR, C4b Float, freeze, C5 (plan §6).
 - Merge the three windows/* branches into main; Windows work stays paused.
 - Update PRODUCT_BRIEF.md, README.md and BACKLOG.md (plan §11), after the C0.5 commit.
@@ -29,7 +28,7 @@
 - None.
 
 ## Next action
-- Noel runs the remaining C0.5 device checks (rows marked Not run in docs/DEVICE_VERIFICATION.md); then write the short plan for the C0 spikes (plan §6) and show it to Noel before building. Do not merge or push without Noel's say.
+- Write the short plan for the C0 spikes (plan §6: polling and privacy prompts, paste into another app, main window focus, package or folder) and show it to Noel before building. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

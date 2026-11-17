@@ -1,6 +1,6 @@
 # DocShot Redefinition Plan
 
-Date: 13 November 2026. Status: proposed, awaiting Noel's sign-off on the open decisions in section 10.
+Date: 13 November 2026. Status: approved, 17 November 2026. The open decisions are settled in section 10.
 
 ## 1. What changes
 
@@ -27,14 +27,14 @@ The old brief promised "no history library". A clipboard manager is a history, s
 3. **History is bounded and yours.** Clipboard history is off until switched on, has hard size and age limits, can be paused, and can be wiped with one action.
 4. **Secrets are never recorded.** Anything a password manager marks as concealed is skipped, and excluded apps are never read.
 5. **Capture stays explicit.** A screenshot or recording still ends at Copy, Save or Discard. History only ever contains what reached the clipboard or what Noel chose to keep.
-6. **Capture must not get worse.** With clipboard history switched off, DocShot behaves exactly as v1.0.0 does today.
+6. **Capture must not get worse.** With history off, nothing new is stored, and every v1.0.0 capture flow still ends the same way, at Copy, Save or Discard, with the full editor one click away. (Reworded 17 November 2026 so that Float, an optional editor action that stores nothing, fits; reworded again the same day for the preview thumbnail in section 7, which puts a small window in front of the editor after a screenshot.)
 
 ## 3. The main window
 
 One window, opened on demand, three sections:
 
 - **Clipboard:** searchable history, newest first, pinned items at the top. Search field has focus on open. Enter pastes into the previous app, Cmd+C copies only, Escape closes.
-- **Captures:** the last few screenshots (reopen in the editor, copy again, save) and a list of saved recordings by file reference.
+- **Captures:** the last 20 screenshots at most (reopen in the editor, copy again, save) and a list of saved recordings by file reference.
 - **Settings:** the existing settings, plus the clipboard options in section 5.
 
 The window has its own global shortcut. Defaults for all shortcuts are in section 13.
@@ -71,7 +71,8 @@ ClipItem
 
 - **De-duplication:** copying something already in history moves the existing item to the top instead of adding a second one.
 - **Storage:** SQLite through the system library, so the project keeps its zero-dependency policy. Image payloads are stored as files beside the database under `Application Support/DocShot/Clipboard/`.
-- **Retention defaults:** 200 items, 30 days, 500 MB, whichever limit is hit first. Pinned items are exempt from age and count.
+- **Retention defaults:** 200 items, 30 days, 500 MB, whichever limit is hit first (confirmed 17 November 2026; review after the 14-day soak). Pinned items are exempt from age and count, but count towards the 500 MB cap and are never removed automatically. When the cap is full, a new pin is refused with a message saying why.
+- **OCR text:** recognised text for an image item counts towards the 500 MB cap and is deleted with its item.
 - **Clear cache:** one action wipes history and cached captures, and what it leaves behind is a setting (decided 13 November 2026): keep the last 5, keep the last 10, keep pinned only, or keep nothing. The default is keep pinned only. The same setting applies to both the Clipboard and Captures sections, and the action is available from the window, the menu bar and a shortcut.
 - **At rest:** not separately encrypted in the first version. It relies on FileVault. Revisit if the Mac is ever shared.
 
@@ -94,7 +95,7 @@ Step 3 needs macOS Accessibility permission, which DocShot has never asked for. 
 ### 4.5 Captures in history
 
 - A screenshot the user copies is a clipboard image like any other, so it appears in history automatically.
-- The Captures section keeps recent screenshots with their annotation state, so "get the last one back" works. How many are kept follows the Clear cache setting in 4.2. This is on only when history is on.
+- The Captures section keeps recent screenshots with their annotation state, so "get the last one back" works. Between clears, captures follow the same 30-day and 500 MB limits as history, with a fixed cap of the 20 most recent screenshots (not a setting). What a Clear leaves behind follows the Clear cache setting in 4.2. This is on only when history is on.
 - **Discard in the editor** still means "do not output this capture". With history on, the discarded capture stays in the cache until Clear cache removes it or retention ages it out. With history off, Discard destroys it immediately, as today.
 - Recordings are never copied into history storage. Saved recordings appear as file references; temporary recordings keep today's cleanup rules exactly.
 
@@ -113,6 +114,8 @@ Step 3 needs macOS Accessibility permission, which DocShot has never asked for. 
 | Pause history | Menu bar item and window button |
 | Clear cache keeps | Pinned only (options: last 5, last 10, pinned only, nothing) |
 
+Not settings, by decision (17 November 2026): the Captures cap of 20 screenshots is fixed, and OCR has no switch of its own; it runs whenever history is on.
+
 ## 6. Milestones
 
 Each milestone is designed, built and verified on its own, the same gate the recording work used. Nothing moves on until the device checks pass and both test toolchains are green.
@@ -122,24 +125,42 @@ Each milestone is designed, built and verified on its own, the same gate the rec
 | C0 | Spikes. (a) Polling behaviour and any pasteboard privacy prompts on Noel's macOS 26. (b) Accessibility-based paste into another app. (c) Main window focus behaviour from a menu bar app. (d) Package versus folder for `ClipboardKit`. | A throwaway proof for each, and the four questions answered in this document. |
 | C1 | `ClipboardKit` core: models, SQLite store, de-duplication, retention, exclusion rules, reducer. No UI. | Unit tests for every rule in 4.2 and 4.3, passing in SwiftPM and Xcode. |
 | C0.5 | Shortcut rework from section 13: one rebindable registry for every global shortcut, new defaults, conflict warning in Settings, single-key tool shortcuts in the editor. Ships before any clipboard work because it also fixes today's conflicts. | All global shortcuts rebindable and persisted; old bindings migrated; no default collides with the list in 13.2. |
+| C0.6 | Preview thumbnail after a screenshot (section 7). Added 17 November 2026 at Noel's request. Starts only after C0.5 is committed, with its own short plan first. | Copy, Discard, Edit and Save all work from the thumbnail; only Edit opens the full editor; nothing is written to disk before Save; recording flow unchanged. |
 | C2 | Watcher, main window with read-only history, copy back to the clipboard, Settings toggle, pause, clear. | History survives relaunch; concealed and excluded copies never appear; capture unchanged with the toggle off. |
 | C3 | Paste into the previous app, pinning, search, keyboard navigation. | Paste works in a browser, a terminal and a native text field; degrades cleanly without Accessibility. |
 | C4 | Captures section: recent screenshots, recording references. | Reopen, re-copy and save all work; Discard plus Clear leaves nothing on disk. |
+| C4a | OCR for history search (section 7). | Image items are found by their text; "Copy text" works; no OCR runs with history off; idle CPU stays flat. |
+| C4b | Float on screen (section 7). | Float opens from the editor, Captures and history; works with history off; nothing is written to disk; no float survives quit. |
+| Freeze | Feature set frozen in writing once C4a and C4b pass their device checks. Later ideas go to BACKLOG.md for after Windows. | Stability bar point 6. |
 | C5 | Hardening and soak. | The stability bar in section 8. |
 | W | Windows resumes. | See section 9. |
 
+**Who builds (decided 17 November 2026).** One lane, one unit at a time, no parallel builders. Claude Opus 5.5 at High effort orchestrates and builds every unit; read-only subagents are allowed for large reads. Claude Fable reviews each unit from the diff before it is committed. Codex and Antigravity are not used on the Mac work. This project rule takes precedence over the general model split in the handoff skill.
+
+**Testing rules (decided 17 November 2026).**
+1. Automated tests use a private, uniquely named pasteboard and scratch preferences, never the general pasteboard or `com.docshot.app`.
+2. An agent tells Noel first before driving the running app against the real clipboard, the real preferences or the system hotkey table.
+3. Clipboard device checks are run by Noel.
+
 ## 7. Capture features: in or out before the freeze
 
-Windows ports a frozen feature set, so every capture feature added now is one more thing to port. Recommendation:
+Windows ports a frozen feature set, so every capture feature added now is one more thing to port. Decided 17 November 2026:
 
-| Feature | Recommendation | Reason |
+| Feature | Decision | Reason |
 |---|---|---|
-| OCR (Vision, local) | In, after C4 | Cheap on macOS, and makes image items searchable in history. |
-| Pin screenshot to screen | In, after C4 | Small, and fits the "quiet tool" idea. |
+| OCR (Vision, local) | In, as C4a | Cheap on macOS, and makes image items searchable in history. |
+| Preview thumbnail after capture | In, as C0.6 (added 17 November 2026) | Noel's request after using C0.5: most captures only need Copy or Save, so the full editor should not open every time. |
+| Float on screen (was "pin to screen") | In, as C4b | Small, and fits the "quiet tool" idea. Renamed so it is not confused with pinned history items. |
 | Step counter annotation | Out for now | Nice to have; adds editor and export surface on both platforms. |
 | Pixelate redaction | Out for now | Opaque redaction is safer and already shipped. |
 | Scrolling capture | Out | Most expensive and least reliable item on the old backlog. |
 | Microphone audio | Out for now | Modelled but not implemented; needs a new permission and entitlement. |
+
+**OCR scope.** OCR only feeds history search, plus a "Copy text" action on image items in history. It runs only when history is on, once per image, in the background at low priority, after the image is stored, in the system languages. The image editor gets no OCR button.
+
+**Float scope.** Float starts from the image editor and from an image in Captures or history. Several images can float at once. Each floating window stays above other windows and can be dragged; Cmd+C copies it, and Escape or its close button removes it. Floating writes nothing to disk, floats are gone after quit, and Float works with history off.
+
+**Preview thumbnail scope.** After a screenshot is taken, a small window shows a thumbnail of it with four icon buttons: Copy, Discard, Edit and Save. Only Edit opens the full editor used today; the other three finish the capture from the thumbnail. Decided by Noel, 17 November 2026. Proposed, to be confirmed in the slice's short plan before any build: screenshots only, recordings keep today's flow; the thumbnail stays until one of the four actions is taken, with no timed dismissal, because a silent timeout would be a Discard nobody chose (principle 5); Escape discards, as in the editor; no new global shortcut and no new setting; nothing is written to disk before Save. One more item for Windows to port.
 
 ## 8. Stability bar ("dream stability", written down)
 
@@ -162,14 +183,14 @@ macOS is done, and Windows may start, when all of these hold:
 - Two known gaps must be fixed, not carried: the HUD Pause button that only pauses the timer, and the Show Cursor setting that has no effect.
 - Windows 11 already ships a basic clipboard history on Win+V. The DocShot version has to earn its place through search, pinning and capture integration.
 
-## 10. Open decisions for Noel
+## 10. Decisions for Noel (all settled)
 
 1. ~~Shortcut scheme~~ Decided: three rebindable global shortcuts on Control+Option+Command, plus single-key editor tools. See 13.3.
-2. **Retention defaults:** 200 items, 30 days, 500 MB. Too small, too large?
+2. ~~Retention defaults~~ Decided 17 November 2026: 200 items, 30 days, 500 MB, reviewed after the 14-day soak. Pinned items count towards storage; captures share the limits with a fixed cap of 20. See 4.2 and 4.5.
 3. ~~Recent screenshots after Discard~~ Decided: a configurable Clear cache (keep last 5, last 10, pinned only, or nothing). See 4.2 and 4.5.
-4. **OCR and pin-to-screen:** confirm both are in before the freeze, and that the other four are out.
-5. **Name:** keep "DocShot" even though it now does more than shots?
-6. **Who builds what:** same three-agent split as the Windows port (Claude on pure core and tests, Codex on platform plumbing, Antigravity on UI), or a single lane for the Mac work?
+4. ~~OCR and pin-to-screen~~ Decided 17 November 2026: both in, as C4a and C4b; pin-to-screen renamed Float; the other four stay out; the freeze follows C4a and C4b. See sections 6 and 7. Principle 6 reworded in section 2.
+5. ~~Name~~ Decided 17 November 2026: keep "DocShot". Changing the bundle ID would likely reset preferences and permissions (assumed, not tested).
+6. ~~Who builds what~~ Decided 17 November 2026: a single lane. Opus 5.5 at High effort orchestrates and builds; Fable reviews each unit from the diff. See section 6. DocShot stays Tier C with no due date.
 
 ## 11. Documents to update once this is approved
 
@@ -187,7 +208,7 @@ macOS is done, and Windows may start, when all of these hold:
 | macOS tightens pasteboard access | C0 spike on the current OS before any build work; polling reads only on change. |
 | A secret lands in history | Concealed markers, app exclusions, pause, and tests for each. |
 | Accessibility permission is refused or reset | Paste degrades to copy-only; never blocks the rest of the app. |
-| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. |
+| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. One exception so far: the preview thumbnail, added by Noel on 17 November 2026. |
 
 ## 13. Shortcuts
 

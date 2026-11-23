@@ -3,6 +3,55 @@
 Dated detail that does not fit on the one-page STATUS.md. Newest first. Each entry keeps
 its original evidence label (verified, inherited, assumed, unknown).
 
+## 2026-11-23
+
+- Spike cleanup with Noel's yes: `spikes/` (app, build, log), the `spike/c0d-package`
+  worktree and branch removed. No `com.docshot.spike` preferences existed; nothing for Noel
+  to remove from System Settings. Other old worktrees left untouched. Verified (git, ls).
+
+## 2026-11-18
+
+- C0 spikes plan agreed by Noel ("Yes to all"), seven answers: one throwaway menu bar app
+  `DocShotSpike` (`com.docshot.spike`) in a git-ignored `spikes/` folder, separate from DocShot,
+  with menu entries for (a) polling and the privacy prompt, (b) paste into another app and
+  (c) main window focus; Noel runs (a)-(c) from a checklist, the agent builds and reads the
+  log; the log holds type names, sizes, times, app names and permission states, never
+  clipboard content; if no alert appears, (a) is repeated with the pasteboard privacy preview
+  set on the spike's own ID only; answers go into the plan and DEVICE_VERIFICATION.md, spike
+  code and the (d) branch are not committed; Noel removes the spike from Accessibility and the
+  pasteboard list, the agent deletes the build, the spike prefs and the (d) branch with his yes.
+  (d) package versus folder is a build-only spike in a throwaway worktree.
+- Found while planning (verified from the macOS 26.6 SDK header `NSPasteboard.h`): the general
+  pasteboard's default access behaviour is to ask on programmatic access; user-started paste is
+  exempt. Whether macOS 26.5.2 enforces it: unknown until spike (a). `/Applications/DocShot.app`
+  and the debug builds share `com.docshot.app`; builds are signed with team DVV9Z7Q7B9.
+- Spike (d) package versus folder, run in a throwaway worktree on branch
+  `spike/c0d-package` (not committed): a local package `Packages/ClipboardKit` (one type, one
+  test) wired into `Package.swift` and, by hand, into the Xcode project using the pre-Xcode-15
+  form (folder reference plus `XCSwiftPackageProductDependency`), so `objectVersion` stays 56.
+  Both the app and the hostless test target link it; an app file importing `ClipboardKit` is
+  also compiled into the test target. Results: `swift test` 291 (290 + 1 link test), the
+  package's own `swift test` 1, `xcodebuild test` 292 (291 + 1), all passing with the hotkey
+  suites skipped; parity audit OK; the package links statically. Verified (tests only).
+  One cost: the root `swift test` does not run the package's own tests, so they need
+  `swift test --package-path Packages/ClipboardKit` as a second command (or a test file in
+  `Tests/DocShotTests`). Recommendation: package.
+- `DocShotSpike` built for (a)-(c) in `spikes/DocShotSpike` (git-ignored), signed with the
+  same team. Not launched; Noel runs it from the "C0 Spikes" rows in DEVICE_VERIFICATION.md.
+- Noel ran part (a): no alert with counter-only or full-read polling; the log shows
+  `accessBehavior` "always allow" from launch and three text copies read (types and sizes
+  only). Image, file, password and idle-CPU steps were not run. Noel found the manual
+  checklist too heavy for a spike: (b) moved to C3, password marker, idle CPU, menu opening
+  and the Escape key moved to C2, and the agent ran (c) itself.
+- (c) agent-run with full-screen control approved by Noel: a self-test build (window closes
+  after 3 s, alternating activation method) opened by real ⌃⌥⌘J presses in TextEdit. Both
+  `NSApp.activate()` and the old forced call made the window key with focus in its field;
+  closing returned TextEdit to the front and typing continued there; activation policy stayed
+  accessory. Verified (log, TextEdit text). The test document was discarded unsaved and the
+  spike quit.
+- C0 answers written into the plan: section 4.1 (package decided), 4.3 (privacy note),
+  a "C0 findings" subsection in section 6, and the carried checks added to the C2 row.
+
 ## 2026-11-17
 
 - C0.6 preview thumbnail built by this session (Opus 5.5) on

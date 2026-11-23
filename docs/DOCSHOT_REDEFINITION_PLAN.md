@@ -52,7 +52,7 @@ The clipboard feature is isolated so that a fault in it cannot take capture down
 - **Rule:** nothing under `Capture/`, `Recording/` or `Editor/` imports `ClipboardKit`. The only shared pieces are the shell: `HotkeyService`, the main window, Settings, launch at login.
 - **Test parity:** the Xcode test target is hostless and audited by `Scripts/audit-test-parity.sh`. New files must be declared in `Tests/target-parity.json`, and the audit gains a check for the import rule above.
 
-Whether a local package or a plain folder is the better container is the one architecture question for the C0 spike. A package is cleaner but changes how the hand-maintained Xcode project builds.
+**Container (decided by the C0 spike, 18 November 2026): a local package** at `Packages/ClipboardKit`. The spike showed it builds and tests under SwiftPM and in the hand-maintained Xcode project without moving the project format (see C0 findings in section 6). One extra step: the package's own tests run with `swift test --package-path Packages/ClipboardKit`, which the handoff checks must include.
 
 ### 4.2 Data model
 
@@ -83,6 +83,7 @@ ClipItem
 - Skip anything copied while an excluded app is frontmost. Default exclusions: Bitwarden, Passwords, Keychain Access, 1Password.
 - Ignore DocShot's own writes, so pasting from history does not create a new entry.
 - A Pause control stops reading entirely until resumed.
+- **Privacy prompt (C0 finding):** on Noel's macOS 26.5.2 polling and reading raised no alert, and the system reported "always allow" for a new app. The SDK says the general pasteboard's default is to ask, so the watcher still reads `accessBehavior`, and if it is "ask" or "always deny" Settings says so and how to change it; history never pretends to be recording when it cannot read.
 
 ### 4.4 Pasting into the previous app
 
@@ -122,12 +123,12 @@ Each milestone is designed, built and verified on its own, the same gate the rec
 
 | ID | Scope | Exit check |
 |---|---|---|
-| C0 | Spikes. (a) Polling behaviour and any pasteboard privacy prompts on Noel's macOS 26. (b) Accessibility-based paste into another app. (c) Main window focus behaviour from a menu bar app. (d) Package versus folder for `ClipboardKit`. | A throwaway proof for each, and the four questions answered in this document. |
+| C0 | Done 18 November 2026; see C0 findings below. Spikes. (a) Polling behaviour and any pasteboard privacy prompts on Noel's macOS 26. (b) Accessibility-based paste into another app. (c) Main window focus behaviour from a menu bar app. (d) Package versus folder for `ClipboardKit`. | A throwaway proof for each, and the four questions answered in this document. |
 | C1 | `ClipboardKit` core: models, SQLite store, de-duplication, retention, exclusion rules, reducer. No UI. | Unit tests for every rule in 4.2 and 4.3, passing in SwiftPM and Xcode. |
 | C0.5 | Shortcut rework from section 13: one rebindable registry for every global shortcut, new defaults, conflict warning in Settings, single-key tool shortcuts in the editor. Ships before any clipboard work because it also fixes today's conflicts. | All global shortcuts rebindable and persisted; old bindings migrated; no default collides with the list in 13.2. |
 | C0.6 | Preview thumbnail after a screenshot (section 7). Added 17 November 2026 at Noel's request. Starts only after C0.5 is committed, with its own short plan first. | Copy, Discard, Edit and Save all work from the thumbnail; only Edit opens the full editor; nothing is written to disk before Save; recording flow unchanged. |
 | C0.7 | Colour themes (section 7). Added 17 November 2026 at Noel's request, after C0.6 and before the C0 spikes, so the clipboard window is built on theme-aware colours. Starts with its own short plan and swatches. | Four themes selectable in Settings, applied at once, no relaunch; each works in light and dark mode; captures, exports and annotation colours unchanged. |
-| C2 | Watcher, main window with read-only history, copy back to the clipboard, Settings toggle, pause, clear. | History survives relaunch; concealed and excluded copies never appear; capture unchanged with the toggle off. |
+| C2 | Watcher, main window with read-only history, copy back to the clipboard, Settings toggle, pause, clear. | History survives relaunch; concealed and excluded copies never appear; capture unchanged with the toggle off. Carried from C0: a real password-manager copy is skipped, idle watching costs next to no CPU, and the window opens from the menu bar item and closes with Escape back to the previous app. |
 | C3 | Paste into the previous app, pinning, search, keyboard navigation. | Paste works in a browser, a terminal and a native text field; degrades cleanly without Accessibility. |
 | C4 | Captures section: recent screenshots, recording references. | Reopen, re-copy and save all work; Discard plus Clear leaves nothing on disk. |
 | C4a | OCR for history search (section 7). | Image items are found by their text; "Copy text" works; no OCR runs with history off; idle CPU stays flat. |
@@ -142,6 +143,15 @@ Each milestone is designed, built and verified on its own, the same gate the rec
 1. Automated tests use a private, uniquely named pasteboard and scratch preferences, never the general pasteboard or `com.docshot.app`.
 2. An agent tells Noel first before driving the running app against the real clipboard, the real preferences or the system hotkey table.
 3. Clipboard device checks are run by Noel.
+
+### C0 findings (18 November 2026)
+
+Throwaway proofs, none committed: a menu bar app `DocShotSpike` (its own ID, so DocShot's permissions and preferences were untouched) and a package build on a throwaway branch.
+
+- **(a) Polling and privacy.** Answered. Polling the change counter twice a second, then reading type names and data, raised no alert on macOS 26.5.2; the system reported `accessBehavior` "always allow" from first launch (verified from the spike log; "no alert" user-reported). Only text copies were exercised. Not checked, moved to C2: whether password-manager copies carry the concealed marker (tested there with a private pasteboard) and idle CPU (C2 device check).
+- **(b) Paste into another app.** Not spiked, by Noel's decision: C3 must already prove paste in a browser, a terminal and a native text field, with and without Accessibility, in the real app. The spike code for it exists but was not run.
+- **(c) Main window focus.** Answered. From a global hotkey pressed in TextEdit, a menu bar app (accessory, no Dock icon) brought its window to the front with keyboard focus in its text field using the current `NSApp.activate()`; the older forced call behaved the same, so it is not needed. Closing the window and calling `activate()` on the remembered app put TextEdit back in front, and typing carried on there. The activation policy stayed accessory throughout. Agent-run and verified from the log and TextEdit. Not covered: opening from the menu bar item, and closing with the Escape key itself (the window closed on a timer); C2 covers both.
+- **(d) Package or folder.** Answered: package. A local `ClipboardKit` package, wired into `Package.swift` and by hand into the Xcode project (folder reference plus product dependency, `objectVersion` unchanged at 56), linked into both the app and the hostless test target: `swift test` 291, the package's own tests 1, `xcodebuild test` 292, all passing with the hotkey suites skipped; parity audit OK (tests only).
 
 ## 7. Capture features: in or out before the freeze
 

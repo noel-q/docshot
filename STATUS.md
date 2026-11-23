@@ -20,7 +20,7 @@
 - macOS V1 done; origin/main 291a4a4, tag macos-v1.0.0. Inherited.
 
 ## Left
-- C0 spikes, then C1 to C4, C4a OCR, C4b Float, freeze, C5 (plan §6).
+- C1 to C4, C4a OCR, C4b Float, freeze, C5 (plan §6).
 - Merge the three windows/* branches into main; Windows work stays paused.
 - Update PRODUCT_BRIEF.md, README.md and BACKLOG.md (plan §11), after the C0.5 commit.
 
@@ -28,7 +28,7 @@
 - None.
 
 ## Next action
-- Write the short plan for the C0 spikes (plan §6: polling and privacy prompts, paste into another app, main window focus, package or folder) and show it to Noel before building. Do not merge or push without Noel's say.
+- C0 done (answers in plan section 6, "C0 findings"; package chosen). Spikes cleaned up (folder, worktree and branch removed; the spike left no preferences or privacy entries). Next: write the short plan for C1 (ClipboardKit core) and show it to Noel before building. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

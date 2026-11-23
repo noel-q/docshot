@@ -204,6 +204,34 @@ to the default.
 | What must not change | User-reported pass (17 Nov 2026) | Annotation colours, copied and saved images, recordings, the DocShot mark, the video player backdrop and the timeline track look the same in every theme. |
 | Video editor | User-reported pass (17 Nov 2026) | In the video editor, controls, the scrubber and the selected segment use the theme accent; unselected segments stay graphite. |
 
+## C0 Spikes
+
+Throwaway app `DocShotSpike` (`com.docshot.spike`, signed with the same team as DocShot), built
+from the git-ignored `spikes/DocShotSpike` folder on 18 November 2026. It is not DocShot: it
+never touches `com.docshot.app`. It logs to `spikes/logs/spike.log`: type names, byte counts,
+times, app IDs and permission states, never clipboard content. While it runs it holds the
+hotkey ⌃⌥⌘J. Steps marked "overwrites the clipboard" replace what is on it. Part (a) was run
+by Noel; at his request the agent ran (c) itself (a self-test build that closes its window
+after 3 s, driven with real key presses in TextEdit), and (b) moved to C3.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| Launch | User-reported pass (18 Nov 2026) | `open spikes/DocShotSpike/DocShotSpike.app`: "Spike" appears in the menu bar; no Dock icon, no window. |
+| (a) Counter only | User-reported pass, text copies only (18 Nov 2026); no alert; log shows "always allow" | Spike menu > Watch: counter only. Copy some text, an image and a file in Finder. Note whether any system alert appears (expected: none). |
+| (a) Full read | User-reported pass, text copies only (18 Nov 2026); no alert; log shows "always allow" before and after each read | Spike menu > Watch: full read. Copy the same three things. Note whether an alert about DocShotSpike reading the clipboard appears, its wording and the button pressed; then whether DocShotSpike now appears in System Settings > Privacy & Security under a paste or clipboard heading, and its setting. Unknown on macOS 26.5.2. |
+| (a) Password copy | Not run; moved to C2 | Still on full read, copy a password from Passwords or Bitwarden. Only type names are logged; expected: a concealed marker is present. |
+| (a) Idle cost | Not run; moved to C2 | Leave full read on for 3 minutes without copying. Expected: CPU lines in the log near zero. |
+| (c) Hotkey opens | Agent-run pass (18 Nov 2026): window key, focus in its field, no Dock icon (log) | In TextEdit, press ⌃⌥⌘J: the spike window comes to the front and typing goes into its field. No Dock icon. |
+| (c) Escape returns | Agent-run pass for the return, closed by a 3 s timer not the Escape key (18 Nov 2026); TextEdit in front and took typing again; Escape itself moved to C2 | Press Escape: the window closes and TextEdit is in front again, cursor where it was. |
+| (c) Menu opens | Not run; moved to C2 | Spike menu > Open window: same as the hotkey row; Escape returns to the app you were in. |
+| (c) Forced activation | Agent-run (18 Nov 2026): same as the current API, so not needed | Tick Forced activation (old API) and repeat the hotkey row. Note any difference. |
+| (b) No permission | Not run; moved to C3 by Noel | Overwrites the clipboard. In a TextEdit document, ⌃⌥⌘J then Return: the window closes, TextEdit is in front, nothing is typed; ⌘V then pastes "DocShot spike paste test" with a time. |
+| (b) Grant Accessibility | Not run; moved to C3 by Noel | Spike menu > Ask for Accessibility, then turn DocShotSpike on in System Settings > Privacy & Security > Accessibility (Noel's step). |
+| (b) Paste in TextEdit | Not run; moved to C3 by Noel | Overwrites the clipboard. ⌃⌥⌘J then Return in TextEdit: the test text appears by itself. |
+| (b) Paste in a browser | Not run; moved to C3 by Noel | Overwrites the clipboard. Same in a browser text field. |
+| (b) Paste in Terminal | Not run; moved to C3 by Noel | Overwrites the clipboard. Same at a Terminal prompt; the text appears at the prompt. Do not press Return there. |
+| Cleanup | Done (23 Nov 2026): spike folder, log, worktree and branch removed; no `com.docshot.spike` preferences existed; the spike was never granted Accessibility and raised no paste alert, so no privacy list holds it | Quit the spike. Noel removes DocShotSpike from Accessibility and from the paste list if it appeared; the agent deletes the build, its log and any `com.docshot.spike` preferences, with Noel's yes. |
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

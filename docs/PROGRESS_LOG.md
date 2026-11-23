@@ -5,6 +5,35 @@ its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-23
 
+- C0 findings committed as 70132a5 on `feature/c0.7-themes`, local only.
+- C1 plan agreed by Noel ("Yes to all"), eight answers written into plan section 4.2 ("C1
+  rules"). Checked first in a scratch package (deleted): the system SQLite 3.51 and CryptoKit
+  build with no dependencies, and a package's tests run under both `swift test` and
+  `xcodebuild test` (verified). C1 has no device checks: no UI, no real clipboard. Built on
+  `feature/c1-clipboardkit`, cut from 70132a5.
+- C1 built on `feature/c1-clipboardkit`, uncommitted: `Packages/ClipboardKit` (standalone,
+  not linked into the app) with the item model and fingerprint, recording rules (markers,
+  excluded apps, own writes, pause, history off), retention and clear rules, a pure reducer,
+  and an SQLite store (one transaction per change, images as files, owner-only folders, schema
+  version 1, secure delete, log checkpoint after removals). The audit gains the import rule
+  (nothing under Capture, Recording or Editor may import ClipboardKit); the handoff checks gain
+  `swift test --package-path Packages/ClipboardKit`.
+- Fable reviewed C1: rules 1-5 proven; found defects in the store (text with NUL cut short,
+  a newer database switched to WAL before refusal, existing folders not tightened, unreadable
+  rows blocking re-recording and losing their image, failed limit changes half-applied,
+  deleted clips left in the write-ahead log) and gaps in the import regex. All fixed, with 7
+  new tests; the NUL and deleted-text tests were mutation-checked (each fails with its fix
+  undone). Fable re-reviewed: all fixed, no new defects. Two nits also fixed (a stale comment,
+  `@_spi` imports). My first import-rule probes were confounded by the parity check failing on
+  the probe file; re-probed against the rule's own message: 9 forms caught, comments and
+  look-alike names pass.
+- Known, not fixed: the rollback test fails before any row changes, so undoing a partial
+  change is shown by code reading, not by a test; the setLimits test covers only success;
+  `.added` is reported even if retention removes the new item, possible only with a
+  200-item limit of 0; once history is full, each copy also runs a log checkpoint.
+- After the fixes: ClipboardKit `swift test` 68 and its `xcodebuild test` 68, all passing;
+  app `swift test` 290 with the hotkey suites skipped, unchanged; parity audit OK. Verified
+  (tests only). No device checks: C1 has no UI and no real clipboard.
 - Spike cleanup with Noel's yes: `spikes/` (app, build, log), the `spike/c0d-package`
   worktree and branch removed. No `com.docshot.spike` preferences existed; nothing for Noel
   to remove from System Settings. Other old worktrees left untouched. Verified (git, ls).

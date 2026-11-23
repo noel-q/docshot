@@ -11,6 +11,10 @@
     {
       "name": "test-parity-audit",
       "cmd": "Scripts/audit-test-parity.sh"
+    },
+    {
+      "name": "clipboardkit-tests",
+      "cmd": "swift test --package-path Packages/ClipboardKit"
     }
   ]
 }

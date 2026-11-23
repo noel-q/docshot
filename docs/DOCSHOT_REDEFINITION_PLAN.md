@@ -75,6 +75,15 @@ ClipItem
 - **OCR text:** recognised text for an image item counts towards the 500 MB cap and is deleted with its item.
 - **Clear cache:** one action wipes history and cached captures, and what it leaves behind is a setting (decided 13 November 2026): keep the last 5, keep the last 10, keep pinned only, or keep nothing. The default is keep pinned only. The same setting applies to both the Clipboard and Captures sections, and the action is available from the window, the menu bar and a shortcut.
 - **At rest:** not separately encrypted in the first version. It relies on FileVault. Revisit if the Mac is ever shared.
+- **C1 rules (agreed 23 November 2026):**
+  - Age counts from an item's last use: copying the same thing again, or copying it back from history, moves it to the top and restarts its 30 days.
+  - The 200-item limit counts unpinned items only; the 500 MB cap counts everything, and the oldest unpinned items go first when it is exceeded.
+  - Clear "keep the last 5 / last 10" keeps that many most recently used items plus every pinned item; only "keep nothing" removes pins.
+  - A pin is refused when pinned items alone would exceed the storage cap.
+  - Any single copy over 50 MB is skipped (a fixed rule, not a setting), so one huge copy cannot empty history.
+  - The database carries a schema version from the start, so captures (C4) and OCR text (C4a) arrive as migrations. C1 stores clipboard items only.
+  - `ClipboardKit` stays a standalone package in C1; the app links it in C2.
+  - Default excluded apps by ID: `com.apple.Passwords` (checked on Noel's Mac), `com.apple.keychainaccess`, `com.bitwarden.desktop`, `com.1password.1password` and `com.agilebits.onepassword7` (assumed; not installed to check).
 
 ### 4.3 Watching the clipboard (macOS)
 

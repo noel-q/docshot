@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Audits the Xcode DocShotTests target against Tests/target-parity.json.
+# Audits the Xcode DocShotTests target against Tests/target-parity.json, and checks that
+# capture code never imports ClipboardKit (plan section 4.1).
 #
 # The Xcode test bundle is hostless: it links no app binary and instead compiles a
 # curated subset of production sources directly. Nothing in Xcode enforces that subset,
@@ -331,11 +332,40 @@ if suites_stale:
     )
 
 
+
+# ------------------------- 4. capture code must not import ClipboardKit (plan 4.1)
+# The clipboard module is isolated so a fault in it cannot take capture down. Nothing under
+# Capture/, Recording/ or Editor/ may import it, including @testable or scoped imports.
+
+# Matches any import form: attributes (@testable, @preconcurrency, @_exported, @_spi(X)), access levels
+# (public import ...), scoped imports (import struct ClipboardKit.X), and an import after ";".
+clipboard_import = re.compile(
+    r"(?:^|;)\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:public|package|internal|fileprivate|private)\s+)?import\s+"
+    r"(?:(?:class|struct|enum|protocol|typealias|func|var|let)\s+)?ClipboardKit\b",
+    re.M,
+)
+isolated_dirs = ["Capture", "Recording", "Editor"]
+import_violations = set()
+for folder in isolated_dirs:
+    for path in swift_files(os.path.join(source_dir, folder)):
+        with open(os.path.join(repo, path)) as handle:
+            if clipboard_import.search(handle.read()):
+                import_violations.add(path)
+if import_violations:
+    fail(
+        "Capture code imports ClipboardKit.",
+        "      Nothing under %s may import ClipboardKit (plan section 4.1).\n"
+        % ", ".join("%s/%s" % (source_dir, d) for d in isolated_dirs)
+        + bullets(import_violations),
+    )
+
+
 # ---------------------------------------------------------------- report
 
 notes.append("%-3d test files compiled by both toolchains" % len(tests_on_disk))
 notes.append("%-3d production sources duplicated into %s" % (len(actual_duplicated), test_target))
 notes.append("%-3d production sources app-only" % len(actual_app_only))
+notes.append("%-3d ClipboardKit imports under %s" % (len(import_violations), ", ".join(isolated_dirs)))
 notes.append(
     "%-3d SwiftPM-only suite(s) declared: %s"
     % (

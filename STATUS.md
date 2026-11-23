@@ -28,7 +28,7 @@
 - None.
 
 ## Next action
-- C0 done (answers in plan section 6, "C0 findings"; package chosen). Spikes cleaned up (folder, worktree and branch removed; the spike left no preferences or privacy entries). Next: write the short plan for C1 (ClipboardKit core) and show it to Noel before building. Do not merge or push without Noel's say.
+- C1 (ClipboardKit core) built, reviewed by Fable and fixed on `feature/c1-clipboardkit`; uncommitted. Commit it with Noel's yes, then write the short plan for C2 (watcher, main window with read-only history, Settings toggle, pause, clear). Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

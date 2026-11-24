@@ -17,13 +17,14 @@ public enum PreviewThumbnailAction: Equatable, Sendable, CaseIterable {
         }
     }
 
-    /// The key shown in the button's tooltip, matching `PreviewThumbnailKeyCommand`.
+    /// The key shown on the button and in its tooltip, matching `PreviewThumbnailKeyCommand`
+    /// (Quiet: every action shows its key where it lives).
     public var keyHint: String {
         switch self {
-        case .copy: return "Return"
+        case .copy: return "↵"
         case .save: return "⌘S"
-        case .edit: return "click the image"
-        case .discard: return "Esc"
+        case .edit: return "⌘E"
+        case .discard: return "esc"
         }
     }
 
@@ -41,7 +42,8 @@ public enum PreviewThumbnailAction: Equatable, Sendable, CaseIterable {
 }
 
 /// Keys the thumbnail answers while it has keyboard focus. Return and Cmd+C copy and close,
-/// Cmd+S saves, Escape discards. Anything else is passed on untouched.
+/// Cmd+S saves, Cmd+E opens the editor (Quiet restyle, 24 November 2026), Escape discards.
+/// Anything else is passed on untouched.
 public enum PreviewThumbnailKeyCommand {
     public static let returnKeyCode: UInt16 = 36
     public static let keypadEnterKeyCode: UInt16 = 76
@@ -70,6 +72,7 @@ public enum PreviewThumbnailKeyCommand {
         switch characters?.lowercased() {
         case "c": return .copy
         case "s": return .save
+        case "e": return .edit
         default: return nil
         }
     }
@@ -80,10 +83,15 @@ public enum PreviewThumbnailKeyCommand {
 public enum PreviewThumbnailLayout {
     /// The largest box the image is scaled into, in points.
     public static let maxImageSize = CGSize(width: 240, height: 150)
-    public static let padding: CGFloat = 10
-    public static let buttonRowHeight: CGFloat = 28
-    public static let buttonWidth: CGFloat = 32
-    public static let buttonSpacing: CGFloat = 8
+    /// Quiet `space-3`.
+    public static let padding: CGFloat = 12
+    /// Tall enough for an icon with its key under it.
+    public static let buttonRowHeight: CGFloat = 40
+    /// The accent Copy button, labelled with its key.
+    public static let copyButtonWidth: CGFloat = 84
+    /// Save, Edit and Discard: icon over key.
+    public static let buttonWidth: CGFloat = 44
+    public static let buttonSpacing: CGFloat = 4
     /// Gap between the panel and the edges of the visible frame.
     public static let screenMargin: CGFloat = 16
 
@@ -106,10 +114,11 @@ public enum PreviewThumbnailLayout {
         )
     }
 
-    /// The width the four buttons need.
+    /// The width the four buttons need: Copy, a flexible gap, then three icon buttons, with
+    /// `buttonSpacing` between each of those five children.
     public static var buttonRowWidth: CGFloat {
-        let count = CGFloat(PreviewThumbnailAction.displayOrder.count)
-        return count * buttonWidth + (count - 1) * buttonSpacing
+        let others = CGFloat(PreviewThumbnailAction.displayOrder.count - 1)
+        return copyButtonWidth + others * buttonWidth + (others + 1) * buttonSpacing
     }
 
     /// The panel's frame in Cocoa screen coordinates: bottom-right of `visibleFrame`, which

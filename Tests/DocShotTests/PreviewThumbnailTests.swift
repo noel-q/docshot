@@ -31,6 +31,31 @@ struct PreviewThumbnailTests {
         #expect(PreviewThumbnailKeyCommand.resolve(characters: "s", keyCode: 1, hasCommand: true, hasOtherModifiers: false) == .save)
     }
 
+    @Test("The button row is exactly Copy, three icon buttons and four gaps: 232 points")
+    func testButtonRowWidth() {
+        #expect(PreviewThumbnailLayout.buttonRowWidth == CGFloat(84 + 3 * 44 + 4 * 4))
+        #expect(PreviewThumbnailLayout.buttonRowWidth == CGFloat(232))
+    }
+
+    @Test("Cmd+E opens the editor; plain E does nothing")
+    func testEdit() {
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "e", keyCode: 14, hasCommand: true, hasOtherModifiers: false) == .edit)
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "E", keyCode: 14, hasCommand: true, hasOtherModifiers: false) == .edit)
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "e", keyCode: 14, hasCommand: false, hasOtherModifiers: false) == nil)
+    }
+
+    @Test("Every button's key hint is a key the thumbnail answers")
+    func testHintsMatchKeys() {
+        #expect(PreviewThumbnailAction.copy.keyHint == "↵")
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "\r", keyCode: 36, hasCommand: false, hasOtherModifiers: false) == .copy)
+        #expect(PreviewThumbnailAction.save.keyHint == "⌘S")
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "s", keyCode: 1, hasCommand: true, hasOtherModifiers: false) == .save)
+        #expect(PreviewThumbnailAction.edit.keyHint == "⌘E")
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: "e", keyCode: 14, hasCommand: true, hasOtherModifiers: false) == .edit)
+        #expect(PreviewThumbnailAction.discard.keyHint == "esc")
+        #expect(PreviewThumbnailKeyCommand.resolve(characters: nil, keyCode: 53, hasCommand: false, hasOtherModifiers: false) == .discard)
+    }
+
     @Test("Plain letters, other chords and modified Return do nothing")
     func testUnhandledKeys() {
         // Plain C and S are not shortcuts on the thumbnail.

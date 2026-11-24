@@ -4,6 +4,18 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Settings committed as b958886 with Noel's yes.
+- Quiet pilot step 3, preview thumbnail (six answers agreed) built on
+  `feature/quiet-thumbnail`, uncommitted: floating `surface` panel with `radius-lg` and the
+  system shadow; Copy is the one accent button labelled with its key; Save, Edit, Discard as
+  icons with keys under them; Cmd+E opens the editor; an Edit pill on hover over the image;
+  the window rises and fades in over dur-base (fade only with Reduce Motion) and leaves at
+  once. Checked from app-rendered snapshots in dark and light (hover pill not seen). Fable
+  review: no contradiction; fixed an exit fade that kept the keyboard for 0.16 s, the shadow
+  during the rise (now the window itself animates), an overcounted row width (now 232 pt,
+  tested against the literal sum), off-step spacing. swift test 358, xcodebuild test 358.
+- Noel asked for Settings and the clipboard window to be less in-your-face, like the
+  thumbnail: compact floating panels that expand when needed. Sketch given; short plan next.
 - Quiet pilot step 2 committed as bd2dd88 with Noel's yes ("Looks right").
 - Quiet pilot step 3, Settings (seven answers agreed; Settings stays its own window, the C4
   move into the DocShot window dropped) built on `feature/quiet-settings`, uncommitted:

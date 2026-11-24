@@ -88,6 +88,14 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 6. Sentence case and plain words ("Clipboard history", "Shortcuts").
 7. Restyle only: every setting behaves as now. The shortcut recorder sheet is restyled too. Checks: app-rendered snapshots of each tab in dark and light on scratch data, Fable review, Noel's look.
 
+**Quiet pilot step 3, preview thumbnail (agreed 24 November 2026).**
+1. A floating panel: `radius-lg` continuous corners, `surface`, a hairline `line` edge, the system window shadow; the image inside with concentric corners.
+2. Copy is the one accent button, labelled "Copy" with its Return key; Save, Edit and Discard are neutral icon buttons with their keys shown under each icon.
+3. Edit gets Cmd+E (the one behaviour change; Edit was click-only).
+4. Hovering the image shows a soft "Edit" overlay, so a click visibly opens the editor.
+5. It rises about 8 points and fades in over `dur-base`, and leaves with a quick fade; Reduce Motion: fade only. Copy still closes it at once.
+6. Everything else stays as the C0.6 plan: no timeout, nothing written before Save, focus returns, recording waits, same place on screen. Checks: app-rendered snapshots in dark and light, Fable review, Noel's look.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

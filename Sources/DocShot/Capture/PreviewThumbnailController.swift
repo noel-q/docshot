@@ -78,9 +78,24 @@ public final class PreviewThumbnailController: NSObject {
         panel.contentView = NSHostingView(rootView: view)
 
         currentPanel = panel
+        // Rises 8 points and fades in over dur-base by moving the window itself, so the
+        // system shadow follows (Reduce Motion: fade only).
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        panel.alphaValue = 0
+        if !reduceMotion {
+            panel.setFrameOrigin(NSPoint(x: frame.minX, y: frame.minY - Quiet.Space.s2))
+        }
         panel.orderFrontRegardless()
         panel.makeKey()
         installKeyMonitor()
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = QuietTokens.durBase
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1) // ease-out
+            panel.animator().alphaValue = 1
+            if !reduceMotion {
+                panel.animator().setFrameOrigin(frame.origin)
+            }
+        }
     }
 
     /// Closes the panel without finishing the capture. Callers decide what happens to the
@@ -88,6 +103,8 @@ public final class PreviewThumbnailController: NSObject {
     public func dismiss() {
         removeKeyMonitor()
         if let panel = currentPanel {
+            // Leaves at once (plan point 5): a fading panel would keep the keyboard and take
+            // clicks while it faded, so a quick Cmd+V after Copy could land nowhere.
             panel.orderOut(nil)
             panel.close()
         }
@@ -231,6 +248,11 @@ public final class PreviewThumbnailController: NSObject {
     }
 }
 
+/// The preview thumbnail in Quiet (pilot step 3, 24 November 2026): a floating `surface` panel
+/// with `radius-lg` corners and the system shadow; the capture itself, which shows an Edit pill
+/// under the pointer; one accent button, Copy, labelled with its key; and Save, Edit and Discard
+/// as icons with their keys under them. It rises 8 points and fades in over `dur-base` (a fade
+/// only under Reduce Motion).
 struct PreviewThumbnailView: View {
     /// Redraws this view when the colour theme changes (C0.7).
     @ObservedObject var themeController = ThemeController.shared
@@ -239,50 +261,114 @@ struct PreviewThumbnailView: View {
     @ObservedObject var model: PreviewThumbnailModel
     let onAction: (PreviewThumbnailAction) -> Void
 
-    var body: some View {
-        VStack(spacing: PreviewThumbnailLayout.padding) {
-            Image(decorative: image, scale: 1)
-                .resizable()
-                .interpolation(.high)
-                .aspectRatio(contentMode: .fit)
-                .frame(width: imageSize.width, height: imageSize.height)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-                .contentShape(Rectangle())
-                .onTapGesture { onAction(.edit) }
-                .help("Open in the editor")
-                .accessibilityLabel("Screenshot preview")
-                .accessibilityAddTraits(.isButton)
-                .accessibilityAction { onAction(.edit) }
+    @State private var hoveringImage = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-            HStack(spacing: PreviewThumbnailLayout.buttonSpacing) {
-                ForEach(PreviewThumbnailAction.displayOrder, id: \.self) { action in
-                    Button {
-                        onAction(action)
-                    } label: {
-                        Image(systemName: action.symbolName)
-                            .font(.system(size: 13, weight: .medium))
-                            .frame(
-                                width: PreviewThumbnailLayout.buttonWidth,
-                                height: PreviewThumbnailLayout.buttonRowHeight
-                            )
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.borderless)
-                    .help("\(action.title) (\(action.keyHint))")
-                    .accessibilityLabel(action.title)
+    private typealias Layout = PreviewThumbnailLayout
+    /// Concentric with the panel: its radius minus the padding between them.
+    private static let imageRadius = Quiet.Radius.lg - PreviewThumbnailLayout.padding
+
+    var body: some View {
+        VStack(spacing: Layout.padding) {
+            capture
+            buttons
+                .disabled(model.isBusy)
+        }
+        .padding(Layout.padding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous).fill(Quiet.surface))
+        .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous))
+    }
+
+    private var capture: some View {
+        Image(decorative: image, scale: 1)
+            .resizable()
+            .interpolation(.high)
+            .aspectRatio(contentMode: .fit)
+            .frame(width: imageSize.width, height: imageSize.height)
+            .clipShape(RoundedRectangle(cornerRadius: Self.imageRadius, style: .continuous))
+            .overlay {
+                if hoveringImage {
+                    Label("Edit", systemImage: "pencil")
+                        .font(Quiet.Font.ui)
+                        .foregroundStyle(Quiet.ink)
+                        .padding(.horizontal, Quiet.Space.s3)
+                        .padding(.vertical, Quiet.Space.s1)
+                        .background(Capsule().fill(Quiet.surface))
+                        .overlay(Capsule().strokeBorder(Quiet.line, lineWidth: 1))
+                        .shadow(color: Quiet.controlDrop, radius: 1, y: 1) // shadow-control
+                        .transition(.opacity)
+                        .accessibilityHidden(true)
                 }
             }
-            .disabled(model.isBusy)
+            .contentShape(Rectangle())
+            .onHover { inside in
+                withAnimation(reduceMotion ? nil : Quiet.Motion.instant) { hoveringImage = inside }
+            }
+            .onTapGesture { onAction(.edit) }
+            .help("Open in the editor (⌘E)")
+            .accessibilityLabel("Screenshot preview")
+            .accessibilityHint("Opens the screenshot in the editor")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { onAction(.edit) }
+    }
+
+    private var buttons: some View {
+        HStack(spacing: Layout.buttonSpacing) {
+            Button {
+                onAction(.copy)
+            } label: {
+                AccentButtonLabel("Copy  \(PreviewThumbnailAction.copy.keyHint)")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .tint(Quiet.accent)
+            .frame(width: Layout.copyButtonWidth)
+            .help("Copy (Return or ⌘C)")
+            .accessibilityLabel("Copy")
+
+            Spacer(minLength: 0)
+
+            ForEach(PreviewThumbnailAction.displayOrder.filter { $0 != .copy }, id: \.self) { action in
+                ThumbnailIconButton(action: action) { onAction(action) }
+            }
         }
-        .padding(PreviewThumbnailLayout.padding)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(DesignTokens.cardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(DesignTokens.borderAdaptive, lineWidth: 1)
-        )
+        .frame(height: Layout.buttonRowHeight)
+    }
+}
+
+/// Save, Edit or Discard: the icon with its key under it, a neutral hover fill.
+private struct ThumbnailIconButton: View {
+    let action: PreviewThumbnailAction
+    let perform: () -> Void
+
+    @State private var hovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Button(action: perform) {
+            VStack(spacing: Quiet.Space.s1) {
+                Image(systemName: action.symbolName)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Quiet.ink)
+                Text(action.keyHint)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+            }
+            .frame(width: PreviewThumbnailLayout.buttonWidth, height: PreviewThumbnailLayout.buttonRowHeight)
+            .background(
+                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                    .fill(hovering ? Quiet.hover : Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { inside in
+            withAnimation(reduceMotion ? nil : Quiet.Motion.instant) { hovering = inside }
+        }
+        .help("\(action.title) (\(action.keyHint))")
+        .accessibilityLabel(action.title)
     }
 }

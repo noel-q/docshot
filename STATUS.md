@@ -7,6 +7,7 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-24: Preview thumbnail restyled in Quiet (pilot step 3): floating panel, accent Copy with its key, keys under icons, Cmd+E for Edit, rise-in. Fable review fixed; swift test 358, xcodebuild test 358. Verified (snapshots) and user-reported ("Looks right").
 - 2026-11-24: Settings restyled in Quiet (pilot step 3, first screen): toolbar tabs with eased resizing, grouped panels, switches, exact-count Clear, clipboard window keys and the open-history shortcut in Settings. Fable review fixed; swift test 355, xcodebuild test 355, ClipboardKit 76. Verified (agent snapshots and frame traces) and user-reported ("Looks right").
 - 2026-11-24: Quiet restyle of the clipboard window (pilot step 1) committed as 9a1120d on feature/quiet-clipboard; Fable review fixed; swift test 352, xcodebuild test 353, ClipboardKit 76; Noel: "Looks good", clicks work. Verified (agent snapshots) and user-reported.
 - 2026-11-24: C3 paste, search, keys, pins, editable limits and excluded apps committed as 9ef04d1 on feature/c3-paste. Fable review, re-review and a final check; all fixes in. swift test 339, xcodebuild test 340, ClipboardKit 76; parity OK. Device: paste verified in TextEdit (agent, screenshot) and user-reported in Chrome, the Claude app and Terminal; pin, delete, Escape agent-run via a DEBUG-only hook. Verified.
@@ -33,7 +34,7 @@
 - None.
 
 ## Next action
-- Quiet pilot step 3: Settings restyled and committed on feature/quiet-settings (from bd2dd88), local only; Noel: "Looks right". Next: the preview thumbnail, permission window, onboarding, image editor, video editor, one at a time with a short plan each; after that C4. Do not merge or push without Noel's say.
+- Preview thumbnail restyled and committed on feature/quiet-thumbnail (from b958886), local only; Noel: "Looks right". Next: a short plan for compact, expandable panels for the clipboard window and Settings (Noel's request). Then permission window, onboarding, editors; after that C4. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

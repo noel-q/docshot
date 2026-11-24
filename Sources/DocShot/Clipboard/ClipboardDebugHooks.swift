@@ -138,7 +138,7 @@ enum ClipboardDebugHooks {
                 return writeState(command)
             case "windows":
                 return writeState("windows: " + NSApp.windows.filter(\.isVisible)
-                    .map { "\(type(of: $0))|\($0.title)" }.joined(separator: ", "))
+                    .map { "\(type(of: $0))|\($0.title)|\(Int($0.frame.width))x\(Int($0.frame.height))" }.joined(separator: ", "))
             default:
                 break
             }
@@ -149,6 +149,25 @@ enum ClipboardDebugHooks {
                 ThemeController.shared.select(theme)
                 return writeState(command)
             }
+            if command.hasPrefix("settings-tab:"), let index = Int(command.dropFirst("settings-tab:".count)) {
+                SettingsWindowFactory.controller.select(index)
+                return writeState(command)
+            }
+            if command.hasPrefix("tabtrace:"), let index = Int(command.dropFirst("tabtrace:".count)),
+               let window = NSApp.windows.first(where: { $0.identifier == SettingsWindowFactory.identifier }) {
+                // Selects a tab and samples the window height every frame for 0.8 s, so a
+                // choppy switch shows up as jumps (debug check of the transition).
+                Task {
+                    var samples: [Int] = []
+                    SettingsWindowFactory.controller.select(index)
+                    for _ in 0..<48 {
+                        samples.append(Int(window.frame.height))
+                        try? await Task.sleep(for: .milliseconds(16))
+                    }
+                    writeState("tabtrace \(index): " + samples.map(String.init).joined(separator: " "))
+                }
+                return
+            }
             if command.hasPrefix("snapwin:") {
                 // snapwin:<word>:<path prefix>
                 let rest = command.dropFirst("snapwin:".count)
@@ -156,7 +175,7 @@ enum ClipboardDebugHooks {
                 let word = String(rest[..<colon]).lowercased()
                 let prefix = URL(fileURLWithPath: String(rest[rest.index(after: colon)...]))
                 guard let target = NSApp.windows.first(where: {
-                    $0.isVisible && ("\(type(of: $0))|\($0.title)").lowercased().contains(word)
+                    $0.isVisible && ("\(type(of: $0))|\($0.title)|\($0.identifier?.rawValue ?? "")").lowercased().contains(word)
                 }) else { return writeState("snapwin: no visible window matches \(word)") }
                 snapshot(target, to: prefix)
                 return

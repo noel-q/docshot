@@ -22,13 +22,14 @@ struct CustomShortcutRecorder: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Quiet.Space.s4) {
             Text(title)
-                .font(.headline)
+                .font(Quiet.Font.headline)
+                .foregroundStyle(Quiet.ink)
 
             Text("Press one key with one to three modifiers.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+                .font(Quiet.Font.nativeBody)
+                .foregroundStyle(Quiet.inkMuted)
 
             ShortcutCaptureField(
                 display: captured?.display ?? currentDisplay,
@@ -45,25 +46,30 @@ struct CustomShortcutRecorder: View {
             .frame(height: 44)
 
             if let validationMessage {
-                Text(validationMessage)
-                    .font(.footnote)
-                    .foregroundColor(.red)
+                Label(validationMessage, systemImage: "exclamationmark.triangle")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.danger)
             }
 
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
-                Button("Use Shortcut") {
+                    .keyboardShortcut(.cancelAction)
+                Button {
                     guard let captured else { return }
                     onSave(captured.keyCode, captured.modifiers, captured.keyDisplay)
                     dismiss()
+                } label: {
+                    AccentButtonLabel("Use shortcut")
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.primaryAccent)
                 .disabled(captured == nil)
             }
         }
-        .padding(20)
+        .padding(Quiet.Space.s6)
         .frame(width: 440)
+        .background(Quiet.canvas)
     }
 }
 
@@ -94,6 +100,10 @@ private final class ShortcutCaptureNSView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    private var isDark: Bool {
+        effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    }
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         DispatchQueue.main.async { [weak self] in
@@ -103,12 +113,13 @@ private final class ShortcutCaptureNSView: NSView {
     }
 
     override func draw(_ dirtyRect: NSRect) {
-        NSColor.controlBackgroundColor.setFill()
-        NSBezierPath(roundedRect: bounds, xRadius: 8, yRadius: 8).fill()
+        // Quiet: a raised field (`surface-raised`, `radius-sm`) with the chord in `ink`.
+        NSColor(quietRGBA: QuietTokens.surfaceRaised.value(isDark: isDark)).setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: QuietTokens.radiusSm, yRadius: QuietTokens.radiusSm).fill()
 
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedSystemFont(ofSize: 16, weight: .medium),
-            .foregroundColor: NSColor.labelColor
+            .font: NSFont.monospacedSystemFont(ofSize: 17, weight: .medium),
+            .foregroundColor: NSColor(quietRGBA: QuietTokens.ink.value(isDark: isDark))
         ]
         let size = (display as NSString).size(withAttributes: attributes)
         (display as NSString).draw(

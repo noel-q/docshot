@@ -94,6 +94,7 @@
     "Sources/DocShot/Services/WindowDiscoveryService.swift",
     "Sources/DocShot/Settings/CustomShortcutRecorder.swift",
     "Sources/DocShot/Settings/SettingsView.swift",
+    "Sources/DocShot/Settings/SettingsComponents.swift",
     "Sources/DocShot/Clipboard/ClipboardWindowController.swift",
     "Sources/DocShot/Clipboard/ClipboardHistoryView.swift",
     "Sources/DocShot/Clipboard/ClipboardSettingsSection.swift",
@@ -105,8 +106,8 @@
     {
       "suite": "Settings Layout Tests",
       "file": "Tests/DocShotTests/SettingsLayoutTests.swift",
-      "testCount": 1,
-      "reason": "SettingsView is app-only: the hostless Xcode test bundle links no app binary, so the view has nothing to link against there."
+      "testCount": 2,
+      "reason": "The Settings tab views are app-only: the hostless Xcode test bundle links no app binary, so the views have nothing to link against there."
     },
     {
       "suite": "CaptureCoordinator Escape Lifecycle Tests",

@@ -7,6 +7,7 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-24: Settings restyled in Quiet (pilot step 3, first screen): toolbar tabs with eased resizing, grouped panels, switches, exact-count Clear, clipboard window keys and the open-history shortcut in Settings. Fable review fixed; swift test 355, xcodebuild test 355, ClipboardKit 76. Verified (agent snapshots and frame traces) and user-reported ("Looks right").
 - 2026-11-24: Quiet restyle of the clipboard window (pilot step 1) committed as 9a1120d on feature/quiet-clipboard; Fable review fixed; swift test 352, xcodebuild test 353, ClipboardKit 76; Noel: "Looks good", clicks work. Verified (agent snapshots) and user-reported.
 - 2026-11-24: C3 paste, search, keys, pins, editable limits and excluded apps committed as 9ef04d1 on feature/c3-paste. Fable review, re-review and a final check; all fixes in. swift test 339, xcodebuild test 340, ClipboardKit 76; parity OK. Device: paste verified in TextEdit (agent, screenshot) and user-reported in Chrome, the Claude app and Terminal; pin, delete, Escape agent-run via a DEBUG-only hook. Verified.
 - 2026-11-24: C2 clipboard window committed as b89d700 on feature/c2-clipboard-window, local only. Fable review and re-review: seven defects found and fixed. swift test 316, xcodebuild test 317, ClipboardKit 69 pass with the hotkey suites skipped; parity audit OK. Device checks: recording, skips, idle CPU, relaunch and off agent-run in the app (verified by reading the store); window, copy-back, Escape, menu and Clear user-reported. Pause tests only. Noel likes the behaviour, not the look.
@@ -32,7 +33,7 @@
 - None.
 
 ## Next action
-- Quiet pilot step 2 built on feature/quiet-tokens (from 3f86759), uncommitted: themes Ember (default), Tide, Slate, Moss on Quiet neutrals; Fable review fixed; tests pass; agent saw all five windows in both modes. Next: Noel looks; then ask to commit. Then pilot step 3 (restyle Settings, thumbnail, editors, onboarding, permission one at a time). Do not merge or push without Noel's say.
+- Quiet pilot step 3: Settings restyled and committed on feature/quiet-settings (from bd2dd88), local only; Noel: "Looks right". Next: the preview thumbnail, permission window, onboarding, image editor, video editor, one at a time with a short plan each; after that C4. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

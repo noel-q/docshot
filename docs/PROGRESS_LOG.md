@@ -4,6 +4,32 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Quiet pilot step 2 committed as bd2dd88 with Noel's yes ("Looks right").
+- Quiet pilot step 3, Settings (seven answers agreed; Settings stays its own window, the C4
+  move into the DocShot window dropped) built on `feature/quiet-settings`, uncommitted:
+  toolbar tabs General, Clipboard, Capture, Shortcuts (window title and height follow the
+  tab, capped at 640 pt of content so it fits a 13-inch display, then scrolls); groups of
+  rows in Quiet panels; switches tinted with the accent, buttons and segmented controls
+  neutral; Clear confirms with the exact count in Settings, the clipboard window and the
+  menu bar; restyled shortcut recorder. Checked by the agent from app-rendered snapshots of
+  every tab in dark and light on scratch data, and the window title and size per tab.
+  Fable review: three defects (the Clipboard tab taller than a 13-inch display with no
+  scrolling; the layout test blind to it; garbled recorder titles) and six smaller points,
+  all fixed; mutation check on the height cap done. Final: swift test 355, xcodebuild test
+  355, ClipboardKit 76, parity OK, Release has no debug symbols.
+- Noel: the Settings tab switch looked "like a PowerPoint", and the clipboard window's keys
+  were missing from Settings. A DEBUG trace of the window height per frame showed the cause:
+  NSTabViewController cross-faded for about 0.6 s and then jumped to the new height in one
+  frame (tabs measured their height only after drawing). Replaced with a custom Settings
+  window controller: preferences toolbar, content swapped at once, the window easing to
+  each tab's height over dur-base (ease-out, Reduce Motion respected), tabs sized up front,
+  in-tab changes eased too. Re-traced: every switch eases over about 14 frames, no jumps.
+  Added an "In the DocShot window" group to Shortcuts listing the seven window keys, with a
+  test that each listed key does what it says. swift test 355, xcodebuild test 355, ClipboardKit 76.
+- Noel: Settings did not say how to open the clipboard or let it be configured where he
+  looked. The shortcut was there but named "Open DocShot window"; renamed "Open clipboard
+  history" (menu bar item "Open Clipboard History"), and the Clipboard tab now starts with
+  that row: the shortcut, Change... and Reset, shown even with history off.
 - Viewfinder icon committed as 3f86759 with Noel's yes.
 - Quiet pilot step 2 (plan section 3, five points agreed; Noel chose Tide for Graphite and
   Ember as default) built on `feature/quiet-tokens`, uncommitted: themes Ember (default),

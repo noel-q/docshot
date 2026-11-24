@@ -85,6 +85,7 @@
 		A00000122C50000000000001 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000122C50000000000001 /* CanvasView.swift */; };
 		A00000132C50000000000001 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000132C50000000000001 /* ImageRenderer.swift */; };
 		A00000142C50000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000142C50000000000001 /* SettingsView.swift */; };
+		D5000002D5000000000000A1 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5000001D5000000000000A1 /* SettingsComponents.swift */; };
 		A00000152C50000000000001 /* DisplayGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000152C50000000000001 /* DisplayGeometryTests.swift */; };
 		A00000162C50000000000001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000162C50000000000001 /* AnnotationModelTests.swift */; };
 		C0500004C0500000000000A1 /* GlobalShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500005C0500000000000A1 /* GlobalShortcutTests.swift */; };
@@ -238,6 +239,7 @@
 		B00000122C50000000000001 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CanvasView.swift; path = Sources/DocShot/Editor/CanvasView.swift; sourceTree = "<group>"; };
 		B00000132C50000000000001 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageRenderer.swift; path = Sources/DocShot/Editor/ImageRenderer.swift; sourceTree = "<group>"; };
 		B00000142C50000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Sources/DocShot/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		D5000001D5000000000000A1 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsComponents.swift; path = Sources/DocShot/Settings/SettingsComponents.swift; sourceTree = "<group>"; };
 		B00000152C50000000000001 /* DisplayGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayGeometryTests.swift; path = Tests/DocShotTests/DisplayGeometryTests.swift; sourceTree = "<group>"; };
 		B00000162C50000000000001 /* AnnotationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationModelTests.swift; path = Tests/DocShotTests/AnnotationModelTests.swift; sourceTree = "<group>"; };
 		C0500005C0500000000000A1 /* GlobalShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalShortcutTests.swift; path = Tests/DocShotTests/GlobalShortcutTests.swift; sourceTree = "<group>"; };
@@ -439,6 +441,7 @@
 				B00000132C50000000000001 /* ImageRenderer.swift */,
 				B00000252C50000000000001 /* ExportSizeControl.swift */,
 				B00000142C50000000000001 /* SettingsView.swift */,
+				D5000001D5000000000000A1 /* SettingsComponents.swift */,
 				B00000262C50000000000001 /* CustomShortcutRecorder.swift */,
 				B00000182C50000000000001 /* PermissionWindowController.swift */,
 				B000001B2C50000000000001 /* OnboardingView.swift */,
@@ -678,6 +681,7 @@
 				A00000132C50000000000001 /* ImageRenderer.swift in Sources */,
 				A00000252C50000000000001 /* ExportSizeControl.swift in Sources */,
 				A00000142C50000000000001 /* SettingsView.swift in Sources */,
+				D5000002D5000000000000A1 /* SettingsComponents.swift in Sources */,
 				A00000262C50000000000001 /* CustomShortcutRecorder.swift in Sources */,
 				A00000182C50000000000001 /* PermissionWindowController.swift in Sources */,
 				A000001B2C50000000000001 /* OnboardingView.swift in Sources */,

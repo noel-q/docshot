@@ -90,13 +90,15 @@ public enum DesignTokens {
 struct AccentButtonLabel: View {
     let title: String
     @Environment(\.controlActiveState) private var activeState
+    @Environment(\.isEnabled) private var isEnabled
 
     init(_ title: String) {
         self.title = title
     }
 
     var body: some View {
-        if activeState == .inactive {
+        // Inactive window or disabled button: macOS draws a grey fill, so the system label.
+        if activeState == .inactive || !isEnabled {
             Text(title)
         } else {
             Text(title).foregroundStyle(DesignTokens.onAccent)

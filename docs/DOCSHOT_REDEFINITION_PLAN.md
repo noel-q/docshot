@@ -43,7 +43,7 @@ The app stays a menu bar app (`LSUIElement`). The window is an ordinary window, 
 
 **C2 plan (agreed 23 November 2026).**
 1. Clicking an item copies it back to the clipboard and closes the window; the user presses Cmd+V. Keyboard navigation, Return to paste and search arrive in C3.
-2. Settings stays its own window in C2 and gains a "Clipboard history" section; moving Settings into the DocShot window waits for C4, when Captures arrives.
+2. Settings stays its own window in C2 and gains a "Clipboard history" section; moving Settings into the DocShot window waits for C4, when Captures arrives. (Superseded 24 November 2026: Settings stays its own window; see Quiet pilot step 3.)
 3. The limits and excluded apps are shown read-only in C2; editing them arrives in C3.
 4. Control+Option+Command+V is registered always. With history off, the window says so and offers to turn it on.
 5. A copy that offers only TIFF is converted to PNG before saving; PNG is used as is.
@@ -78,6 +78,15 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 3. `DesignTokens` keeps its names, so call sites do not change. Fixed: the amber maker's mark, the dark tile behind the mark and folder path, video backdrops; annotation colours, captures and exports never change.
 4. Colours only: layout, type and spacing of Settings, the thumbnail, editors, onboarding and the permission window wait for their own restyle (pilot step 3).
 5. Checks: contrast tests for every theme in both modes; DEBUG-hook snapshots of Settings, thumbnail, image editor, onboarding and permission window in dark and light; live theme switching; Noel looks at the end.
+
+**Quiet pilot step 3, Settings (agreed 24 November 2026).**
+1. Settings stays its own window for good (Quiet and Mac convention); the move of Settings into the DocShot window planned for C4 is dropped. The main window keeps Clipboard and, from C4, Captures.
+2. Toolbar tabs replace the long scroll: General (appearance, launch at login, save folder, screen recording permission, guide), Clipboard (today's clipboard section), Capture (screenshot cursor, recording options, frame rate), Shortcuts.
+3. Checkboxes become switches tinted with the accent; each row is a title and at most one line of `ink-muted`; related rows share one panel (`surface`, `radius-md`, inset `line` dividers).
+4. The big "DocShot Settings" header and mark go (the window title says it); "Guide..." becomes an "Open guide" row in General.
+5. Clearing history confirms with the exact count ("Clear 214 items? This can't be undone.") and a red Clear button.
+6. Sentence case and plain words ("Clipboard history", "Shortcuts").
+7. Restyle only: every setting behaves as now. The shortcut recorder sheet is restyled too. Checks: app-rendered snapshots of each tab in dark and light on scratch data, Fable review, Noel's look.
 
 ## 4. Architecture
 
@@ -322,7 +331,7 @@ The rule: three global shortcuts, no more. Everything else is a menu item or a k
 |---|---|---|
 | Screenshot | Control+Option+Command+S | Cmd+Shift+6 |
 | Record (start or stop) | Control+Option+Command+R | Cmd+Shift+8 |
-| Open DocShot window | Control+Option+Command+V | new; registered only once the window exists (C2) |
+| Open clipboard history (the DocShot window; renamed 24 November 2026) | Control+Option+Command+V | new; registered only once the window exists (C2) |
 
 Control, Option and Command sit together at the bottom left, so each is a one-hand chord, and almost nothing else uses that family. The Cmd+Shift+number row was rejected because it collides with list formatting; Control+Option+letter because window managers such as Rectangle use it.
 

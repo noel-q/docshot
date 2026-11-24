@@ -49,11 +49,11 @@ struct ClipboardHistoryView: View {
         .tint(Quiet.accent)
         .onChange(of: model.focusRequest) { _, _ in searchFocused = true }
         .onAppear { searchFocused = true }
-        .confirmationDialog("Clear clipboard history?", isPresented: $confirmingClear) {
+        .confirmationDialog(ClipboardSettings.clearQuestion(controller.clearCount), isPresented: $confirmingClear) {
             Button("Clear", role: .destructive) { controller.clear() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Keeps: \(controller.clearKeep.title.lowercased()). This cannot be undone.")
+            Text("Keeps \(controller.clearKeep.title.lowercased()). \(ClipboardSettings.clearWarning)")
         }
     }
 
@@ -80,13 +80,15 @@ struct ClipboardHistoryView: View {
             .labelsHidden()
             .controlSize(.small)
             .fixedSize()
+            // Quiet SegmentedControl: a neutral thumb, not the accent the window is tinted with.
+            .tint(Quiet.inkMuted)
             .accessibilityLabel("Show")
             Menu {
                 Button(controller.isPaused ? "Resume history" : "Pause history") {
                     controller.setPaused(!controller.isPaused)
                 }
                 Button("Clear history…") { confirmingClear = true }
-                    .disabled(controller.items.isEmpty)
+                    .disabled(controller.clearCount == 0)
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 13, weight: .medium))

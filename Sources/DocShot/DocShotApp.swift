@@ -42,7 +42,7 @@ struct DocShotApp: App {
 
             Divider()
 
-            Button("Open DocShot Window (\(hotkeyService.binding(for: .openWindow).shortcutDisplay))") {
+            Button("Open Clipboard History (\(hotkeyService.binding(for: .openWindow).shortcutDisplay))") {
                 ClipboardWindowController.shared.show()
             }
 
@@ -53,7 +53,7 @@ struct DocShotApp: App {
                 Button("Clear Clipboard History...") {
                     AppDelegate.confirmClearClipboardHistory()
                 }
-                .disabled(clipboardHistory.items.isEmpty)
+                .disabled(clipboardHistory.clearCount == 0)
             }
 
             Divider()
@@ -126,8 +126,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let controller = ClipboardHistoryController.shared
         NSApp.activate()
         let alert = NSAlert()
-        alert.messageText = "Clear clipboard history?"
-        alert.informativeText = "Keeps: \(controller.clearKeep.title.lowercased()). This cannot be undone."
+        alert.messageText = ClipboardSettings.clearQuestion(controller.clearCount)
+        alert.informativeText = "Keeps \(controller.clearKeep.title.lowercased()). \(ClipboardSettings.clearWarning)"
         alert.addButton(withTitle: "Clear")
         alert.addButton(withTitle: "Cancel")
         alert.buttons.first?.hasDestructiveAction = true
@@ -177,18 +177,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 500),
-            styleMask: [.titled, .closable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "DocShot Settings"
-        // The hosting view sizes the window to the settings content, so centre afterwards.
-        window.contentView = NSHostingView(rootView: SettingsView())
-        window.center()
-        window.isReleasedWhenClosed = false
-
+        // Toolbar tabs in Quiet (pilot step 3); the window takes each tab's height.
+        let window = SettingsWindowFactory.make()
         self.settingsWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

@@ -233,6 +233,11 @@ final class ClipboardHistoryController: ObservableObject {
 
     // MARK: - Actions
 
+    /// How many items Clear would remove now, for the confirmation.
+    var clearCount: Int {
+        RetentionPolicy.itemsToRemoveOnClear(from: items, keep: clearKeep).count
+    }
+
     /// Clears history, keeping what the Clear setting says.
     func clear() {
         enqueue { store in

@@ -14,7 +14,7 @@ public enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .screenshot: return "Screenshot"
         case .record: return "Record (start or stop)"
-        case .openWindow: return "Open DocShot window"
+        case .openWindow: return "Open clipboard history"
         }
     }
 

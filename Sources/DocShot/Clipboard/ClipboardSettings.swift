@@ -109,6 +109,15 @@ struct ClipboardSettings: @unchecked Sendable {
     }
 }
 
+extension ClipboardSettings {
+    /// The confirmation for Clear, with the exact count (Quiet `patterns.md`, destructive actions).
+    static func clearQuestion(_ count: Int) -> String {
+        "Clear \(count.formatted()) item\(count == 1 ? "" : "s")?"
+    }
+
+    static let clearWarning = "This can't be undone."
+}
+
 extension ClearKeep {
     /// Label for Settings and the Clear confirmation.
     var title: String {

@@ -7,7 +7,8 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
-- 2026-11-24: C2 clipboard window built on feature/c2-clipboard-window, uncommitted. Fable review and re-review: seven defects found and fixed. swift test 316, xcodebuild test 317, ClipboardKit 69 pass with the hotkey suites skipped; parity audit OK. Device checks: recording, skips, idle CPU, relaunch and off agent-run in the app (verified by reading the store); window, copy-back, Escape, menu and Clear user-reported. Pause tests only. Noel likes the behaviour, not the look.
+- 2026-11-24: C3 paste, search, keys, pins, editable limits and excluded apps built on feature/c3-paste. Fable review, re-review and a final check; all fixes in. swift test 339, xcodebuild test 340, ClipboardKit 76; parity OK. Device: paste verified in TextEdit (agent, screenshot) and user-reported in Chrome, the Claude app and Terminal; pin, delete, Escape agent-run via a DEBUG-only hook. Verified.
+- 2026-11-24: C2 clipboard window committed as b89d700 on feature/c2-clipboard-window, local only. Fable review and re-review: seven defects found and fixed. swift test 316, xcodebuild test 317, ClipboardKit 69 pass with the hotkey suites skipped; parity audit OK. Device checks: recording, skips, idle CPU, relaunch and off agent-run in the app (verified by reading the store); window, copy-back, Escape, menu and Clear user-reported. Pause tests only. Noel likes the behaviour, not the look.
 - 2026-11-23: C1 ClipboardKit core committed as ff490d2 on feature/c1-clipboardkit, local only. Verified.
 - 2026-11-17: Plan approved; all §10 decisions settled (plan §§2, 4.2, 4.5, 5, 6, 7, 10). Build lane: Opus 5.5 High builds, Fable reviews. Verified in session.
 - 2026-11-17: Handoff files, plan and progress log committed as f3be4d4, local only. Verified.
@@ -30,7 +31,7 @@
 - None.
 
 ## Next action
-- Commit C2 with Noel's yes. Then: Noel wants one design language and UI/UX system across his products before more visual work; C2's window look waits for it. C3 plan (paste into the previous app, pinning, search, keyboard) can follow. Do not merge or push without Noel's say.
+- C3 done on feature/c3-paste, uncommitted: device checks pass (TextEdit, Chrome, the Claude app and Terminal paste; pin, delete, Escape), tests pass. Next: commit C3 with Noel's yes, then the Quiet restyle of the clipboard window (brief from the design session: ~/Documents/quiet-design/docs/MIGRATION_PLAN.md, "DocShot pilot"). Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

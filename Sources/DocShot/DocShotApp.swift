@@ -96,6 +96,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Clipboard history does nothing unless the user switched it on (plan section 2.3).
         MainActor.assumeIsolated {
             ClipboardHistoryController.shared.start()
+#if DEBUG
+            ClipboardDebugHooks.install()
+#endif
         }
 
         // Show onboarding guide on first launch

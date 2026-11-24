@@ -262,6 +262,37 @@ anything Noel copied himself were not printed.
 
 End state: history off, store folder empty, the C2 debug build left running.
 
+## C3 Paste, Search, Keys, Pins
+
+Debug build from `build/c3-dd` (branch `feature/c3-paste`, uncommitted), 24 November 2026,
+macOS 26.5.2, Noel's real `com.docshot.app` preferences and clipboard, with his go. The agent
+put test items ("DocShot C3 test: ...") on the clipboard, read the store, and drove the
+window through a DEBUG-only hook (`ClipboardDebugHooks`, a distributed notification), checking
+results by screenshot of TextEdit. Screen control may not send keystrokes into Chrome or
+Terminal and cannot see DocShot, so those pastes were Noel's.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| First Return without Accessibility | User-reported pass (24 Nov 2026) | Copies, closes, TextEdit returns, macOS shows the Accessibility request once; Cmd+V pastes. |
+| Search ignores accents | User-reported pass (24 Nov 2026): "cafe" found "café menu" | Matches as you type. |
+| Paste into TextEdit | User-reported pass; agent-run pass three times, seen by screenshot (24 Nov 2026) | Return, a click or the hook's choose pastes by itself. |
+| Paste into a browser field (Chrome) | User-reported pass on the final build (24 Nov 2026) | Pastes by itself. |
+| Paste into the Claude app (Electron) | Failed on the first build (Cmd+V lost); user-reported pass after the fix (24 Nov 2026) | Pastes by itself. Fix: Cmd+V carries the left-Command device bit and is posted at the session tap. |
+| Paste at a Terminal prompt | User-reported pass (24 Nov 2026) | Text at the prompt, not run. |
+| Pin, delete, Escape | Agent-run pass through the hook, store read (24 Nov 2026); the key bindings themselves are covered by unit tests | Pinned item in its own group at the top; deleted item gone; first Escape clears the search, second closes. |
+| Accessibility kept across rebuilds | Agent-run (24 Nov 2026) | The grant stayed with the debug build after rebuilds signed by the same team. |
+| Limits and excluded-app editing in Settings | Not run in the app; covered by tests | Pickers apply at once, with a confirmation before removals; list edits take effect. |
+| Clean-up | Done (24 Nov 2026) | Test items deleted with secure delete, images removed, history switched off. DocShot stays in Accessibility for the debug build until Noel removes it. |
+
+Incidents during the agent's own tests (24 Nov 2026), recorded so they are not repeated:
+two test pastes went to the wrong app. One went to Chrome, which was in front when the
+hook opened the window; one went to WhatsApp, which became active while the window was
+open and so became the paste target under decision 9. Only Cmd+V was sent, never Return.
+The hook now pastes only into the app named in `open:<bundle id>`, refuses if the target
+changed or is not in front, and the agent runs paste tests only while Noel is away from
+the Mac. The Chrome test tab used first was under the Claude in Chrome extension and
+received no outside keystrokes at all, so it could not test paste.
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

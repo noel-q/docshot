@@ -16,6 +16,17 @@ final class ClipboardHistoryController: ObservableObject {
     @Published private(set) var accessBlocked = false
     /// The last problem worth showing in Settings, such as a store that would not open.
     @Published private(set) var problem: String?
+    /// A short message for the window, such as a refused pin. Cleared by the next action.
+    @Published private(set) var notice: String?
+    /// The limit choices in Settings (C3 plan, decision 6); nil items means no limit.
+    @Published private(set) var maxItems: Int? = RetentionLimits.defaultMaxItems
+    @Published private(set) var maxAgeDays = 30
+    @Published private(set) var maxMegabytes = 500
+    /// Apps whose copies are never recorded (C3 plan, decision 7).
+    @Published private(set) var excludedApps: [String] = []
+    /// Paste into the previous app when allowed; and whether Accessibility allows it.
+    @Published private(set) var pasteDirectly = true
+    @Published private(set) var pasteAllowed = false
 
     /// Polling interval (plan 4.3: about twice a second).
     static let pollInterval: TimeInterval = 0.5
@@ -27,7 +38,9 @@ final class ClipboardHistoryController: ObservableObject {
     private let storeDirectory: URL?
     /// Nil means the real front app; tests pass a fixed one.
     private let frontmostApp: (() -> String?)?
-    private let rules = RecordingRules()
+    /// Whether Accessibility is granted; tests pass a fixed answer.
+    private let accessibilityAllowed: () -> Bool
+    private var rules = RecordingRules()
     private var store: ClipboardStore?
     private var pollTimer: Timer?
     private var retentionTimer: Timer?
@@ -41,18 +54,32 @@ final class ClipboardHistoryController: ObservableObject {
         settings: ClipboardSettings = ClipboardSettings(),
         pasteboard: NSPasteboard = .general,
         storeDirectory: URL? = nil,
-        frontmostApp: (() -> String?)? = nil
+        frontmostApp: (() -> String?)? = nil,
+        accessibilityAllowed: @escaping () -> Bool = { AccessibilityAccess.isAllowed }
     ) {
         self.settings = settings
         self.pasteboard = pasteboard
         self.storeDirectory = storeDirectory
         self.frontmostApp = frontmostApp
+        self.accessibilityAllowed = accessibilityAllowed
+        loadSettings()
+    }
+
+    private func loadSettings() {
+        clearKeep = settings.clearKeep
+        isPaused = settings.paused
+        maxItems = settings.maxItems
+        maxAgeDays = settings.maxAgeDays
+        maxMegabytes = settings.maxMegabytes
+        excludedApps = settings.excludedApps
+        rules.excludedBundleIDs = Set(excludedApps)
+        pasteDirectly = settings.pasteDirectly
     }
 
     /// Called once at launch.
     func start() {
-        clearKeep = settings.clearKeep
-        isPaused = settings.paused
+        loadSettings()
+        refreshPasteAccess()
         if settings.historyEnabled {
             turnOn()
         }
@@ -84,6 +111,98 @@ final class ClipboardHistoryController: ObservableObject {
     func setClearKeep(_ keep: ClearKeep) {
         settings.clearKeep = keep
         clearKeep = keep
+    }
+
+    // MARK: - Limits (C3 plan, decision 6)
+
+    var limits: RetentionLimits { settings.limits }
+
+    /// The limits a choice would give, without saving it.
+    func limits(maxItems: Int?, maxAgeDays: Int, maxMegabytes: Int) -> RetentionLimits {
+        RetentionLimits(
+            maxItems: maxItems ?? RetentionLimits.noItemLimit,
+            maxAge: TimeInterval(maxAgeDays) * 86_400,
+            maxBytes: maxMegabytes * 1024 * 1024
+        )
+    }
+
+    /// How many items new limits would remove now, so Settings can ask first.
+    func removalCount(for newLimits: RetentionLimits) -> Int {
+        RetentionPolicy.itemsToRemove(from: items, limits: newLimits, now: Date()).count
+    }
+
+    /// Saves the limits and applies them at once. If the store cannot apply them, the previous
+    /// limits are put back, so Settings never shows limits the store is not using.
+    func setLimits(maxItems: Int?, maxAgeDays: Int, maxMegabytes: Int) {
+        let previous = (settings.maxItems, settings.maxAgeDays, settings.maxMegabytes)
+        settings.maxItems = maxItems
+        settings.maxAgeDays = maxAgeDays
+        settings.maxMegabytes = maxMegabytes
+        self.maxItems = settings.maxItems
+        self.maxAgeDays = settings.maxAgeDays
+        self.maxMegabytes = settings.maxMegabytes
+        let newLimits = settings.limits
+        enqueue { store in
+            do {
+                try await store.setLimits(newLimits)
+            } catch {
+                self.settings.maxItems = previous.0
+                self.settings.maxAgeDays = previous.1
+                self.settings.maxMegabytes = previous.2
+                self.maxItems = previous.0
+                self.maxAgeDays = previous.1
+                self.maxMegabytes = previous.2
+                throw error
+            }
+        }
+    }
+
+    // MARK: - Excluded apps (C3 plan, decision 7)
+
+    func addExcludedApp(_ bundleID: String) {
+        guard !excludedApps.contains(bundleID) else { return }
+        saveExcludedApps(excludedApps + [bundleID])
+    }
+
+    func removeExcludedApp(_ bundleID: String) {
+        saveExcludedApps(excludedApps.filter { $0 != bundleID })
+    }
+
+    func restoreDefaultExcludedApps() {
+        settings.restoreDefaultExcludedApps()
+        excludedApps = settings.excludedApps
+        rules.excludedBundleIDs = Set(excludedApps)
+    }
+
+    private func saveExcludedApps(_ apps: [String]) {
+        settings.excludedApps = apps
+        excludedApps = apps
+        rules.excludedBundleIDs = Set(apps)
+    }
+
+    // MARK: - Paste (C3 plan, decisions 1 and 2)
+
+    func setPasteDirectly(_ on: Bool) {
+        settings.pasteDirectly = on
+        pasteDirectly = on
+    }
+
+    func refreshPasteAccess() {
+        pasteAllowed = accessibilityAllowed()
+    }
+
+    /// What choosing an item does now. Checks Accessibility afresh.
+    func pasteOutcome(hasPreviousApp: Bool) -> PasteOutcome {
+        refreshPasteAccess()
+        return PastePlanner.outcome(
+            pasteDirectly: pasteDirectly, accessAllowed: pasteAllowed,
+            hasPreviousApp: hasPreviousApp, accessRequestedBefore: settings.accessRequested
+        )
+    }
+
+    /// The system's Accessibility request has been shown; it is not shown again from the window.
+    func markAccessRequested() {
+        settings.accessRequested = true
     }
 
     func refreshAccessState() {
@@ -127,6 +246,40 @@ final class ClipboardHistoryController: ObservableObject {
         }
     }
 
+    /// Pins or unpins. A refused pin leaves a notice for the window.
+    func togglePin(_ item: ClipItem) {
+        notice = nil
+        enqueue { store in
+            let outcome = item.pinned ? try await store.unpin(item.id) : try await store.pin(item.id)
+            if outcome == .pinRefused {
+                self.notice = "Not pinned: pinned items alone would go over the storage limit."
+            }
+        }
+    }
+
+    func clearNotice() {
+        notice = nil
+    }
+
+    func delete(_ item: ClipItem) {
+        notice = nil
+        enqueue { store in
+            try await store.delete(item.id)
+        }
+    }
+
+    /// Ids of the items matching `query`, most recently used first (C3 plan, decision 3).
+    func search(_ query: String) async -> [UUID] {
+        guard let store else { return [] }
+        return (try? await store.search(query)) ?? []
+    }
+
+    /// Frees the store's search index (the window closed).
+    func releaseSearchIndex() {
+        guard let store else { return }
+        Task { await store.releaseSearchIndex() }
+    }
+
     func imageFileURL(for item: ClipItem) async -> URL? {
         guard let store else { return nil }
         return try? await store.imageFileURL(for: item.id)
@@ -140,7 +293,7 @@ final class ClipboardHistoryController: ObservableObject {
         if store == nil {
             do {
                 let directory = try storeDirectory ?? ClipboardStore.defaultDirectory()
-                store = try ClipboardStore(directory: directory)
+                store = try ClipboardStore(directory: directory, limits: settings.limits)
                 problem = nil
             } catch {
                 store = nil

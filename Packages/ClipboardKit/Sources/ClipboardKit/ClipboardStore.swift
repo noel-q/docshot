@@ -31,6 +31,8 @@ public actor ClipboardStore {
     private let db: SQLiteConnection
     private var state: HistoryState
     public private(set) var limits: RetentionLimits
+    /// Folded searchable text by item, built on the first search and kept up to date after.
+    private var searchIndex: [UUID: String]?
 
     /// Opens or creates the store in `directory`. On open it removes only rows this version
     /// cannot read (with their image) and image files no row refers to (left behind by a crash
@@ -115,6 +117,41 @@ public actor ClipboardStore {
         guard try statement.step(), let name = statement.text(0) else { return nil }
         let url = imagesDirectory.appendingPathComponent(name)
         return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
+    // MARK: - Search
+
+    /// Ids of the items matching every word of `query`, most recently used first; every item
+    /// for a blank query. Rules in `SearchText`.
+    public func search(_ query: String) throws -> [UUID] {
+        let terms = SearchText.terms(query)
+        guard !terms.isEmpty else { return state.items.map(\.id) }
+        let index = try loadSearchIndex()
+        return state.items.compactMap { item in
+            guard let text = index[item.id], SearchText.matches(text, terms: terms) else { return nil }
+            return item.id
+        }
+    }
+
+    /// Frees the search index; the next search rebuilds it. The app calls this when the window
+    /// closes, so a large history's text is not held in memory twice between searches.
+    public func releaseSearchIndex() {
+        searchIndex = nil
+    }
+
+    private func loadSearchIndex() throws -> [UUID: String] {
+        if let searchIndex { return searchIndex }
+        var index: [UUID: String] = [:]
+        let statement = try db.prepare("SELECT id, payload_text FROM items")
+        while try statement.step() {
+            guard let id = statement.text(0).flatMap(UUID.init(uuidString:)),
+                  let item = state.item(id) else { continue }
+            index[id] = SearchText.fold(
+                SearchText.searchable(kind: item.kind, payloadText: statement.text(1), preview: item.preview)
+            )
+        }
+        searchIndex = index
+        return index
     }
 
     // MARK: - Changes
@@ -202,6 +239,18 @@ public actor ClipboardStore {
 
         state = result.state
         filesToDelete.forEach { try? FileManager.default.removeItem(at: $0) }
+        if searchIndex != nil {
+            for effect in result.effects {
+                switch effect {
+                case .insert(let item):
+                    searchIndex?[item.id] = newContent.map { SearchText.fold(SearchText.searchable($0)) }
+                case .remove(let id):
+                    searchIndex?[id] = nil
+                case .update:
+                    break
+                }
+            }
+        }
         if result.effects.contains(where: { if case .remove = $0 { return true } else { return false } }) {
             // Fold the write-ahead log back into the database and empty it, so removed clips
             // do not linger there. Best effort: a busy reader only delays it.

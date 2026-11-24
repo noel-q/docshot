@@ -11,6 +11,13 @@
 		C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000001C2000000000000A1 /* ClipboardSettings.swift */; };
 		C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
 		C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
+		C3000002C3000000000000A1 /* PasteAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000001C3000000000000A1 /* PasteAction.swift */; };
+		C3000003C3000000000000A1 /* PasteAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000001C3000000000000A1 /* PasteAction.swift */; };
+		C3000005C3000000000000A1 /* ClipboardListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000004C3000000000000A1 /* ClipboardListModel.swift */; };
+		C3000006C3000000000000A1 /* ClipboardListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000004C3000000000000A1 /* ClipboardListModel.swift */; };
+		C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */; };
+		C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000007C3000000000000A1 /* PasteActionTests.swift */; };
+		C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000009C3000000000000A1 /* ClipboardListModelTests.swift */; };
 		C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
 		C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
 		C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010C2000000000000A1 /* ClipboardWindowController.swift */; };
@@ -306,6 +313,11 @@
 		CA0000232C50000000000001 /* VideoProjectExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportTests.swift; path = Tests/DocShotTests/VideoProjectExportTests.swift; sourceTree = "<group>"; };
 		C2000001C2000000000000A1 /* ClipboardSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettings.swift; path = Sources/DocShot/Clipboard/ClipboardSettings.swift; sourceTree = "<group>"; };
 		C2000004C2000000000000A1 /* PasteboardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteboardReader.swift; path = Sources/DocShot/Clipboard/PasteboardReader.swift; sourceTree = "<group>"; };
+		C3000001C3000000000000A1 /* PasteAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteAction.swift; path = Sources/DocShot/Clipboard/PasteAction.swift; sourceTree = "<group>"; };
+		C3000004C3000000000000A1 /* ClipboardListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardListModel.swift; path = Sources/DocShot/Clipboard/ClipboardListModel.swift; sourceTree = "<group>"; };
+		C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardDebugHooks.swift; path = Sources/DocShot/Clipboard/ClipboardDebugHooks.swift; sourceTree = "<group>"; };
+		C3000007C3000000000000A1 /* PasteActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteActionTests.swift; path = Tests/DocShotTests/PasteActionTests.swift; sourceTree = "<group>"; };
+		C3000009C3000000000000A1 /* ClipboardListModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardListModelTests.swift; path = Tests/DocShotTests/ClipboardListModelTests.swift; sourceTree = "<group>"; };
 		C2000007C2000000000000A1 /* ClipboardHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryController.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryController.swift; sourceTree = "<group>"; };
 		C2000010C2000000000000A1 /* ClipboardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardWindowController.swift; path = Sources/DocShot/Clipboard/ClipboardWindowController.swift; sourceTree = "<group>"; };
 		C2000012C2000000000000A1 /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryView.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryView.swift; sourceTree = "<group>"; };
@@ -369,6 +381,9 @@
 				C0700003C0700000000000A1 /* ColorTheme.swift */,
 				C2000001C2000000000000A1 /* ClipboardSettings.swift */,
 				C2000004C2000000000000A1 /* PasteboardReader.swift */,
+				C3000001C3000000000000A1 /* PasteAction.swift */,
+				C3000004C3000000000000A1 /* ClipboardListModel.swift */,
+				C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */,
 				C2000007C2000000000000A1 /* ClipboardHistoryController.swift */,
 				C2000010C2000000000000A1 /* ClipboardWindowController.swift */,
 				C2000012C2000000000000A1 /* ClipboardHistoryView.swift */,
@@ -453,6 +468,8 @@
 				C0700008C0700000000000A1 /* ColorThemeTests.swift */,
 				C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */,
 				C2000018C2000000000000A1 /* PasteboardReaderTests.swift */,
+				C3000007C3000000000000A1 /* PasteActionTests.swift */,
+				C3000009C3000000000000A1 /* ClipboardListModelTests.swift */,
 				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
@@ -601,6 +618,9 @@
 				C0700002C0700000000000A1 /* ColorTheme.swift in Sources */,
 				C2000002C2000000000000A1 /* ClipboardSettings.swift in Sources */,
 				C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C3000002C3000000000000A1 /* PasteAction.swift in Sources */,
+				C3000005C3000000000000A1 /* ClipboardListModel.swift in Sources */,
+				C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */,
 				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
 				C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */,
 				C2000013C2000000000000A1 /* ClipboardHistoryView.swift in Sources */,
@@ -715,6 +735,10 @@
 				C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */,
 				C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */,
 				C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C3000003C3000000000000A1 /* PasteAction.swift in Sources */,
+				C3000006C3000000000000A1 /* ClipboardListModel.swift in Sources */,
+				C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */,
+				C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */,
 				C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
 				C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */,
 				C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */,

@@ -173,3 +173,18 @@ struct RetentionPolicyTests {
         #expect(!RetentionPolicy.mostRecentFirst(b, a))
     }
 }
+
+@Suite("Retention without an item limit")
+struct NoItemLimitTests {
+    @Test("With no item limit, count removes nothing but age and storage still apply")
+    func testNoItemLimit() {
+        let limits = RetentionLimits(maxItems: RetentionLimits.noItemLimit, maxAge: days(30), maxBytes: 1_000)
+        let many = (0..<500).map { makeItem("item \($0)", byteSize: 1, usedDaysAgo: Double($0) / 1000) }
+        #expect(RetentionPolicy.itemsToRemove(from: many, limits: limits, now: referenceDate).isEmpty)
+
+        let old = makeItem("old", usedDaysAgo: 31)
+        let big = makeItem("big", byteSize: 2_000, usedDaysAgo: 1)
+        let removed = RetentionPolicy.itemsToRemove(from: many + [old, big], limits: limits, now: referenceDate)
+        #expect(removed == [old.id, big.id])
+    }
+}

@@ -2,7 +2,8 @@ import Foundation
 
 /// History limits (plan section 4.2): whichever is hit first.
 public struct RetentionLimits: Sendable, Equatable {
-    /// Unpinned items kept. Pinned items do not count.
+    /// Unpinned items kept. Pinned items do not count. `noItemLimit` means no count limit; the
+    /// age and storage limits still apply.
     public var maxItems: Int
     /// How long an unpinned item is kept after its last use.
     public var maxAge: TimeInterval
@@ -10,6 +11,8 @@ public struct RetentionLimits: Sendable, Equatable {
     public var maxBytes: Int
 
     public static let defaultMaxItems = 200
+    /// No limit on the number of items (decided 24 November 2026, for power users).
+    public static let noItemLimit = Int.max
     public static let defaultMaxAge: TimeInterval = 30 * 24 * 60 * 60
     public static let defaultMaxBytes = 500 * 1024 * 1024
     /// Any single copy above this is skipped. Fixed, not a setting (decided 23 November 2026).

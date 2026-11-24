@@ -50,6 +50,18 @@ The app stays a menu bar app (`LSUIElement`). The window is an ordinary window, 
 6. Only copies made from the history window are ignored as DocShot's own writes; a screenshot copied from the thumbnail or editor is recorded like any other image (4.5).
 7. Turning history off stops recording; what is already stored stays until Clear.
 
+**C3 plan (agreed 24 November 2026).**
+1. Return and a click both paste into the previous app when allowed; Cmd+C copies only; Escape clears the search first, then closes.
+2. Accessibility is asked for once, the first time Return or a click would paste without it: that time DocShot copies, closes and shows the system request. Afterwards only an Allow button in Settings. Never at launch or when history is switched on. (This replaces the "requested when clipboard history is switched on" line in 4.4.)
+3. Search filters as you type, over the full text of text items, file names and colour codes; case and accents ignored; every word typed must match. Not inside images (C4a).
+4. Keys: the search field always has focus; Up and Down move; Return pastes; Cmd+C copies; Cmd+P pins or unpins; Cmd+Delete deletes the selected item; Escape as in 1. Pin and delete are also small buttons on the row under the pointer.
+5. Pinned items sit in their own group at the top. A pin is refused, with a short message, when pinned items alone would exceed the storage limit (4.2).
+6. The limits are settings with fixed choices: keep for 7, 30 or 90 days; at most 50, 100, 200 or 500 items, or no limit; at most 100 MB, 250 MB, 500 MB or 1 GB. With no item limit the storage limit still applies. Lowering a limit removes the oldest unpinned items at once, after a confirmation when anything would go.
+7. Excluded apps are an editable list: Add (choose an app), Remove, and Restore Defaults.
+8. Look: plain, on the current DocShot tokens. The window is restyled later as the pilot for Noel's new design system.
+9. The remembered previous app follows the last other app made active while the window is open, so paste never goes to a stale app.
+Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts such as Dvorak paste too.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

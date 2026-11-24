@@ -4,6 +4,32 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- C2 committed as b89d700 on `feature/c2-clipboard-window` with Noel's yes, local only.
+- C3 plan agreed (nine answers, plan section 3 "C3 plan"); Noel added "No limit" for items
+  and asked for the window's look to wait for his new design system. Built on
+  `feature/c3-paste`, uncommitted: paste into the previous app via Accessibility and Cmd+V
+  with the layout's V key; search (full text, case and accents ignored, store-side index
+  released when the window closes); keys; pins group; delete; editable limits with a
+  confirmation; editable excluded apps; previous-app tracking. Fable review: two defects
+  (keys acting on the list before a pending search settled; Allow button not counting as
+  the one-time request) and seven risks, all fixed; re-review confirmed the fixes and five
+  smaller follow-ups were fixed too. A crash found in testing: keyboard layout calls off the
+  main thread abort, so `PasteKeystroke` is main-actor bound. Tests: swift test 339,
+  xcodebuild test 340 (hotkey suites skipped), ClipboardKit 76, parity audit OK; mutation
+  check on the settled-selection fix done. Not yet run in the app.
+- C3 device checks (table in DEVICE_VERIFICATION.md, "C3 Paste, Search, Keys, Pins"):
+  TextEdit, Chrome, the Claude app and Terminal all paste. The Claude app failed first:
+  Cmd+V needed the left-Command device bit, and is now posted at the session tap. Added a
+  focus wait (Accessibility, up to 400 ms) and a check that the target is still in front
+  before the keystroke. Added a DEBUG-only hook so the agent can drive the window itself
+  after Noel said many checks could have been agent-run. Two of the agent's test pastes went
+  to the wrong app (Chrome, WhatsApp), with Cmd+V only, never Return; the hook now refuses
+  any target but the named one. Test history cleared, history off.
+- Fable check of the post-review changes: no defect; hardening applied: Accessibility focus
+  queries time out after 0.1 s; the hook listens only when launched with
+  `DOCSHOT_DEBUG_HOOKS=1`, pastes only into TextEdit, and acts only on "DocShot " test items;
+  the paste report exists in debug builds only. Final: swift test 339, xcodebuild test 340,
+  ClipboardKit 76, parity audit OK; Release build has no hook or report symbols (nm).
 
 - C2 device checks run with Noel's go; full table in DEVICE_VERIFICATION.md ("C2 Clipboard
   History"). Agent-run passes (verified by reading the store): text, file, colour, PNG,

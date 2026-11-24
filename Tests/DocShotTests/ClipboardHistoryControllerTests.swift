@@ -16,6 +16,7 @@ struct ClipboardHistoryControllerTests {
         let defaults: UserDefaults
         let folder: URL
         var frontApp = "com.apple.TextEdit"
+        var accessibilityAllowed = false
 
         init() {
             defaults = UserDefaults(suiteName: suite)!
@@ -29,7 +30,8 @@ struct ClipboardHistoryControllerTests {
                 settings: ClipboardSettings(defaults: defaults),
                 pasteboard: pasteboard,
                 storeDirectory: folder,
-                frontmostApp: { [unowned self] in self.frontApp }
+                frontmostApp: { [unowned self] in self.frontApp },
+                accessibilityAllowed: { [unowned self] in self.accessibilityAllowed }
             )
         }
 
@@ -186,5 +188,100 @@ struct ClipboardHistoryControllerTests {
         relaunched.clear()
         await relaunched.waitUntilIdle()
         #expect(relaunched.items.isEmpty)
+    }
+
+    @Test("An app added to the excluded list stops being recorded; Restore Defaults brings back the defaults")
+    func testExcludedAppsEdit() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+
+        controller.addExcludedApp("com.apple.TextEdit")
+        await copyAndPoll(fixture, controller, "from TextEdit")
+        #expect(controller.items.isEmpty)
+
+        controller.removeExcludedApp("com.apple.Passwords")
+        fixture.frontApp = "com.apple.Passwords"
+        await copyAndPoll(fixture, controller, "from Passwords")
+        #expect(controller.items.map(\.preview) == ["from Passwords"])
+
+        controller.restoreDefaultExcludedApps()
+        #expect(Set(controller.excludedApps) == RecordingRules.defaultExcludedBundleIDs)
+        await copyAndPoll(fixture, controller, "Passwords again")
+        fixture.frontApp = "com.apple.TextEdit"
+        await copyAndPoll(fixture, controller, "TextEdit again")
+        #expect(controller.items.map(\.preview) == ["TextEdit again", "from Passwords"])
+
+        // The edited list is saved.
+        controller.addExcludedApp("com.example.secret")
+        #expect(fixture.makeController().excludedApps.contains("com.example.secret"))
+    }
+
+    @Test("Lowering the item limit removes the oldest unpinned items at once; no limit keeps them")
+    func testLimits() async throws {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        for index in 0..<52 {
+            await copyAndPoll(fixture, controller, "copy \(index)")
+        }
+        let oldest = try #require(controller.items.last)
+        controller.togglePin(oldest)
+        await controller.waitUntilIdle()
+
+        let fifty = controller.limits(maxItems: 50, maxAgeDays: 30, maxMegabytes: 500)
+        #expect(controller.removalCount(for: fifty) == 1)
+        controller.setLimits(maxItems: 50, maxAgeDays: 30, maxMegabytes: 500)
+        await controller.waitUntilIdle()
+        #expect(controller.items.count == 51) // 50 unpinned plus the pin
+        #expect(controller.items.contains { $0.id == oldest.id })
+        #expect(!controller.items.contains { $0.preview == "copy 1" })
+
+        controller.setLimits(maxItems: nil, maxAgeDays: 30, maxMegabytes: 500)
+        await copyAndPoll(fixture, controller, "one more")
+        #expect(controller.items.count == 52)
+
+        // Saved, and used by the store when history opens again.
+        let relaunched = fixture.makeController()
+        #expect(relaunched.maxItems == nil)
+        #expect(relaunched.limits.maxItems == RetentionLimits.noItemLimit)
+    }
+
+    @Test("Choosing pastes only with the setting and Accessibility; the request is shown once")
+    func testPasteOutcome() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        #expect(controller.pasteOutcome(hasPreviousApp: true) == .copyOnly(askForAccess: true))
+        controller.markAccessRequested()
+        #expect(controller.pasteOutcome(hasPreviousApp: true) == .copyOnly(askForAccess: false))
+
+        fixture.accessibilityAllowed = true
+        #expect(controller.pasteOutcome(hasPreviousApp: true) == .pasteIntoPreviousApp)
+        #expect(controller.pasteAllowed)
+
+        controller.setPasteDirectly(false)
+        #expect(controller.pasteOutcome(hasPreviousApp: true) == .copyOnly(askForAccess: false))
+        #expect(fixture.makeController().pasteDirectly == false)
+    }
+
+    @Test("Search finds text beyond the preview; with history off it finds nothing")
+    func testSearch() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        await copyAndPoll(fixture, controller, String(repeating: "x ", count: 150) + "Zürich")
+        await copyAndPoll(fixture, controller, "other")
+        #expect(await controller.search("zurich").count == 1)
+
+        controller.setEnabled(false)
+        await controller.waitUntilIdle()
+        #expect(await controller.search("zurich").isEmpty)
     }
 }

@@ -32,7 +32,7 @@
 - None.
 
 ## Next action
-- Viewfinder app icon and menu bar image installed on feature/quiet-clipboard (on top of 9a1120d), uncommitted; seen in the built app. Next: commit with Noel's yes; then Quiet pilot step 2 (tokens and themes as accent swaps), which needs Noel's theme-name decision. Do not merge or push without Noel's say.
+- Quiet pilot step 2 built on feature/quiet-tokens (from 3f86759), uncommitted: themes Ember (default), Tide, Slate, Moss on Quiet neutrals; Fable review fixed; tests pass; agent saw all five windows in both modes. Next: Noel looks; then ask to commit. Then pilot step 3 (restyle Settings, thumbnail, editors, onboarding, permission one at a time). Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

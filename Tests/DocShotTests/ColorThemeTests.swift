@@ -7,29 +7,19 @@ struct ColorThemeTests {
 
     // MARK: - Palette
 
-    @Test("Four themes, Graphite first and the default")
+    @Test("Four themes, Ember first and the default; Graphite is now Tide")
     func testThemeList() {
-        #expect(ColorTheme.allCases == [.graphite, .slate, .moss, .ember])
-        #expect(ColorTheme.defaultTheme == .graphite)
-        #expect(ColorTheme.allCases.map(\.displayName) == ["Graphite", "Slate", "Moss", "Ember"])
+        #expect(ColorTheme.allCases == [.ember, .tide, .slate, .moss])
+        #expect(ColorTheme.defaultTheme == .ember)
+        #expect(ColorTheme.allCases.map(\.displayName) == ["Ember", "Tide", "Slate", "Moss"])
     }
 
-    @Test("Graphite is exactly the pre-C0.7 look")
-    func testGraphiteUnchanged() {
-        let dark = ColorTheme.graphite.dark
-        #expect(dark.windowBackground == ThemeRGB(0x1A1D20))
-        #expect(dark.cardBackground == ThemeRGB(0x24272B))
-        #expect(dark.border == ThemeRGB(0x3D4045))
-        #expect(dark.accent == ThemeRGB(0x4FB89F))
-        #expect(dark.secondaryText == ThemeRGB(0x8A8F98))
-
-        // Light mode used the standard macOS surfaces with the same accent and text.
-        let light = ColorTheme.graphite.light
-        #expect(light.windowBackground == nil)
-        #expect(light.cardBackground == nil)
-        #expect(light.border == nil)
-        #expect(light.accent == ThemeRGB(0x4FB89F))
-        #expect(light.secondaryText == ThemeRGB(0x8A8F98))
+    @Test("Every theme uses Quiet's neutrals; only the accent differs", arguments: [true, false])
+    func testQuietNeutrals(isDark: Bool) {
+        let all = ColorTheme.allCases.map { $0.surfaces(isDark: isDark) }
+        #expect(Set(all.compactMap { $0.windowBackground?.hex }).count == 1)
+        #expect(all[0].windowBackground == ThemeRGB(quietRGBA: QuietTokens.canvas.value(isDark: isDark)))
+        #expect(all[0].secondaryText == ThemeRGB(quietRGBA: QuietTokens.inkMuted.value(isDark: isDark)))
     }
 
     @Test("Every theme has its own accent in each mode")
@@ -40,7 +30,7 @@ struct ColorThemeTests {
         }
     }
 
-    @Test("The new themes tint every light-mode surface", arguments: [ColorTheme.slate, .moss, .ember])
+    @Test("The new themes tint every light-mode surface", arguments: ColorTheme.allCases)
     func testNewThemesHaveLightSurfaces(theme: ColorTheme) {
         #expect(theme.light.windowBackground != nil)
         #expect(theme.light.cardBackground != nil)
@@ -48,7 +38,7 @@ struct ColorThemeTests {
     }
 
     @Test("The new themes stay readable in both modes",
-          arguments: [ColorTheme.slate, .moss, .ember], [true, false])
+          arguments: ColorTheme.allCases, [true, false])
     func testNewThemesContrast(theme: ColorTheme, isDark: Bool) throws {
         let surfaces = theme.surfaces(isDark: isDark)
         let window = try #require(surfaces.windowBackground)
@@ -62,7 +52,7 @@ struct ColorThemeTests {
     }
 
     @Test("Light-mode accents are darker than dark-mode ones for the new themes",
-          arguments: [ColorTheme.slate, .moss, .ember])
+          arguments: ColorTheme.allCases)
     func testLightAccentDarker(theme: ColorTheme) {
         #expect(theme.light.accent.relativeLuminance < theme.dark.accent.relativeLuminance)
     }
@@ -71,7 +61,6 @@ struct ColorThemeTests {
     func testFixedTileText() {
         // The tile and its text are fixed, so this holds whatever the theme or mode.
         #expect(ThemeRGB.fixedDarkTileText.contrast(with: ThemeRGB.fixedDarkTile) >= 4.5)
-        #expect(ThemeRGB.fixedDarkTile == ColorTheme.graphite.dark.windowBackground)
     }
 
     @Test("Contrast maths matches known values")
@@ -91,7 +80,7 @@ struct ColorThemeTests {
     func testStoreDefault() {
         let (defaults, suite) = scratchDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
-        #expect(ColorThemeStore(defaults: defaults).load() == .graphite)
+        #expect(ColorThemeStore(defaults: defaults).load() == .ember)
     }
 
     @Test("A saved theme is read back", arguments: ColorTheme.allCases)
@@ -108,7 +97,7 @@ struct ColorThemeTests {
         let (defaults, suite) = scratchDefaults()
         defer { defaults.removePersistentDomain(forName: suite) }
         defaults.set("neon", forKey: ColorThemeStore.key)
-        #expect(ColorThemeStore(defaults: defaults).load() == .graphite)
+        #expect(ColorThemeStore(defaults: defaults).load() == .ember)
     }
 
     // MARK: - Controller
@@ -124,11 +113,35 @@ struct ColorThemeTests {
         }
 
         let controller = ThemeController(store: ColorThemeStore(defaults: defaults))
-        #expect(controller.theme == .graphite)
+        #expect(controller.theme == .ember)
 
         controller.select(.ember)
         #expect(controller.theme == .ember)
         #expect(ThemeController.active.theme == .ember)
         #expect(ColorThemeStore(defaults: defaults).load() == .ember)
+    }
+
+    @Test("A saved Graphite choice loads as Tide")
+    func testGraphiteMigrates() {
+        let suite = "DocShotThemeMigration.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set("graphite", forKey: ColorThemeStore.key)
+        #expect(ColorThemeStore(defaults: defaults).load() == .tide)
+    }
+
+    @Test("Every theme: Quiet canvas, surface, ink-muted, and line-strong over canvas as its border",
+          arguments: ColorTheme.allCases)
+    func testQuietSurfacesPerTheme(theme: ColorTheme) {
+        for isDark in [true, false] {
+            let surfaces = theme.surfaces(isDark: isDark)
+            #expect(surfaces.windowBackground == ThemeRGB(quietRGBA: QuietTokens.canvas.value(isDark: isDark)))
+            #expect(surfaces.cardBackground == ThemeRGB(quietRGBA: QuietTokens.surface.value(isDark: isDark)))
+            #expect(surfaces.secondaryText == ThemeRGB(quietRGBA: QuietTokens.inkMuted.value(isDark: isDark)))
+            #expect(surfaces.accent == ThemeRGB(quietRGBA: theme.quietAccent.value(isDark: isDark)))
+        }
+        // line-strong composited over canvas, worked out by hand.
+        #expect(theme.dark.border == ThemeRGB(0x333332))
+        #expect(theme.light.border == ThemeRGB(0xDAD9D7))
     }
 }

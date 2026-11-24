@@ -342,6 +342,9 @@ public struct SettingsView: View {
         }
         .frame(width: 520, height: 620)
         .background(DesignTokens.windowBackground)
+        // Quiet: checkboxes take the theme accent, not the macOS system accent. Buttons stay
+        // neutral (one accent per screen).
+        .toggleStyle(AccentCheckboxToggleStyle())
         .onAppear {
             launchAtLoginService.refresh()
             hasPermission = PermissionService.shared.hasScreenCaptureAccess()
@@ -459,5 +462,14 @@ private struct ThemeSwatchButton: View {
 
     private func color(_ rgb: ThemeRGB?, fallback: NSColor) -> Color {
         rgb.map { Color(nsColor: NSColor(themeRGB: $0)) } ?? Color(nsColor: fallback)
+    }
+}
+
+/// The standard macOS checkbox, tinted with the theme accent (Quiet `platforms.md`).
+struct AccentCheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Toggle(configuration)
+            .toggleStyle(.checkbox)
+            .tint(DesignTokens.primaryAccent)
     }
 }

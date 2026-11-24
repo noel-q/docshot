@@ -77,8 +77,15 @@ struct DocShotApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settingsWindow: NSWindow?
+#if DEBUG
+    /// For the debug hook: SwiftUI's `NSApp.delegate` is not this object.
+    @MainActor static weak var debugInstance: AppDelegate?
+#endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+#if DEBUG
+        AppDelegate.debugInstance = self
+#endif
         registerForLaunchAtLogin()
 
         // Register the global shortcuts from the table. `openWindow` is defined there but

@@ -22,7 +22,7 @@ public struct OnboardingView: View {
             HStack(spacing: 8) {
                 ForEach(0..<4) { index in
                     Capsule()
-                        .fill(index == currentStep ? DesignTokens.primaryAccent : DesignTokens.borderSubtle)
+                        .fill(index == currentStep ? DesignTokens.primaryAccent : DesignTokens.controlEdge)
                         .frame(height: 4)
                 }
             }
@@ -230,14 +230,18 @@ public struct OnboardingView: View {
                 .padding(.trailing, 12)
                 
                 if currentStep < 3 {
-                    Button("Next") {
+                    Button {
                         withAnimation { currentStep += 1 }
+                    } label: {
+                        AccentButtonLabel("Next")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DesignTokens.primaryAccent)
                 } else {
-                    Button("Get Started") {
+                    Button {
                         finishOnboarding()
+                    } label: {
+                        AccentButtonLabel("Get Started")
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DesignTokens.primaryAccent)

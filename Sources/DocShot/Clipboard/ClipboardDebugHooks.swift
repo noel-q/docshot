@@ -39,7 +39,9 @@ enum ClipboardDebugHooks {
 
     /// `open:<bundle id>` (only while that app is in front; it becomes the paste target),
     /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
-    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
+    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`,
+    /// `open-onboarding`, `open-permission`, `open-thumbnail`, `open-editor`, `windows`,
+    /// `theme:<ember|tide|slate|moss>`, `snapwin:<word>:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
     /// `escape`, `state`.
     static func run(_ command: String) {
         let window = ClipboardWindowController.shared
@@ -111,6 +113,53 @@ enum ClipboardDebugHooks {
                model.rows.indices.contains(number - 1) {
                 model.select(model.rows[number - 1].id)
                 break
+            }
+            // Pilot step 2 checks: open each themed window with sample content, switch theme,
+            // and snapshot any DocShot window by a word in its title or class.
+            switch command {
+            case "open-settings":
+                AppDelegate.debugInstance?.openSettingsWindow()
+                return writeState(command)
+            case "open-onboarding":
+                OnboardingWindowController.shared.showOnboarding()
+                return writeState(command)
+            case "open-permission":
+                PermissionWindowController.shared.showPermissionAlert()
+                return writeState(command)
+            case "open-thumbnail":
+                if let image = sampleCGImage() {
+                    PreviewThumbnailController.shared.present(image: image, on: NSScreen.main, focusReturnApp: nil)
+                }
+                return writeState(command)
+            case "open-editor":
+                if let image = sampleCGImage() {
+                    EditorWindowController.shared.presentEditor(with: image)
+                }
+                return writeState(command)
+            case "windows":
+                return writeState("windows: " + NSApp.windows.filter(\.isVisible)
+                    .map { "\(type(of: $0))|\($0.title)" }.joined(separator: ", "))
+            default:
+                break
+            }
+            if command.hasPrefix("theme:"), (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
+                return writeState("refused: theme needs DOCSHOT_DEBUG_STORE")
+            }
+            if command.hasPrefix("theme:"), let theme = ColorTheme(rawValue: String(command.dropFirst("theme:".count))) {
+                ThemeController.shared.select(theme)
+                return writeState(command)
+            }
+            if command.hasPrefix("snapwin:") {
+                // snapwin:<word>:<path prefix>
+                let rest = command.dropFirst("snapwin:".count)
+                guard let colon = rest.firstIndex(of: ":") else { return writeState("snapwin: bad command") }
+                let word = String(rest[..<colon]).lowercased()
+                let prefix = URL(fileURLWithPath: String(rest[rest.index(after: colon)...]))
+                guard let target = NSApp.windows.first(where: {
+                    $0.isVisible && ("\(type(of: $0))|\($0.title)").lowercased().contains(word)
+                }) else { return writeState("snapwin: no visible window matches \(word)") }
+                snapshot(target, to: prefix)
+                return
             }
             if command.hasPrefix("menubar:") {
                 // The menu bar item, drawn by DocShot itself, in dark and light.
@@ -195,6 +244,12 @@ enum ClipboardDebugHooks {
 
     /// A built-in macOS desktop picture (never the user's own photos), downscaled, so preview
     /// sharpness can be judged; a gradient if it is missing.
+    private static func sampleCGImage() -> CGImage? {
+        let data = sampleImage() as CFData
+        guard let source = CGImageSourceCreateWithData(data, nil) else { return nil }
+        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
     private static func sampleImage() -> Data {
         let photo = URL(fileURLWithPath: "/System/Library/Desktop Pictures/Sonoma.heic")
         if let source = CGImageSourceCreateWithURL(photo as CFURL, nil),
@@ -219,9 +274,14 @@ enum ClipboardDebugHooks {
     /// Renders the window's content in dark and then light appearance to `<prefix>-dark.png`
     /// and `<prefix>-light.png`, then restores the appearance.
     static func snapshot(to prefix: URL) {
-        guard let window = ClipboardWindowController.shared.debugWindow, let view = window.contentView else {
+        guard let window = ClipboardWindowController.shared.debugWindow else {
             return writeState("snapshot: no window")
         }
+        snapshot(window, to: prefix)
+    }
+
+    static func snapshot(_ window: NSWindow, to prefix: URL) {
+        guard let view = window.contentView else { return writeState("snapshot: no content") }
         Task {
             for (name, appearance) in [("dark", NSAppearance.Name.darkAqua), ("light", .aqua)] {
                 window.appearance = NSAppearance(named: appearance)

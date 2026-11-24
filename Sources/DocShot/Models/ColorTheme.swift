@@ -35,8 +35,8 @@ public struct ThemeRGB: Equatable, Sendable {
     }
 }
 
-/// One appearance (dark or light) of a theme. A nil surface means "use the standard macOS
-/// colour", which is how Graphite has always looked in light mode.
+/// One appearance (dark or light) of a theme. Since Quiet pilot step 2 every surface is set;
+/// a nil surface would still mean "use the standard macOS colour".
 public struct ThemeSurfaces: Equatable, Sendable {
     public let windowBackground: ThemeRGB?
     public let cardBackground: ThemeRGB?
@@ -45,91 +45,90 @@ public struct ThemeSurfaces: Equatable, Sendable {
     public let secondaryText: ThemeRGB
 }
 
-/// DocShot's interface colour themes (plan section 7, C0.7). A theme changes only DocShot's own
-/// interface; annotation colours, captures, exports, the DocShot mark and media backdrops never
-/// change.
+/// DocShot's interface colour themes (plan section 7, C0.7; Quiet pilot step 2, 24 November
+/// 2026). Every theme uses Quiet's neutrals; a theme is only an accent. A theme changes only
+/// DocShot's own interface; annotation colours, captures, exports, the DocShot mark and media
+/// backdrops never change.
 public enum ColorTheme: String, CaseIterable, Sendable, Identifiable {
-    case graphite
+    case ember
+    /// Was "Graphite" until 24 November 2026; a saved "graphite" loads as Tide.
+    case tide
     case slate
     case moss
-    case ember
 
-    public static let defaultTheme: ColorTheme = .graphite
+    public static let defaultTheme: ColorTheme = .ember
 
     public var id: String { rawValue }
 
     public var displayName: String {
         switch self {
-        case .graphite: return "Graphite"
+        case .ember: return "Ember"
+        case .tide: return "Tide"
         case .slate: return "Slate"
         case .moss: return "Moss"
-        case .ember: return "Ember"
         }
     }
 
     public var summary: String {
         switch self {
-        case .graphite: return "Default, teal accent"
-        case .slate: return "Cool grey, blue accent"
-        case .moss: return "Green-grey, green accent"
-        case .ember: return "Warm charcoal, amber accent"
+        case .ember: return "Default, orange accent"
+        case .tide: return "Teal accent"
+        case .slate: return "Blue accent"
+        case .moss: return "Green accent"
         }
     }
 
-    public var dark: ThemeSurfaces {
+    /// The theme's Quiet accent (the skin).
+    public var quietAccent: QuietPair {
         switch self {
-        case .graphite:
-            // Today's look, unchanged.
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0x1A1D20), cardBackground: ThemeRGB(0x24272B),
-                border: ThemeRGB(0x3D4045), accent: ThemeRGB(0x4FB89F), secondaryText: ThemeRGB(0x8A8F98)
-            )
-        case .slate:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0x181C22), cardBackground: ThemeRGB(0x222831),
-                border: ThemeRGB(0x3A4350), accent: ThemeRGB(0x6EA8FE), secondaryText: ThemeRGB(0x8B95A3)
-            )
-        case .moss:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0x171C18), cardBackground: ThemeRGB(0x212823),
-                border: ThemeRGB(0x39443B), accent: ThemeRGB(0x7BC47F), secondaryText: ThemeRGB(0x8C968D)
-            )
-        case .ember:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0x1E1A17), cardBackground: ThemeRGB(0x29231F),
-                border: ThemeRGB(0x453B33), accent: ThemeRGB(0xE3A84C), secondaryText: ThemeRGB(0x9A9088)
-            )
+        case .ember: return QuietTokens.ember
+        case .tide: return QuietTokens.tide
+        case .slate: return QuietTokens.sky
+        case .moss: return QuietTokens.moss
         }
     }
 
-    public var light: ThemeSurfaces {
+    public var quietAccentSoft: QuietPair {
         switch self {
-        case .graphite:
-            // Today's look, unchanged: standard macOS surfaces with the same accent and text.
-            return ThemeSurfaces(
-                windowBackground: nil, cardBackground: nil, border: nil,
-                accent: ThemeRGB(0x4FB89F), secondaryText: ThemeRGB(0x8A8F98)
-            )
-        case .slate:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0xEEF1F5), cardBackground: ThemeRGB(0xFFFFFF),
-                border: ThemeRGB(0xD3DAE3), accent: ThemeRGB(0x2F6FD6), secondaryText: ThemeRGB(0x5F6B7A)
-            )
-        case .moss:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0xEEF2EC), cardBackground: ThemeRGB(0xFFFFFF),
-                border: ThemeRGB(0xD2DCCF), accent: ThemeRGB(0x2E8540), secondaryText: ThemeRGB(0x5E6B5F)
-            )
-        case .ember:
-            return ThemeSurfaces(
-                windowBackground: ThemeRGB(0xF5F1EA), cardBackground: ThemeRGB(0xFFFFFF),
-                border: ThemeRGB(0xE2D8CA), accent: ThemeRGB(0xA86A12), secondaryText: ThemeRGB(0x6F6458)
-            )
+        case .ember: return QuietTokens.emberSoft
+        case .tide: return QuietTokens.tideSoft
+        case .slate: return QuietTokens.skySoft
+        case .moss: return QuietTokens.mossSoft
         }
     }
 
+    public var dark: ThemeSurfaces { surfaces(isDark: true) }
+    public var light: ThemeSurfaces { surfaces(isDark: false) }
+
+    /// Quiet's neutrals with this theme's accent. Borders are `line-strong` laid over the canvas,
+    /// so they stay opaque like the old theme borders.
     public func surfaces(isDark: Bool) -> ThemeSurfaces {
-        isDark ? dark : light
+        let canvas = QuietTokens.canvas.value(isDark: isDark)
+        return ThemeSurfaces(
+            windowBackground: ThemeRGB(quietRGBA: canvas),
+            cardBackground: ThemeRGB(quietRGBA: QuietTokens.surface.value(isDark: isDark)),
+            border: ThemeRGB(quietRGBA: QuietTokens.lineStrong.value(isDark: isDark), over: canvas),
+            accent: ThemeRGB(quietRGBA: quietAccent.value(isDark: isDark)),
+            secondaryText: ThemeRGB(quietRGBA: QuietTokens.inkMuted.value(isDark: isDark))
+        )
+    }
+}
+
+extension ThemeRGB {
+    /// An opaque Quiet colour (0xRRGGBBAA).
+    public init(quietRGBA value: UInt32) {
+        self.init(value >> 8)
+    }
+
+    /// A Quiet colour with alpha (0xRRGGBBAA) laid over an opaque one.
+    public init(quietRGBA value: UInt32, over base: UInt32) {
+        let alpha = Double(value & 0xFF) / 255
+        func channel(_ shift: UInt32) -> UInt32 {
+            let top = Double((value >> (shift + 8)) & 0xFF)
+            let bottom = Double((base >> (shift + 8)) & 0xFF)
+            return UInt32((top * alpha + bottom * (1 - alpha)).rounded())
+        }
+        self.init((channel(16) << 16) | (channel(8) << 8) | channel(0))
     }
 }
 
@@ -144,13 +143,12 @@ public struct ColorThemeStore: @unchecked Sendable {
         self.defaults = defaults
     }
 
-    /// The saved theme, or the default when nothing is saved or the value is unknown.
+    /// The saved theme, or the default when nothing is saved or the value is unknown. A saved
+    /// "graphite" (the name until 24 November 2026) is Tide.
     public func load() -> ColorTheme {
-        guard let raw = defaults.string(forKey: Self.key),
-              let theme = ColorTheme(rawValue: raw) else {
-            return .defaultTheme
-        }
-        return theme
+        guard let raw = defaults.string(forKey: Self.key) else { return .defaultTheme }
+        if raw == "graphite" { return .tide }
+        return ColorTheme(rawValue: raw) ?? .defaultTheme
     }
 
     public func save(_ theme: ColorTheme) {

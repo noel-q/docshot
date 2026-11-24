@@ -22,6 +22,7 @@ enum Quiet {
     static let onAccent = color(QuietTokens.onAccent)
     static let danger = color(QuietTokens.danger)
     static let controlRing = color(QuietTokens.controlRing)
+    static let controlEdge = color(QuietTokens.controlEdge)
     static let controlDrop = color(QuietTokens.controlDrop)
     static let warning = color(QuietTokens.warning)
 
@@ -97,28 +98,6 @@ enum Quiet {
         static let fast = Animation.snappy(duration: QuietTokens.durFast)
         static let base = Animation.spring(response: 0.28, dampingFraction: 0.86)
         static let fade = Animation.easeOut(duration: QuietTokens.durFast)
-    }
-}
-
-extension ColorTheme {
-    /// Each Settings theme becomes a Quiet accent on the Quiet neutrals (migration plan, DocShot
-    /// pilot step 2; restyle plan decision 1): Graphite's teal is tide, Slate is sky.
-    var quietAccent: QuietPair {
-        switch self {
-        case .graphite: return QuietTokens.tide
-        case .slate: return QuietTokens.sky
-        case .moss: return QuietTokens.moss
-        case .ember: return QuietTokens.ember
-        }
-    }
-
-    var quietAccentSoft: QuietPair {
-        switch self {
-        case .graphite: return QuietTokens.tideSoft
-        case .slate: return QuietTokens.skySoft
-        case .moss: return QuietTokens.mossSoft
-        case .ember: return QuietTokens.emberSoft
-        }
     }
 }
 

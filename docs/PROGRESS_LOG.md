@@ -4,6 +4,19 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Viewfinder icon committed as 3f86759 with Noel's yes.
+- Quiet pilot step 2 (plan section 3, five points agreed; Noel chose Tide for Graphite and
+  Ember as default) built on `feature/quiet-tokens`, uncommitted: themes Ember (default),
+  Tide, Slate, Moss on Quiet neutrals, a saved "graphite" loads as Tide; DesignTokens names
+  unchanged. Checked by the agent from app-rendered snapshots of Settings, preview thumbnail,
+  image editor, onboarding and permission window in dark and light, plus a live switch from
+  Ember to Tide with windows open (scratch preferences, so the real theme stayed Moss).
+  Fable review: one defect (white labels on accent at about 2:1 in dark mode) and several
+  risks, all fixed: labels on accent use Quiet on-accent while the window is active; Settings
+  tints checkboxes only; onboarding step bars use control-edge; debug theme switching only on
+  the scratch store; stronger theme tests. Final: swift test 354, xcodebuild test 355,
+  ClipboardKit 76, parity OK, Release has no debug symbols. The editors' system dividers draw
+  opaque in snapshots; likely a snapshot artifact, not seen in the app (unknown).
 - Quiet restyle committed as 9a1120d on `feature/quiet-clipboard` with Noel's yes.
 - New app icon "Viewfinder" (Noel's pick from the Quiet icon bake-off; files from
   `~/Documents/quiet-design/icons/docshot/final/`) installed: AppIcon PNGs swapped (same names

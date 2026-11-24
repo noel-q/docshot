@@ -62,7 +62,7 @@ struct QuietTokensTests {
 
     @Test("Themes map to the agreed Quiet accents")
     func testMapping() {
-        #expect(ColorTheme.graphite.quietAccent == QuietTokens.tide)
+        #expect(ColorTheme.tide.quietAccent == QuietTokens.tide)
         #expect(ColorTheme.slate.quietAccent == QuietTokens.sky)
         #expect(ColorTheme.moss.quietAccent == QuietTokens.moss)
         #expect(ColorTheme.ember.quietAccent == QuietTokens.ember)

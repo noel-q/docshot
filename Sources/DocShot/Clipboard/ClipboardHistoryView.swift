@@ -221,8 +221,10 @@ struct ClipboardHistoryView: View {
                 .frame(maxWidth: 420, alignment: .leading)
             HStack(spacing: Quiet.Space.s2) {
                 // No Return shortcut: turning history on starts recording, so it takes a click.
-                Button("Turn on") { controller.setEnabled(true) }
-                    .buttonStyle(.borderedProminent)
+                Button { controller.setEnabled(true) } label: {
+                    AccentButtonLabel("Turn on")
+                }
+                .buttonStyle(.borderedProminent)
             }
             .padding(.top, Quiet.Space.s2)
             Spacer(minLength: 0)

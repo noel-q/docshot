@@ -100,7 +100,7 @@ public struct VideoEditorView: View {
                         Text("Save Edited MP4…")
                     }
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(DesignTokens.onAccent)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 7)
                     .background(viewModel.isExporting ? Color.gray : DesignTokens.primaryAccent)

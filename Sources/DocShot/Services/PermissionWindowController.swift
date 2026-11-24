@@ -62,8 +62,10 @@ public struct PermissionAlertView: View {
                 }
                 .buttonStyle(.borderless)
                 
-                Button("Open System Settings") {
+                Button {
                     onOpenSettings()
+                } label: {
+                    AccentButtonLabel("Open System Settings")
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(DesignTokens.primaryAccent)

@@ -211,7 +211,7 @@ public struct EditorView: View {
                         Text("Copy PNG")
                     }
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(DesignTokens.onAccent)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 7)
                     .background(isExporting ? Color.gray : DesignTokens.primaryAccent)

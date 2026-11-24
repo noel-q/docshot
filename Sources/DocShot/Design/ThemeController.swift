@@ -29,10 +29,22 @@ final class ActiveThemeBox: @unchecked Sendable {
 /// in Settings redraws every open window at once without rebuilding any view state.
 @MainActor
 public final class ThemeController: ObservableObject {
-    public static let shared = ThemeController()
+    public static let shared = ThemeController(store: defaultStore)
 
     /// Read by the dynamic colours in `DesignTokens`.
-    nonisolated static let active = ActiveThemeBox(ColorThemeStore().load())
+    nonisolated static let active = ActiveThemeBox(defaultStore.load())
+
+    /// The real preferences; in a debug run on a scratch store (`DOCSHOT_DEBUG_STORE`), scratch
+    /// preferences, so checking themes never changes the saved choice.
+    nonisolated static var defaultStore: ColorThemeStore {
+#if DEBUG
+        if let folder = ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"], !folder.isEmpty,
+           let scratch = UserDefaults(suiteName: "DocShotDebugStore") {
+            return ColorThemeStore(defaults: scratch)
+        }
+#endif
+        return ColorThemeStore()
+    }
 
     @Published public private(set) var theme: ColorTheme
 

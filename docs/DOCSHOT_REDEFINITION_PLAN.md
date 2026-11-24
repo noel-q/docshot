@@ -72,6 +72,13 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 7. Type-aware previews, local only: text; code in mono when copied from a terminal or code editor; colour swatch with hex, RGB and HSL; link with its site from the address (no network); image with pixel size; file with icon and path.
 8. Checks: a DEBUG-only snapshot of the real window in dark and light for the agent; Noel judges the look at the end; Fable reviews against the Quiet checklist.
 
+**Quiet pilot step 2: colours across DocShot (agreed 24 November 2026).** Noel chose to rename Graphite to Tide and make Ember the default.
+1. Themes, in this order in Settings: Ember, Tide (was Graphite), Slate, Moss; Ember is the default for anyone who has not chosen; a saved "graphite" loads as Tide. Each theme is only an accent: tide, sky, moss, ember.
+2. Every theme uses Quiet's neutrals (canvas, surface, line, ink-muted) in dark and light; the per-theme tinted greys and Graphite's standard macOS light surfaces go.
+3. `DesignTokens` keeps its names, so call sites do not change. Fixed: the amber maker's mark, the dark tile behind the mark and folder path, video backdrops; annotation colours, captures and exports never change.
+4. Colours only: layout, type and spacing of Settings, the thumbnail, editors, onboarding and the permission window wait for their own restyle (pilot step 3).
+5. Checks: contrast tests for every theme in both modes; DEBUG-hook snapshots of Settings, thumbnail, image editor, onboarding and permission window in dark and light; live theme switching; Noel looks at the end.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

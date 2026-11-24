@@ -19,7 +19,8 @@ struct ClipboardHistoryView: View {
     @Namespace private var selectionSpace
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    static let listWidth: CGFloat = 300
+    static var listWidth: CGFloat { ClipboardPanelLayout.listWidth }
+    let onTogglePreview: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,23 +30,38 @@ struct ClipboardHistoryView: View {
                     pausedLine
                 }
                 Rectangle().fill(Quiet.line).frame(height: 1)
+                // The list keeps its width; the preview pane sits to its right and is revealed as
+                // the panel widens (compact panels, decision 3).
                 HStack(spacing: 0) {
                     list
                         .frame(width: Self.listWidth)
-                    Rectangle().fill(Quiet.line).frame(width: 1)
-                    ClipPreviewPane(item: model.selectedItem, controller: controller)
+                    if model.showPreview {
+                        HStack(spacing: 0) {
+                            Rectangle().fill(Quiet.line).frame(width: 1)
+                            ClipPreviewPane(item: model.selectedItem, controller: controller)
+                                .frame(width: ClipboardPanelLayout.previewWidth - 1)
+                        }
+                        .transition(.opacity.animation(Quiet.Motion.fade))
+                    }
                 }
+                // minWidth 0: the content never insists on a width, so the panel's animated
+                // edge clips the list and pane instead of the content forcing the panel wide.
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
+                .clipped()
                 Rectangle().fill(Quiet.line).frame(height: 1)
                 footer
             } else {
                 offState
             }
         }
-        .frame(minWidth: 600, minHeight: 360)
-        .background(Quiet.canvas)
-        // The title bar is merged into the content (restyle plan 6): the search bar sits at
-        // the very top rather than below an empty title bar band.
-        .ignoresSafeArea(.container, edges: .top)
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+        // The panel's own shape (compact panels, decision 1): radius-lg, surface, hairline edge.
+        .background(Quiet.surface)
+        .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1)
+        )
+        .ignoresSafeArea()
         .tint(Quiet.accent)
         .onChange(of: model.focusRequest) { _, _ in searchFocused = true }
         .onAppear { searchFocused = true }
@@ -71,18 +87,41 @@ struct ClipboardHistoryView: View {
                 .foregroundStyle(Quiet.ink)
                 .focused($searchFocused)
                 .accessibilityLabel("Search clipboard")
-            Picker("Show", selection: $model.filter) {
-                ForEach(ClipboardFilter.allCases) { filter in
-                    Text(filter.title).tag(filter)
+            // A compact menu: the five-way segmented control does not fit beside the search at
+            // the panel's 420 points.
+            // Draws its own label in Quiet's colours: a tinted menu-style picker is drawn with
+            // pale text that all but vanishes in light mode.
+            Menu {
+                Picker("Show", selection: $model.filter) {
+                    ForEach(ClipboardFilter.allCases) { filter in
+                        Text(filter.title).tag(filter)
+                    }
                 }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                HStack(spacing: Quiet.Space.s1) {
+                    Text(model.filter.title)
+                        .font(Quiet.Font.ui)
+                        .foregroundStyle(Quiet.ink)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Quiet.inkMuted)
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, Quiet.Space.s2)
+                .padding(.vertical, Quiet.Space.s1)
+                .background(RoundedRectangle(cornerRadius: Quiet.Radius.xs, style: .continuous).fill(Quiet.surfaceRaised))
+                .contentShape(Rectangle())
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .controlSize(.small)
+            // Plain button menu: the label is drawn exactly as written (the borderless style
+            // tints its icon with the accent and drops the background).
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .menuIndicator(.hidden)
             .fixedSize()
-            // Quiet SegmentedControl: a neutral thumb, not the accent the window is tinted with.
-            .tint(Quiet.inkMuted)
-            .accessibilityLabel("Show")
+            .help("Show one kind of item")
+            .accessibilityLabel("Show: \(model.filter.title)")
             Menu {
                 Button(controller.isPaused ? "Resume history" : "Pause history") {
                     controller.setPaused(!controller.isPaused)
@@ -220,7 +259,7 @@ struct ClipboardHistoryView: View {
                 .font(Quiet.Font.body)
                 .foregroundStyle(Quiet.inkMuted)
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: 420, alignment: .leading)
+                .frame(maxWidth: 340, alignment: .leading)
             HStack(spacing: Quiet.Space.s2) {
                 // No Return shortcut: turning history on starts recording, so it takes a click.
                 Button { controller.setEnabled(true) } label: {
@@ -251,14 +290,14 @@ struct ClipboardHistoryView: View {
                 Text(notice).foregroundStyle(Quiet.warning).lineLimit(1)
             } else if model.selectedItem != nil {
                 hint("↵", pastes ? "Paste" : "Copy")
-                hint("⌘C", "Copy")
-                hint("⌘P", model.selectedItem?.pinned == true ? "Unpin" : "Pin")
-                hint("⌘⌫", "Delete")
-                if controller.pasteDirectly && !controller.pasteAllowed {
-                    Text("Allow pasting in Settings")
-                        .foregroundStyle(Quiet.inkMuted)
-                        .lineLimit(1)
+                Button(action: onTogglePreview) {
+                    hint("⌘Y", model.showPreview ? "Hide preview" : "Preview")
                 }
+                .buttonStyle(.plain)
+                .help(model.showPreview ? "Hide the preview (⌘Y)" : "Show the preview (⌘Y)")
+                hint("⌘P", model.selectedItem?.pinned == true ? "Unpin" : "Pin")
+                // The Accessibility note lives in Settings (Clipboard, Pasting): the compact
+                // footer has room for the hints only; "↵ Copy" already says paste is off.
             }
             Spacer(minLength: 0)
             closeHint
@@ -273,8 +312,9 @@ struct ClipboardHistoryView: View {
     private func hint(_ keys: String, _ label: String) -> some View {
         HStack(spacing: Quiet.Space.s1) {
             KeyHint(keys: keys)
-            Text(label).foregroundStyle(Quiet.inkFaint)
+            Text(label).foregroundStyle(Quiet.inkFaint).lineLimit(1)
         }
+        .fixedSize()
         .accessibilityElement(children: .combine)
     }
 

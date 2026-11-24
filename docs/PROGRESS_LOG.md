@@ -4,6 +4,24 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Preview thumbnail committed as bd76322 with Noel's yes.
+- Compact panels (six answers agreed): the clipboard part built on
+  `feature/quiet-compact-panels`, uncommitted. A borderless rounded panel (420 pt, `surface`,
+  system shadow) that rises in, opens in the upper middle of the screen in use, can be
+  dragged and remembers its place; Cmd+Y or the footer hint slides the preview pane out to
+  780 pt and back. Frame traces found three causes of snapping, all fixed: content that
+  forced the window size (`sizingOptions = []`, `minWidth: 0`), a layout change during the
+  window animation (content changes first, animation on the next turn), and the pane's
+  presence while narrowing (it fades first). Every toggle now eases over about 14 frames.
+  The filter became a plain menu (a tinted menu picker was nearly invisible in light mode).
+  Found and fixed during the work: the panel's preview choice and place were written to the
+  real `com.docshot.app` from debug runs (two new keys, deleted; now through the
+  controller's preferences, with a test). Fable review: no contradiction; fixed footer
+  overflow without Accessibility, overlapping animations (counter), the place drifting after
+  widening near the edge, partly off-screen places, edge-of-screen pointer, surface fill,
+  12 pt chevron, curve token, trace commands gated on the scratch store. swift test 367,
+  xcodebuild test 367, ClipboardKit 76, parity OK, Release clean. Real history setting found
+  on (store empty, unchanged since 11:24), left as Noel's choice.
 - Settings committed as b958886 with Noel's yes.
 - Quiet pilot step 3, preview thumbnail (six answers agreed) built on
   `feature/quiet-thumbnail`, uncommitted: floating `surface` panel with `radius-lg` and the

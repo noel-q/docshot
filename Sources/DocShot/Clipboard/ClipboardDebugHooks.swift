@@ -41,7 +41,8 @@ enum ClipboardDebugHooks {
     /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
     /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`,
     /// `open-onboarding`, `open-permission`, `open-thumbnail`, `open-editor`, `windows`,
-    /// `theme:<ember|tide|slate|moss>`, `snapwin:<word>:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
+    /// `theme:<ember|tide|slate|moss>`, `snapwin:<word>:<path prefix>`, `previewtrace`,
+    /// `widthtrace:<points>[.1]`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
     /// `escape`, `state`.
     static func run(_ command: String) {
         let window = ClipboardWindowController.shared
@@ -89,7 +90,8 @@ enum ClipboardDebugHooks {
             }
             // Commands that add or change history run only against the scratch store, never the
             // real one (`DOCSHOT_DEBUG_STORE`).
-            if ["pause", "resume", "enable", "disable", "seed"].contains(command),
+            if ["pause", "resume", "enable", "disable", "seed", "previewtrace"].contains(command)
+                || command.hasPrefix("widthtrace:"),
                (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
                 return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
             }
@@ -148,6 +150,40 @@ enum ClipboardDebugHooks {
             if command.hasPrefix("theme:"), let theme = ColorTheme(rawValue: String(command.dropFirst("theme:".count))) {
                 ThemeController.shared.select(theme)
                 return writeState(command)
+            }
+            if command.hasPrefix("widthtrace:"), let width = Double(command.dropFirst("widthtrace:".count).prefix(3)),
+               let panel = ClipboardWindowController.shared.debugWindow {
+                // Animates only the panel's width (no content change), sampling every frame.
+                Task {
+                    var samples: [Int] = []
+                    var target = panel.frame
+                    target.size.width = width
+                    let curve = command.hasSuffix(".1")
+                    NSAnimationContext.runAnimationGroup({ context in
+                        context.duration = QuietTokens.durBase
+                        if curve { context.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1) }
+                        panel.animator().setFrame(target, display: true)
+                    }, completionHandler: nil)
+                    for _ in 0..<24 {
+                        samples.append(Int(panel.frame.width))
+                        try? await Task.sleep(for: .milliseconds(16))
+                    }
+                    writeState("widthtrace: " + samples.map(String.init).joined(separator: " "))
+                }
+                return
+            }
+            if command == "previewtrace", let panel = ClipboardWindowController.shared.debugWindow {
+                // Toggles the preview pane and samples the panel width every frame for 0.6 s.
+                Task {
+                    var samples: [Int] = []
+                    ClipboardWindowController.shared.togglePreview()
+                    for _ in 0..<36 {
+                        samples.append(Int(panel.frame.width))
+                        try? await Task.sleep(for: .milliseconds(16))
+                    }
+                    writeState("previewtrace: " + samples.map(String.init).joined(separator: " "))
+                }
+                return
             }
             if command.hasPrefix("settings-tab:"), let index = Int(command.dropFirst("settings-tab:".count)) {
                 SettingsWindowFactory.controller.select(index)

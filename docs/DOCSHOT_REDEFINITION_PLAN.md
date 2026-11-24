@@ -96,6 +96,14 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 5. It rises about 8 points and fades in over `dur-base`, and leaves with a quick fade; Reduce Motion: fade only. Copy still closes it at once.
 6. Everything else stays as the C0.6 plan: no timeout, nothing written before Save, focus returns, recording waits, same place on screen. Checks: app-rendered snapshots in dark and light, Fable review, Noel's look.
 
+**Compact panels for the clipboard window and Settings (agreed 24 November 2026).** Noel asked for both to be less in-your-face, like the preview thumbnail, and to expand when needed.
+1. Both use the thumbnail's style: no title bar, `radius-lg` corners, `surface`, the system shadow; they rise and fade in, and close with Escape or their shortcut. Every size change eases over `dur-base`; Reduce Motion fades only.
+2. The clipboard panel is compact (about 420 points wide: search, list, key hints), opens in the upper middle of the screen in use, can be dragged, and remembers where it was left.
+3. Cmd+Y, or a Preview hint in the footer, slides the preview pane out to the right and the panel widens; again folds it away; the choice is remembered. (Space stays for typing in the search.)
+4. Settings from the menu bar opens a compact panel with the everyday settings (theme, clipboard history on or paused, the open-clipboard shortcut, how saving works, open at login); "All settings" expands it in place to the four tabs. A click outside or Escape closes it.
+5. Paste is unchanged: the panel still brings the previous app back and pastes the tested way.
+6. Checks: app-rendered snapshots of each state in dark and light, frame traces of every expand and collapse, Fable review, Noel's look. The clipboard panel first, then Settings, each committed on its own.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

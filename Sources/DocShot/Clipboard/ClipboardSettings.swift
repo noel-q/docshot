@@ -13,6 +13,8 @@ struct ClipboardSettings: @unchecked Sendable {
     static let excludedAppsKey = "DocShotClipboardExcludedApps"
     static let pasteDirectlyKey = "DocShotClipboardPasteDirectly"
     static let accessRequestedKey = "DocShotClipboardAccessibilityRequested"
+    static let showPreviewKey = "DocShotClipboardShowPreview"
+    static let panelOriginKey = "DocShotClipboardPanelOrigin"
 
     /// The fixed choices in Settings (C3 plan, decision 6). `nil` items means no limit.
     static let itemChoices: [Int?] = [50, 100, 200, 500, nil]
@@ -100,6 +102,27 @@ struct ClipboardSettings: @unchecked Sendable {
     var pasteDirectly: Bool {
         get { defaults.object(forKey: Self.pasteDirectlyKey) as? Bool ?? true }
         nonmutating set { defaults.set(newValue, forKey: Self.pasteDirectlyKey) }
+    }
+
+    /// The preview pane is out (compact panels, decision 3). Folded away by default.
+    var showPreview: Bool {
+        get { defaults.bool(forKey: Self.showPreviewKey) }
+        nonmutating set { defaults.set(newValue, forKey: Self.showPreviewKey) }
+    }
+
+    /// Where the panel was left (its bottom-left corner in screen coordinates); nil until moved.
+    var panelOrigin: CGPoint? {
+        get {
+            guard let parts = defaults.array(forKey: Self.panelOriginKey) as? [Double], parts.count == 2 else { return nil }
+            return CGPoint(x: parts[0], y: parts[1])
+        }
+        nonmutating set {
+            if let newValue {
+                defaults.set([Double(newValue.x), Double(newValue.y)], forKey: Self.panelOriginKey)
+            } else {
+                defaults.removeObject(forKey: Self.panelOriginKey)
+            }
+        }
     }
 
     /// The system's Accessibility request has been shown once (C3 plan, decision 2).

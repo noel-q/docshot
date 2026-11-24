@@ -143,6 +143,13 @@ struct ClipboardKeysTests {
         #expect(action(35, .command, chars: "з") == .togglePin)
     }
 
+    @Test("Cmd+Y shows or hides the preview, on Latin and non-Latin layouts; plain Y types")
+    func testTogglePreview() {
+        #expect(action(16, .command, chars: "y") == .togglePreview)
+        #expect(action(16, .command, chars: "н") == .togglePreview) // Russian: the Y position
+        #expect(action(16, [], chars: "y") == .passThrough)
+    }
+
     @Test("Cmd+1 to Cmd+9 pick a row; on AZERTY the digit-row position decides; Cmd+0 does nothing")
     func testPick() {
         #expect(action(18, .command, chars: "1") == .pick(1))
@@ -231,6 +238,18 @@ struct ClipboardWindowModelTests {
         #expect(controller.notice == nil)
     }
 
+    @Test("The preview choice is kept in the controller's preferences, never the app's own")
+    func testPreviewPreference() {
+        let fixture = ClipboardHistoryControllerTests.Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        let model = ClipboardWindowModel(controller: controller, searchDelay: .zero)
+        #expect(model.showPreview == false)
+        model.showPreview = true
+        #expect(fixture.defaults.bool(forKey: ClipboardSettings.showPreviewKey))
+        #expect(ClipboardWindowModel(controller: fixture.makeController(), searchDelay: .zero).showPreview)
+    }
+
     @Test("A key pressed straight after typing acts on the searched list, not the old one")
     func testSettledSelection() async {
         let fixture = ClipboardHistoryControllerTests.Fixture()
@@ -313,5 +332,59 @@ struct ClipPreviewTextTests {
         #expect(ClipPreviewText.size(of: .image(data: Data(), typeIdentifier: "public.png"),
                                      pixelSize: CGSize(width: 480, height: 360), byteSize: 2048)
                 .hasPrefix("480 × 360 pixels, "))
+    }
+}
+
+@Suite("Clipboard panel layout")
+struct ClipboardPanelLayoutTests {
+    let screen = CGRect(x: 0, y: 0, width: 1440, height: 900)
+
+    @Test("Compact is 420 wide; with the preview, 780")
+    func testWidths() {
+        #expect(ClipboardPanelLayout.width(showingPreview: false) == 420)
+        #expect(ClipboardPanelLayout.width(showingPreview: true) == 780)
+    }
+
+    @Test("First open: centred across, top a fifth of the way down")
+    func testFirstOpen() {
+        let frame = ClipboardPanelLayout.frame(visible: screen, savedOrigin: nil, showingPreview: false)
+        #expect(frame.midX == screen.midX)
+        #expect(frame.maxY == screen.maxY - screen.height / 5)
+        #expect(screen.contains(frame))
+    }
+
+    @Test("A remembered place is used if the whole panel fits there, otherwise the default")
+    func testRemembered() {
+        let kept = ClipboardPanelLayout.frame(visible: screen, savedOrigin: CGPoint(x: 100, y: 200), showingPreview: false)
+        #expect(kept.origin == CGPoint(x: 100, y: 200))
+        // On another, smaller screen the old place is off the edge: back to the default.
+        let small = CGRect(x: 0, y: 0, width: 800, height: 600)
+        let moved = ClipboardPanelLayout.frame(visible: small, savedOrigin: CGPoint(x: 900, y: 200), showingPreview: false)
+        #expect(small.contains(moved))
+        #expect(moved.midX == small.midX)
+    }
+
+    @Test("A place left partly off screen is nudged back on, not forgotten")
+    func testNudgedBack() {
+        let partly = ClipboardPanelLayout.frame(visible: screen, savedOrigin: CGPoint(x: 1300, y: 50), showingPreview: false)
+        #expect(screen.contains(partly))
+        #expect(partly.maxX == screen.maxX)
+    }
+
+    @Test("Resizing only ever moves the panel sideways")
+    func testSidewaysOnly() {
+        let low = CGRect(x: 1000, y: -100, width: 420, height: 480) // partly below the screen
+        #expect(ClipboardPanelLayout.resized(low, toWidth: 780, within: screen).minY == -100)
+    }
+
+    @Test("Widening keeps the left edge, unless that would run off the right of the screen")
+    func testWidening() {
+        let left = CGRect(x: 100, y: 200, width: 420, height: 480)
+        #expect(ClipboardPanelLayout.resized(left, toWidth: 780, within: screen).minX == 100)
+        let right = CGRect(x: 1000, y: 200, width: 420, height: 480)
+        let widened = ClipboardPanelLayout.resized(right, toWidth: 780, within: screen)
+        #expect(widened.maxX == screen.maxX)
+        #expect(widened.width == 780)
+        #expect(ClipboardPanelLayout.resized(widened, toWidth: 420, within: screen).minX == widened.minX)
     }
 }

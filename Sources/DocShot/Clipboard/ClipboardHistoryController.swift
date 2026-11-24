@@ -89,6 +89,10 @@ final class ClipboardHistoryController: ObservableObject {
         pasteDirectly = settings.pasteDirectly
     }
 
+    /// The clipboard preferences this controller uses (scratch ones in tests and debug runs),
+    /// for the window's own choices such as the preview pane and the panel's place.
+    var preferences: ClipboardSettings { settings }
+
     /// Called once at launch.
     func start() {
         loadSettings()

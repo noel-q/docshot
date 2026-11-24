@@ -98,6 +98,8 @@ enum Quiet {
         static let fast = Animation.snappy(duration: QuietTokens.durFast)
         static let base = Animation.spring(response: 0.28, dampingFraction: 0.86)
         static let fade = Animation.easeOut(duration: QuietTokens.durFast)
+        /// Quiet `ease-out` for AppKit window animations.
+        static var easeOutCurve: CAMediaTimingFunction { CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1) }
     }
 }
 

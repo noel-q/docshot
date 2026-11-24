@@ -2,8 +2,8 @@ import AppKit
 import ClipboardKit
 import SwiftUI
 
-/// The DocShot window (plan section 3), opened from the menu bar or Control+Option+Command+V.
-/// An ordinary window, not a floating panel. Return or a click pastes into the app the user was
+/// The DocShot clipboard panel (plan section 3; compact panels, 24 November 2026), opened from
+/// the menu bar or its shortcut: a borderless rounded panel at the normal window level. Return or a click pastes into the app the user was
 /// in; Escape closes and focus goes back there (C3 plan, decisions 1, 4 and 9).
 @MainActor
 final class ClipboardWindowController: NSObject, NSWindowDelegate {
@@ -46,12 +46,14 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
         watchActivations()
 
         let window = self.window ?? makeWindow()
+        let wasShowing = window.isVisible
         self.window = window
         let history = ClipboardHistoryController.shared
         history.refreshAccessState()
         history.refreshPasteAccess()
         history.clearNotice()
         model.reset()
+        if !wasShowing { place(window) }
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
         installKeyMonitor()
@@ -129,39 +131,144 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Window
 
-    /// Saved frame name. New with the Quiet layout, so the old narrow saved size is not reused
-    /// (restyle plan, decision 6).
-    static let frameName = "DocShotClipboardWindowQuiet"
-
     private func makeWindow() -> NSWindow {
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 760, height: 480),
-            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+        let panel = ClipboardPanel(
+            contentRect: NSRect(x: 0, y: 0, width: ClipboardPanelLayout.listWidth, height: ClipboardPanelLayout.height),
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
-        // One panel: the title bar is merged into the content and its buttons are hidden;
-        // macOS still draws the corners and the shadow. Escape, the shortcut and "esc Close"
-        // in the footer close it.
-        window.title = "DocShot Clipboard"
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.isMovableByWindowBackground = true
-        for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
-            window.standardWindowButton(button)?.isHidden = true
-        }
-        window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 600, height: 360)
-        window.delegate = self
-        window.contentView = NSHostingView(rootView: ClipboardHistoryView(
+        // The thumbnail's style (compact panels, decision 1): no title bar, the SwiftUI content
+        // draws the rounded shape, and the system draws the shadow around it.
+        panel.title = "DocShot Clipboard"
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.isMovableByWindowBackground = true
+        panel.isReleasedWhenClosed = false
+        // Behaves like the window it replaces: stays open when another app is used, so the
+        // previous-app tracking (C3 plan, decision 9) still works.
+        panel.hidesOnDeactivate = false
+        panel.isFloatingPanel = false
+        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        panel.delegate = self
+        let host = NSHostingView(rootView: ClipboardHistoryView(
             model: model,
             controller: ClipboardHistoryController.shared,
             onChoose: { [weak self] item in self?.choose(item) },
-            onClose: { [weak self] in self?.close() }
+            onClose: { [weak self] in self?.close() },
+            onTogglePreview: { [weak self] in self?.togglePreview() }
         ))
-        window.center()
-        window.setFrameAutosaveName(Self.frameName)
-        return window
+        // The panel's size is DocShot's to animate; the content must not force it (it would
+        // snap the panel wide the moment the preview pane is laid out).
+        host.sizingOptions = []
+        panel.contentView = host
+        return panel
+    }
+
+    // MARK: - Place and size (compact panels, decisions 2 and 3)
+
+    /// The clipboard controller's preferences (scratch ones in a debug run on a scratch store).
+    private var panelSettings: ClipboardSettings { ClipboardHistoryController.shared.preferences }
+    /// Counts DocShot's own moves of the panel; a drag is remembered only when none is running.
+    /// A counter, not a flag, so an older animation finishing cannot clear a newer one's mark.
+    private var animationsRunning = 0
+    /// Where the panel's left edge was before the preview pushed it left, to go back on folding.
+    private var minXBeforePreview: CGFloat?
+
+    /// The screen the pointer is on: the one in use. NSMouseInRect counts the screen's edges.
+    private static var screenInUse: NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+    }
+
+    private func place(_ window: NSWindow) {
+        let visible = (Self.screenInUse ?? window.screen)?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        let frame = ClipboardPanelLayout.frame(
+            visible: visible, savedOrigin: panelSettings.panelOrigin, showingPreview: model.showPreview
+        )
+        minXBeforePreview = nil
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        // Rises 8 points and fades in over dur-base, moving the window itself so the shadow
+        // follows (Reduce Motion: fade only).
+        window.setFrame(reduceMotion ? frame : frame.offsetBy(dx: 0, dy: -Quiet.Space.s2), display: false)
+        window.alphaValue = 0
+        animate(window, reduceMotion: false) {
+            window.animator().alphaValue = 1
+            if !reduceMotion { window.animator().setFrame(frame, display: true) }
+        }
+    }
+
+    /// Runs one of DocShot's own panel animations over dur-base with Quiet's ease-out.
+    private func animate(_ window: NSWindow, reduceMotion: Bool, changes: @escaping () -> Void,
+                         completion: (@MainActor () -> Void)? = nil) {
+        animationsRunning += 1
+        let done: @MainActor () -> Void = { [weak self] in
+            self?.animationsRunning -= 1
+            completion?()
+        }
+        if reduceMotion {
+            changes()
+            done()
+            return
+        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = QuietTokens.durBase
+            context.timingFunction = Quiet.Motion.easeOutCurve
+            changes()
+        }, completionHandler: {
+            MainActor.assumeIsolated { done() }
+        })
+    }
+
+    /// Cmd+Y or the footer hint: slide the preview pane out to the right, or fold it away.
+    /// The content changes first and the panel's edge animates on the next turn of the run
+    /// loop, never the other way round: a layout change during a window animation cuts it
+    /// short (traced frame by frame, 24 November 2026). Widening reveals the new pane; narrowing
+    /// lets the pane fade out quickly and the panel close over the space it left. Ignored while
+    /// the panel is still rising in or already resizing.
+    func togglePreview() {
+        guard let window, window.isVisible, animationsRunning == 0 else { return }
+        let showing = !model.showPreview
+        let visible = window.screen?.visibleFrame ?? (Self.screenInUse?.visibleFrame ?? window.frame)
+        var target = ClipboardPanelLayout.resized(
+            window.frame, toWidth: ClipboardPanelLayout.width(showingPreview: showing), within: visible
+        )
+        if showing {
+            // Remember the left edge in case widening near the right of the screen moves it.
+            minXBeforePreview = window.frame.minX
+        } else if let minX = minXBeforePreview {
+            // Folding goes back to where the panel was before the preview pushed it left.
+            target.origin.x = min(max(minX, visible.minX), visible.maxX - target.width)
+            minXBeforePreview = nil
+        }
+        model.showPreview = showing
+        animationsRunning += 1 // held across the hop to the next turn of the run loop
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.animationsRunning -= 1
+                self.animate(window, reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion) {
+                    if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+                        window.setFrame(target, display: true)
+                    } else {
+                        window.animator().setFrame(target, display: true)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Saves where the user left the panel. Only drags call this, never DocShot's own moves.
+    private func rememberPlace(_ origin: CGPoint) {
+        panelSettings.panelOrigin = origin
+    }
+
+    func windowDidMove(_ notification: Notification) {
+        guard animationsRunning == 0, let window else { return }
+        rememberPlace(window.frame.origin)
+        // A drag sets a new home for the left edge.
+        minXBeforePreview = nil
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -247,6 +354,8 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             model.moveSelection(by: -1)
         case .down:
             model.moveSelection(by: 1)
+        case .togglePreview:
+            togglePreview()
         case .pick(let number):
             Task {
                 guard let item = await self.model.settledRow(number), self.isShowing else { return }
@@ -268,4 +377,11 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
         }
         return true
     }
+}
+
+/// A borderless panel that still takes the keyboard (the search field) and stays at the normal
+/// window level, so it behaves like a window, not an overlay.
+final class ClipboardPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }

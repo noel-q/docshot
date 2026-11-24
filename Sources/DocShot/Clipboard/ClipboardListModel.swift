@@ -8,6 +8,8 @@ enum ClipboardKeyAction: Equatable {
     case close, clearSearch, up, down, choose, copy, togglePin, delete
     /// Cmd+1 to Cmd+9: paste that row (restyle plan, decision 2). One-based.
     case pick(Int)
+    /// Cmd+Y: show or hide the preview pane (compact panels, decision 3).
+    case togglePreview
     /// Not ours: the search field gets it.
     case passThrough
 }
@@ -15,8 +17,8 @@ enum ClipboardKeyAction: Equatable {
 enum ClipboardKeys {
     static let escape: UInt16 = 53, up: UInt16 = 126, down: UInt16 = 125
     static let returnKey: UInt16 = 36, enter: UInt16 = 76, delete: UInt16 = 51
-    /// ANSI positions of C and P, used only when the layout gives no Latin letter (Russian, Greek).
-    static let ansiC: UInt16 = 8, ansiP: UInt16 = 35
+    /// ANSI positions of C, P and Y, used only when the layout gives no Latin letter (Russian, Greek).
+    static let ansiC: UInt16 = 8, ansiP: UInt16 = 35, ansiY: UInt16 = 16
     /// ANSI digit row, 1 to 9, used when the layout types something else there (AZERTY).
     static let ansiDigits: [UInt16] = [18, 19, 20, 21, 23, 22, 26, 28, 25]
 
@@ -42,6 +44,7 @@ enum ClipboardKeys {
         switch commandLetter(keyCode: keyCode, characters: characters, charactersIgnoringModifiers: charactersIgnoringModifiers) {
         case "c": return hasTextSelection ? .passThrough : .copy
         case "p": return .togglePin
+        case "y": return .togglePreview
         default: return .passThrough
         }
     }
@@ -68,8 +71,55 @@ enum ClipboardKeys {
         switch keyCode {
         case ansiC: return "c"
         case ansiP: return "p"
+        case ansiY: return "y"
         default: return nil
         }
+    }
+}
+
+/// Size and place of the compact clipboard panel (compact panels, decisions 2 and 3). Pure
+/// geometry in Cocoa screen coordinates, so it can be tested without a screen.
+enum ClipboardPanelLayout {
+    /// Search, list and key hints.
+    static let listWidth: CGFloat = 420
+    /// The preview pane that slides out to the right on Cmd+Y.
+    static let previewWidth: CGFloat = 360
+    static let height: CGFloat = 480
+
+    static func width(showingPreview: Bool) -> CGFloat {
+        showingPreview ? listWidth + previewWidth : listWidth
+    }
+
+    /// Where the panel opens: the remembered place, nudged fully on screen, if it is on this
+    /// screen at all; otherwise centred across with its top a fifth of the way down (where
+    /// Spotlight sits).
+    static func frame(visible: CGRect, savedOrigin: CGPoint?, showingPreview: Bool) -> CGRect {
+        let size = CGSize(width: width(showingPreview: showingPreview), height: height)
+        if let savedOrigin {
+            let saved = CGRect(origin: savedOrigin, size: size)
+            if visible.intersects(saved) { return clamped(saved, within: visible) }
+        }
+        let origin = CGPoint(
+            x: (visible.midX - size.width / 2).rounded(),
+            y: (visible.maxY - visible.height / 5 - size.height).rounded()
+        )
+        return clamped(CGRect(origin: origin, size: size), within: visible)
+    }
+
+    /// The frame after widening or narrowing to `width`: the left edge stays where it was unless
+    /// the panel would then run off the right of the screen, in which case it moves left. It
+    /// only ever moves sideways.
+    static func resized(_ frame: CGRect, toWidth width: CGFloat, within visible: CGRect) -> CGRect {
+        var result = CGRect(x: frame.minX, y: frame.minY, width: width, height: frame.height)
+        result.origin.x = min(max(result.minX, visible.minX), max(visible.maxX - result.width, visible.minX))
+        return result
+    }
+
+    static func clamped(_ frame: CGRect, within visible: CGRect) -> CGRect {
+        var result = frame
+        result.origin.x = min(max(result.minX, visible.minX), max(visible.maxX - result.width, visible.minX))
+        result.origin.y = min(max(result.minY, visible.minY), max(visible.maxY - result.height, visible.minY))
+        return result
     }
 }
 
@@ -172,6 +222,11 @@ final class ClipboardWindowModel: ObservableObject {
     @Published private(set) var selectedID: UUID?
     /// Bumped when the window opens, so the view puts focus in the search field.
     @Published private(set) var focusRequest = 0
+    /// The preview pane is out (compact panels, decision 3); remembered between openings.
+    @Published var showPreview: Bool {
+        didSet { if showPreview != oldValue { panelSettings.showPreview = showPreview } }
+    }
+    private let panelSettings: ClipboardSettings
 
     let controller: ClipboardHistoryController
     private let searchDelay: Duration
@@ -194,9 +249,15 @@ final class ClipboardWindowModel: ObservableObject {
     var selectedItem: ClipItem? { rows.first { $0.id == selectedID } }
     var isSearching: Bool { !SearchText.terms(query).isEmpty }
 
-    init(controller: ClipboardHistoryController, searchDelay: Duration = .milliseconds(120)) {
+    init(
+        controller: ClipboardHistoryController,
+        searchDelay: Duration = .milliseconds(120)
+    ) {
         self.controller = controller
         self.searchDelay = searchDelay
+        // The controller's preferences, so tests and debug runs never touch the real ones.
+        self.panelSettings = controller.preferences
+        showPreview = panelSettings.showPreview
         latestItems = controller.items
         arrange()
         itemsSubscription = controller.$items.sink { [weak self] items in

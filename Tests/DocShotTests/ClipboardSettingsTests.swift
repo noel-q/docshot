@@ -94,4 +94,19 @@ struct ClipboardSettingsTests {
         settings.pasteDirectly = false
         #expect(!ClipboardSettings(defaults: defaults).pasteDirectly)
     }
+
+    @Test("The preview starts folded away; the panel's place is remembered and can be forgotten")
+    func testPanelSettings() {
+        let (settings, defaults, suite) = scratch()
+        defer { defaults.removePersistentDomain(forName: suite) }
+        #expect(settings.showPreview == false)
+        #expect(settings.panelOrigin == nil)
+        settings.showPreview = true
+        settings.panelOrigin = CGPoint(x: 120.5, y: 300)
+        let reread = ClipboardSettings(defaults: defaults)
+        #expect(reread.showPreview)
+        #expect(reread.panelOrigin == CGPoint(x: 120.5, y: 300))
+        settings.panelOrigin = nil
+        #expect(ClipboardSettings(defaults: defaults).panelOrigin == nil)
+    }
 }

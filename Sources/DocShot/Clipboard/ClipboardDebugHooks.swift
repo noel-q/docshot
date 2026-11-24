@@ -38,7 +38,8 @@ enum ClipboardDebugHooks {
     }
 
     /// `open:<bundle id>` (only while that app is in front; it becomes the paste target),
-    /// `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
+    /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
+    /// `select:<n>`, `snapshot:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
     /// `escape`, `state`.
     static func run(_ command: String) {
         let window = ClipboardWindowController.shared
@@ -79,6 +80,42 @@ enum ClipboardDebugHooks {
             }
             return
         default:
+            if command == "show" {
+                // The window without a paste target: for looking, never for pasting.
+                window.show()
+                break
+            }
+            // Commands that add or change history run only against the scratch store, never the
+            // real one (`DOCSHOT_DEBUG_STORE`).
+            if ["pause", "resume", "enable", "disable", "seed"].contains(command),
+               (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
+                return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
+            }
+            if command == "pause" || command == "resume" {
+                history.setPaused(command == "pause")
+                break
+            }
+            if command == "enable" || command == "disable" {
+                history.setEnabled(command == "enable")
+                break
+            }
+            if command == "seed" {
+                seed()
+                return
+            }
+            if command.hasPrefix("filter:"), let filter = ClipboardFilter(rawValue: String(command.dropFirst("filter:".count))) {
+                model.filter = filter
+                break
+            }
+            if command.hasPrefix("select:"), let number = Int(command.dropFirst("select:".count)),
+               model.rows.indices.contains(number - 1) {
+                model.select(model.rows[number - 1].id)
+                break
+            }
+            if command.hasPrefix("snapshot:") {
+                snapshot(to: URL(fileURLWithPath: String(command.dropFirst("snapshot:".count))))
+                return
+            }
             if command.hasPrefix("keystroke:") {
                 // Cmd+V alone, no window: only while the named app is in front.
                 let bundleID = String(command.dropFirst("keystroke:".count))
@@ -111,6 +148,75 @@ enum ClipboardDebugHooks {
             }
         }
         writeState(command)
+    }
+
+    /// Sample items of every kind, added straight to the store (no clipboard), so the look can
+    /// be checked. Text samples start with "DocShot sample" so they are easy to clear.
+    static func seed() {
+        let history = ClipboardHistoryController.shared
+        let now = Date()
+        let lastWeek = now.addingTimeInterval(-6 * 86_400)
+        history.debugAdd(.fileURLs([URL(fileURLWithPath: NSHomeDirectory() + "/Documents/docshot/docs/DOCSHOT_REDEFINITION_PLAN.md")]),
+                         sourceApp: "com.apple.finder", at: lastWeek)
+        history.debugAdd(.text("DocShot sample: the earlier note from last week"), sourceApp: "com.apple.Notes", at: lastWeek.addingTimeInterval(60))
+        history.debugAdd(.image(data: sampleImage(), typeIdentifier: "public.png"), sourceApp: "com.apple.Preview", at: now.addingTimeInterval(-840))
+        history.debugAdd(.text("DocShot sample: Thanks, I will send the C2 notes over tonight."), sourceApp: "com.apple.MobileSMS", at: now.addingTimeInterval(-600))
+        history.debugAdd(.text("https://developer.apple.com/design/human-interface-guidelines"), sourceApp: "com.apple.Safari", at: now.addingTimeInterval(-540))
+        history.debugAdd(.colour(ClipColour(red: 0.914, green: 0.447, blue: 0.298)), sourceApp: "com.figma.Desktop", at: now.addingTimeInterval(-120))
+        history.debugAdd(.text("DocShot sample: ssh noel@devbox.local -p 2222"), sourceApp: "com.apple.Terminal", at: now.addingTimeInterval(-60))
+        Task {
+            await history.waitUntilIdle()
+            if let ssh = history.items.first(where: { $0.preview.hasPrefix("DocShot sample: ssh") }), !ssh.pinned {
+                history.togglePin(ssh)
+                await history.waitUntilIdle()
+            }
+            writeState("seed")
+        }
+    }
+
+    /// A built-in macOS desktop picture (never the user's own photos), downscaled, so preview
+    /// sharpness can be judged; a gradient if it is missing.
+    private static func sampleImage() -> Data {
+        let photo = URL(fileURLWithPath: "/System/Library/Desktop Pictures/Sonoma.heic")
+        if let source = CGImageSourceCreateWithURL(photo as CFURL, nil),
+           let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+               kCGImageSourceCreateThumbnailFromImageAlways: true,
+               kCGImageSourceThumbnailMaxPixelSize: 1600,
+           ] as CFDictionary),
+           let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
+            return png
+        }
+        let side = 480
+        let context = CGContext(data: nil, width: side, height: side * 3 / 4, bitsPerComponent: 8, bytesPerRow: 0,
+                                space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let colours = [CGColor(srgbRed: 0.31, green: 0.82, blue: 0.71, alpha: 1), CGColor(srgbRed: 0.45, green: 0.71, blue: 1, alpha: 1)]
+        let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB), colors: colours as CFArray, locations: [0, 1])!
+        context.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: side, y: side * 3 / 4), options: [])
+        let bitmap = NSBitmapImageRep(cgImage: context.makeImage()!)
+        return bitmap.representation(using: .png, properties: [:]) ?? Data()
+    }
+
+    /// Renders the window's content in dark and then light appearance to `<prefix>-dark.png`
+    /// and `<prefix>-light.png`, then restores the appearance.
+    static func snapshot(to prefix: URL) {
+        guard let window = ClipboardWindowController.shared.debugWindow, let view = window.contentView else {
+            return writeState("snapshot: no window")
+        }
+        Task {
+            for (name, appearance) in [("dark", NSAppearance.Name.darkAqua), ("light", .aqua)] {
+                window.appearance = NSAppearance(named: appearance)
+                try? await Task.sleep(for: .milliseconds(500))
+                view.layoutSubtreeIfNeeded()
+                guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
+                view.cacheDisplay(in: view.bounds, to: rep)
+                let url = prefix.deletingLastPathComponent()
+                    .appendingPathComponent(prefix.lastPathComponent + "-\(name).png")
+                try? rep.representation(using: .png, properties: [:])?.write(to: url)
+            }
+            window.appearance = nil
+            writeState("snapshot")
+        }
     }
 
     static func writeState(_ after: String) {

@@ -22,6 +22,7 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
     private(set) var lastPasteReport = "none"
     var debugPreviousApp: String? { previousApp?.bundleIdentifier }
     func debugSetPreviousApp(_ app: NSRunningApplication) { previousApp = app }
+    var debugWindow: NSWindow? { window }
 #endif
 
     var isShowing: Bool { window?.isVisible == true }
@@ -128,24 +129,38 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Window
 
+    /// Saved frame name. New with the Quiet layout, so the old narrow saved size is not reused
+    /// (restyle plan, decision 6).
+    static let frameName = "DocShotClipboardWindowQuiet"
+
     private func makeWindow() -> NSWindow {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 560),
-            styleMask: [.titled, .closable, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: 760, height: 480),
+            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        window.title = "DocShot"
+        // One panel: the title bar is merged into the content and its buttons are hidden;
+        // macOS still draws the corners and the shadow. Escape, the shortcut and "esc Close"
+        // in the footer close it.
+        window.title = "DocShot Clipboard"
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.isMovableByWindowBackground = true
+        for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+            window.standardWindowButton(button)?.isHidden = true
+        }
         window.isReleasedWhenClosed = false
-        window.minSize = NSSize(width: 340, height: 360)
+        window.minSize = NSSize(width: 600, height: 360)
         window.delegate = self
         window.contentView = NSHostingView(rootView: ClipboardHistoryView(
             model: model,
             controller: ClipboardHistoryController.shared,
-            onChoose: { [weak self] item in self?.choose(item) }
+            onChoose: { [weak self] item in self?.choose(item) },
+            onClose: { [weak self] in self?.close() }
         ))
         window.center()
-        window.setFrameAutosaveName("DocShotClipboardWindow")
+        window.setFrameAutosaveName(Self.frameName)
         return window
     }
 
@@ -219,6 +234,8 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             queryIsEmpty: model.query.isEmpty
         )
         let history = ClipboardHistoryController.shared
+        // History off: only Escape is ours; Return reaches the Turn On button.
+        if !history.isEnabled, action != .close, action != .clearSearch { return false }
         switch action {
         case .passThrough:
             return false
@@ -230,6 +247,12 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             model.moveSelection(by: -1)
         case .down:
             model.moveSelection(by: 1)
+        case .pick(let number):
+            Task {
+                guard let item = await self.model.settledRow(number), self.isShowing else { return }
+                self.model.select(item.id)
+                self.choose(item)
+            }
         case .choose, .copy, .togglePin, .delete:
             // Act on the list the search is about to show, not the one before it.
             Task {

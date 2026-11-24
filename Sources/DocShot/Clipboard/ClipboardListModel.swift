@@ -6,6 +6,8 @@ import Foundation
 /// What a key press in the window does (C3 plan, decisions 1 and 4).
 enum ClipboardKeyAction: Equatable {
     case close, clearSearch, up, down, choose, copy, togglePin, delete
+    /// Cmd+1 to Cmd+9: paste that row (restyle plan, decision 2). One-based.
+    case pick(Int)
     /// Not ours: the search field gets it.
     case passThrough
 }
@@ -15,6 +17,8 @@ enum ClipboardKeys {
     static let returnKey: UInt16 = 36, enter: UInt16 = 76, delete: UInt16 = 51
     /// ANSI positions of C and P, used only when the layout gives no Latin letter (Russian, Greek).
     static let ansiC: UInt16 = 8, ansiP: UInt16 = 35
+    /// ANSI digit row, 1 to 9, used when the layout types something else there (AZERTY).
+    static let ansiDigits: [UInt16] = [18, 19, 20, 21, 23, 22, 26, 28, 25]
 
     static func action(
         keyCode: UInt16, modifiers: NSEvent.ModifierFlags, characters: String?,
@@ -32,11 +36,26 @@ enum ClipboardKeys {
         default: break
         }
         guard flags == [.command] else { return .passThrough }
+        if let digit = commandDigit(keyCode: keyCode, characters: characters) {
+            return .pick(digit)
+        }
         switch commandLetter(keyCode: keyCode, characters: characters, charactersIgnoringModifiers: charactersIgnoringModifiers) {
         case "c": return hasTextSelection ? .passThrough : .copy
         case "p": return .togglePin
         default: return .passThrough
         }
+    }
+
+    /// 1 to 9 from the typed digit, or from the digit-row position when the layout types a
+    /// symbol there (AZERTY types "&" for 1).
+    static func commandDigit(keyCode: UInt16, characters: String?) -> Int? {
+        if let text = characters, text.count == 1, let digit = Int(text), (1...9).contains(digit) {
+            return digit
+        }
+        // A Latin letter is a letter shortcut, never a digit; anything else on the digit row
+        // (AZERTY's "&", "é") counts by position.
+        if let text = characters, text.count == 1, let first = text.first, first.isASCII, first.isLetter { return nil }
+        return ansiDigits.firstIndex(of: keyCode).map { $0 + 1 }
     }
 
     /// The Latin letter typed with Command: from the layout when it gives one, otherwise from
@@ -54,14 +73,65 @@ enum ClipboardKeys {
     }
 }
 
-/// The pure list rules of the window (C3 plan, decisions 3 to 5).
+/// The type filter at the top of the window (restyle plan, decision 2).
+enum ClipboardFilter: String, CaseIterable, Identifiable {
+    case all, text, images, files, colours
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: return "All"
+        case .text: return "Text"
+        case .images: return "Images"
+        case .files: return "Files"
+        case .colours: return "Colours"
+        }
+    }
+
+    func includes(_ kind: ClipKind) -> Bool {
+        switch self {
+        case .all: return true
+        case .text: return kind == .text || kind == .richText
+        case .images: return kind == .image
+        case .files: return kind == .fileURLs
+        case .colours: return kind == .colour
+        }
+    }
+}
+
+/// The list in groups: pinned, then used today, then earlier (restyle plan, decision 4).
+struct ClipboardGroups: Equatable {
+    var pinned: [ClipItem] = []
+    var today: [ClipItem] = []
+    var earlier: [ClipItem] = []
+
+    var rows: [ClipItem] { pinned + today + earlier }
+}
+
+/// The pure list rules of the window (C3 plan, decisions 3 to 5; restyle plan 2 and 4).
 enum ClipboardList {
 
-    /// Pinned items first, then the rest, each most recently used first. `matching` nil shows
-    /// everything; otherwise only those ids.
-    static func arrange(_ items: [ClipItem], matching: Set<UUID>?) -> (pinned: [ClipItem], others: [ClipItem]) {
-        let shown = matching.map { ids in items.filter { ids.contains($0.id) } } ?? items
-        return (shown.filter(\.pinned), shown.filter { !$0.pinned })
+    /// Pinned items first, then today's, then earlier ones, each most recently used first.
+    /// `matching` nil shows everything; otherwise only those ids. `filter` keeps one kind.
+    static func arrange(
+        _ items: [ClipItem], matching: Set<UUID>?, filter: ClipboardFilter = .all,
+        now: Date = Date(), calendar: Calendar = .current
+    ) -> ClipboardGroups {
+        let shown = items.filter { item in
+            filter.includes(item.kind) && (matching.map { $0.contains(item.id) } ?? true)
+        }
+        var groups = ClipboardGroups()
+        for item in shown {
+            if item.pinned {
+                groups.pinned.append(item)
+            } else if calendar.isDate(item.lastUsedAt, inSameDayAs: now) {
+                groups.today.append(item)
+            } else {
+                groups.earlier.append(item)
+            }
+        }
+        return groups
     }
 
     /// One step up (-1) or down (+1), stopping at the ends. With nothing selected, the first row.
@@ -90,8 +160,15 @@ final class ClipboardWindowModel: ObservableObject {
     @Published var query = "" {
         didSet { if query != oldValue { scheduleSearch() } }
     }
-    @Published private(set) var pinned: [ClipItem] = []
-    @Published private(set) var others: [ClipItem] = []
+    /// The type filter; back to All each time the window opens.
+    @Published var filter: ClipboardFilter = .all {
+        didSet {
+            guard filter != oldValue else { return }
+            arrange()
+            selectedID = rows.first?.id
+        }
+    }
+    @Published private(set) var groups = ClipboardGroups()
     @Published private(set) var selectedID: UUID?
     /// Bumped when the window opens, so the view puts focus in the search field.
     @Published private(set) var focusRequest = 0
@@ -104,7 +181,16 @@ final class ClipboardWindowModel: ObservableObject {
     private var searchTask: Task<Void, Never>?
     private var itemsSubscription: AnyCancellable?
 
-    var rows: [ClipItem] { pinned + others }
+    var rows: [ClipItem] { groups.rows }
+    var pinned: [ClipItem] { groups.pinned }
+    var others: [ClipItem] { groups.today + groups.earlier }
+
+    /// Row `number` (1 to 9) as Cmd+number picks it, once any search has settled.
+    func settledRow(_ number: Int) async -> ClipItem? {
+        await waitForSearch()
+        let rows = rows
+        return rows.indices.contains(number - 1) ? rows[number - 1] : nil
+    }
     var selectedItem: ClipItem? { rows.first { $0.id == selectedID } }
     var isSearching: Bool { !SearchText.terms(query).isEmpty }
 
@@ -124,6 +210,7 @@ final class ClipboardWindowModel: ObservableObject {
     func reset() {
         searchTask?.cancel()
         query = ""
+        filter = .all
         matches = nil
         latestItems = controller.items
         arrange()
@@ -201,9 +288,8 @@ final class ClipboardWindowModel: ObservableObject {
 
     private func arrange() {
         let old = rows
-        let arranged = ClipboardList.arrange(latestItems, matching: matches)
-        pinned = arranged.pinned
-        others = arranged.others
+        groups = ClipboardList.arrange(latestItems, matching: matches, filter: filter)
         selectedID = ClipboardList.keepSelection(selectedID, old: old, new: rows)
     }
+
 }

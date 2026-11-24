@@ -57,7 +57,10 @@
     "Sources/DocShot/Clipboard/PasteboardReader.swift",
     "Sources/DocShot/Clipboard/ClipboardHistoryController.swift",
     "Sources/DocShot/Clipboard/PasteAction.swift",
-    "Sources/DocShot/Clipboard/ClipboardListModel.swift"
+    "Sources/DocShot/Clipboard/ClipboardListModel.swift",
+    "Sources/DocShot/Design/QuietTokens.swift",
+    "Sources/DocShot/Design/Quiet.swift",
+    "Sources/DocShot/Clipboard/ClipPreviewText.swift"
   ],
 
   "appOnlyProductionSources": [
@@ -94,7 +97,8 @@
     "Sources/DocShot/Clipboard/ClipboardWindowController.swift",
     "Sources/DocShot/Clipboard/ClipboardHistoryView.swift",
     "Sources/DocShot/Clipboard/ClipboardSettingsSection.swift",
-    "Sources/DocShot/Clipboard/ClipboardDebugHooks.swift"
+    "Sources/DocShot/Clipboard/ClipboardDebugHooks.swift",
+    "Sources/DocShot/Clipboard/ClipboardPreviewPane.swift"
   ],
 
   "swiftPackageOnlySuites": [

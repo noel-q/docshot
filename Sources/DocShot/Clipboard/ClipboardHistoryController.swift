@@ -6,7 +6,20 @@ import ClipboardKit
 /// back. With history off it does nothing at all: no timer, no store, no reads.
 @MainActor
 final class ClipboardHistoryController: ObservableObject {
-    static let shared = ClipboardHistoryController()
+    static let shared: ClipboardHistoryController = {
+#if DEBUG
+        // Debug runs for checking the look: `open --env DOCSHOT_DEBUG_STORE=<folder>` keeps
+        // history in that folder with scratch preferences, away from the real ones.
+        if let folder = ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"], !folder.isEmpty,
+           let defaults = UserDefaults(suiteName: "DocShotDebugStore") {
+            return ClipboardHistoryController(
+                settings: ClipboardSettings(defaults: defaults),
+                storeDirectory: URL(fileURLWithPath: folder, isDirectory: true)
+            )
+        }
+#endif
+        return ClipboardHistoryController()
+    }()
 
     @Published private(set) var items: [ClipItem] = []
     @Published private(set) var isEnabled = false
@@ -273,6 +286,21 @@ final class ClipboardHistoryController: ObservableObject {
         guard let store else { return [] }
         return (try? await store.search(query)) ?? []
     }
+
+    /// The full content of an item for the preview pane; nil if it cannot be read.
+    func previewContent(for item: ClipItem) async -> ClipContent? {
+        guard let store else { return nil }
+        return try? await store.content(for: item.id)
+    }
+
+#if DEBUG
+    /// Debug hook only: adds test content as if copied in `sourceApp`, without the clipboard.
+    func debugAdd(_ content: ClipContent, sourceApp: String?, at date: Date = Date()) {
+        enqueue { store in
+            try await store.add(content, sourceApp: sourceApp, now: date)
+        }
+    }
+#endif
 
     /// Frees the store's search index (the window closed).
     func releaseSearchIndex() {

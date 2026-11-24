@@ -18,10 +18,57 @@ struct ClipboardListTests {
         let a = Self.item("a"), b = Self.item("b", pinned: true), c = Self.item("c")
         let all = ClipboardList.arrange([a, b, c], matching: nil)
         #expect(all.pinned.map(\.preview) == ["b"])
-        #expect(all.others.map(\.preview) == ["a", "c"])
+        #expect(all.today.map(\.preview) == ["a", "c"])
         let some = ClipboardList.arrange([a, b, c], matching: [c.id])
         #expect(some.pinned.isEmpty)
-        #expect(some.others.map(\.preview) == ["c"])
+        #expect(some.rows.map(\.preview) == ["c"])
+    }
+
+    static func item(_ label: String, kind: ClipKind, usedAt: Date, pinned: Bool = false) -> ClipItem {
+        ClipItem(createdAt: usedAt, lastUsedAt: usedAt, kind: kind,
+                 contentHash: ClipContent.text(label).contentHash, sourceApp: nil,
+                 pinned: pinned, byteSize: 1, preview: label)
+    }
+
+    @Test("Unpinned items split into today and earlier by last use; pins stay on top whatever their age")
+    func testGroups() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: "Europe/London"))
+        let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 24, hour: 10)))
+        let morning = now.addingTimeInterval(-9 * 3600) // 01:00 today
+        let yesterday = now.addingTimeInterval(-11 * 3600) // 23:00 yesterday
+        let items = [
+            Self.item("today", kind: .text, usedAt: morning),
+            Self.item("yesterday", kind: .text, usedAt: yesterday),
+            Self.item("old pin", kind: .text, usedAt: yesterday, pinned: true),
+        ]
+        let groups = ClipboardList.arrange(items, matching: nil, now: now, calendar: calendar)
+        #expect(groups.pinned.map(\.preview) == ["old pin"])
+        #expect(groups.today.map(\.preview) == ["today"])
+        #expect(groups.earlier.map(\.preview) == ["yesterday"])
+        #expect(groups.rows.map(\.preview) == ["old pin", "today", "yesterday"])
+    }
+
+    @Test("The type filter keeps one kind; Text includes rich text; it combines with search")
+    func testFilter() {
+        let now = Date()
+        let items: [ClipItem] = [
+            Self.item("plain", kind: .text, usedAt: now),
+            Self.item("rich", kind: .richText, usedAt: now),
+            Self.item("picture", kind: .image, usedAt: now),
+            Self.item("doc", kind: .fileURLs, usedAt: now),
+            Self.item("swatch", kind: .colour, usedAt: now),
+        ]
+        func shown(_ filter: ClipboardFilter, _ matching: Set<UUID>? = nil) -> [String] {
+            ClipboardList.arrange(items, matching: matching, filter: filter, now: now).rows.map(\.preview)
+        }
+        #expect(shown(.all).count == 5)
+        #expect(shown(.text) == ["plain", "rich"])
+        #expect(shown(.images) == ["picture"])
+        #expect(shown(.files) == ["doc"])
+        #expect(shown(.colours) == ["swatch"])
+        #expect(shown(.text, [items[1].id, items[2].id]) == ["rich"])
+        #expect(ClipboardFilter.allCases.map(\.title) == ["All", "Text", "Images", "Files", "Colours"])
     }
 
     @Test("Up and Down stop at the ends; with nothing selected the first row is chosen")
@@ -94,6 +141,17 @@ struct ClipboardKeysTests {
         // Russian: the ANSI C position types a Cyrillic letter; the position decides.
         #expect(action(8, .command, chars: "с") == .copy)
         #expect(action(35, .command, chars: "з") == .togglePin)
+    }
+
+    @Test("Cmd+1 to Cmd+9 pick a row; on AZERTY the digit-row position decides; Cmd+0 does nothing")
+    func testPick() {
+        #expect(action(18, .command, chars: "1") == .pick(1))
+        #expect(action(25, .command, chars: "9") == .pick(9))
+        #expect(action(18, .command, chars: "&") == .pick(1)) // AZERTY 1 key
+        #expect(action(19, .command, chars: "é") == .pick(2)) // AZERTY 2 key
+        #expect(action(29, .command, chars: "0") == .passThrough)
+        #expect(action(18, [], chars: "1") == .passThrough) // plain 1 types in the search
+        #expect(action(18, .command, chars: "c") == .copy) // a letter is never a digit
     }
 
     @Test("The letter typed with Command wins over the plain letter (Dvorak with QWERTY Command)")
@@ -190,5 +248,70 @@ struct ClipboardWindowModelTests {
         #expect(model.selectedItem?.preview == "newest")
         model.query = "targ"
         #expect(await model.settledSelection()?.preview == "target")
+    }
+
+    @Test("The filter narrows the list and selects its first row; opening again shows All")
+    func testFilterInModel() async {
+        let fixture = ClipboardHistoryControllerTests.Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        for text in ["first", "second"] {
+            fixture.copy(text)
+            controller.poll()
+            await controller.waitUntilIdle()
+        }
+        let model = ClipboardWindowModel(controller: controller, searchDelay: .zero)
+        model.reset()
+        model.filter = .images
+        #expect(model.rows.isEmpty)
+        #expect(model.selectedItem == nil)
+        model.filter = .text
+        #expect(model.selectedItem?.preview == "second")
+        #expect(await model.settledRow(2)?.preview == "first")
+        #expect(await model.settledRow(3) == nil)
+        model.reset()
+        #expect(model.filter == .all)
+    }
+}
+
+@Suite("Clip preview text")
+struct ClipPreviewTextTests {
+    @Test("Colours read as hex, RGB and HSL")
+    func testColour() {
+        let colour = ClipColour(red: 233 / 255, green: 114 / 255, blue: 76 / 255)
+        #expect(colour.hexString == "#E9724C")
+        #expect(ClipPreviewText.rgb(colour) == "rgb(233 114 76)")
+        #expect(ClipPreviewText.hsl(colour) == "hsl(15 78% 61%)") // standard maths; the Quiet preview shows 79%
+        #expect(ClipPreviewText.hsl(ClipColour(red: 0.5, green: 0.5, blue: 0.5)) == "hsl(0 0% 50%)")
+        #expect(ClipPreviewText.hsl(ClipColour(red: 0, green: 0, blue: 1)) == "hsl(240 100% 50%)")
+    }
+
+    @Test("A lone web link shows its site from the address; other text does not")
+    func testLinkHost() {
+        #expect(ClipPreviewText.linkHost("https://www.apple.com/design") == "apple.com")
+        #expect(ClipPreviewText.linkHost("  http://example.org/a?b=c \n") == "example.org")
+        #expect(ClipPreviewText.linkHost("file:///tmp/a.txt") == nil)
+        #expect(ClipPreviewText.linkHost("see https://apple.com") == nil)
+    }
+
+    @Test("Text from terminals and code editors counts as code")
+    func testCodeSource() {
+        #expect(ClipPreviewText.isCodeSource("com.apple.Terminal"))
+        #expect(ClipPreviewText.isCodeSource("com.jetbrains.intellij"))
+        #expect(!ClipPreviewText.isCodeSource("com.apple.TextEdit"))
+        #expect(!ClipPreviewText.isCodeSource(nil))
+    }
+
+    @Test("Size reads as characters, pixels and bytes, or a file count")
+    func testSize() {
+        #expect(ClipPreviewText.size(of: .text("hello"), pixelSize: nil, byteSize: 5) == "5 characters")
+        #expect(ClipPreviewText.size(of: .text("a"), pixelSize: nil, byteSize: 1) == "1 character")
+        #expect(ClipPreviewText.size(of: .fileURLs([URL(fileURLWithPath: "/a"), URL(fileURLWithPath: "/b")]),
+                                     pixelSize: nil, byteSize: 0) == "2 files")
+        #expect(ClipPreviewText.size(of: .image(data: Data(), typeIdentifier: "public.png"),
+                                     pixelSize: CGSize(width: 480, height: 360), byteSize: 2048)
+                .hasPrefix("480 × 360 pixels, "))
     }
 }

@@ -293,6 +293,23 @@ changed or is not in front, and the agent runs paste tests only while Noel is aw
 the Mac. The Chrome test tab used first was under the Claude in Chrome extension and
 received no outside keystrokes at all, so it could not test paste.
 
+## Quiet Restyle of the Clipboard Window
+
+Debug build from `build/qc-dd` (branch `feature/quiet-clipboard`, uncommitted), 24 November
+2026, macOS 26.5.2. The agent ran DocShot with `DOCSHOT_DEBUG_HOOKS=1` and
+`DOCSHOT_DEBUG_STORE` set, so sample items went to a scratch store and scratch preferences,
+never the real history (which stayed off). The app rendered its own window to PNG in dark and
+light; the agent looked at each.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| Layout in dark and light | Agent-run pass from app-rendered snapshots (24 Nov 2026) | Search bar at the top (no empty title band), filter, "..." menu, 300 pt list with groups, preview pane, footer hints. |
+| Previews | Agent-run pass (24 Nov 2026) | Code in mono from Terminal; link with its site; colour with hex, RGB and HSL; a 1600 px photo shown sharp with its pixel size; file with icon and path. |
+| States | Agent-run pass (24 Nov 2026) | No matches (action hints hidden); paused line with Resume in the accent; history off with a Turn on button and no Return shortcut. |
+| Clicks in the merged title-bar zone | User-reported pass (24 Nov 2026) | The filter, the "..." menu and the search field all take clicks. |
+| Look | User-reported pass (24 Nov 2026): "Looks good" | Noel says it no longer looks ugly. |
+| Clean-up | Done (24 Nov 2026) | Scratch store, scratch preferences and snapshots deleted; normal debug build relaunched; real history still off. |
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

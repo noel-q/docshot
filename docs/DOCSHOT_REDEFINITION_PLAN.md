@@ -62,6 +62,16 @@ The app stays a menu bar app (`LSUIElement`). The window is an ordinary window, 
 9. The remembered previous app follows the last other app made active while the window is open, so paste never goes to a stale app.
 Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts such as Dvorak paste too.
 
+**Quiet restyle of the clipboard window (agreed 24 November 2026).** The pilot for Noel's design system "Quiet" (`~/Documents/quiet-design`, skill `quiet-design`; brief in its `docs/MIGRATION_PLAN.md`, "DocShot pilot", step 1). Layout: bare search bar, 300-point list with a sliding neutral selection, preview pane, key-hint footer; Quiet tokens only, dark and light. Settings and the rest of the app follow later, one screen at a time.
+1. Quiet neutrals; the accent follows the Settings theme (Graphite to tide, Slate to sky, Moss to moss, Ember to ember). Renaming Graphite and the default theme stay open.
+2. Two additions from the Quiet spec: a type filter (All, Text, Images, Files, Colours) and Cmd+1 to Cmd+9 to paste one of the first nine rows.
+3. Cmd+Delete still deletes (plain Delete edits the search); the Quiet spec is to be corrected.
+4. Groups: Pinned, Today, Earlier.
+5. Pause and Clear move into a "..." menu at the end of the search bar; a quiet line says when history is paused.
+6. Window about 760 by 480, title bar merged into the content, system corners and shadow; size remembered under a new name, so the old saved size is reset once.
+7. Type-aware previews, local only: text; code in mono when copied from a terminal or code editor; colour swatch with hex, RGB and HSL; link with its site from the address (no network); image with pixel size; file with icon and path.
+8. Checks: a DEBUG-only snapshot of the real window in dark and light for the agent; Noel judges the look at the end; Fable reviews against the Quiet checklist.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

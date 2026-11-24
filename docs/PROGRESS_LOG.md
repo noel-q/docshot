@@ -4,6 +4,19 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- C3 committed as 9ef04d1 on `feature/c3-paste` with Noel's yes, local only.
+- Quiet restyle of the clipboard window (plan section 3, "Quiet restyle", eight answers
+  agreed) built on `feature/quiet-clipboard`, uncommitted: generated `QuietTokens.swift`
+  (Scripts/generate-quiet-tokens.py from Quiet's tokens.json), `Quiet.swift` (accent follows
+  the Settings theme), the new layout, type-aware previews, the type filter, Cmd+1 to Cmd+9,
+  Pinned/Today/Earlier groups. Checked by the agent from snapshots the app rendered of the
+  real window in dark and light (DEBUG hook, scratch store via `DOCSHOT_DEBUG_STORE`, never
+  the real history). Fable review: one defect (blurry image previews from a shared thumbnail
+  cache) and several risks and nits, all fixed, including Return no longer turning history on
+  (not agreed) and debug commands refusing the real store. Tests: swift test 352,
+  xcodebuild test 353, ClipboardKit 76, parity OK, Release has no debug symbols.
+  Noel looked at it running on sample data: "Looks good", and the filter, the "..." menu
+  and the search field all take clicks (user-reported). Scratch data cleaned up.
 - C2 committed as b89d700 on `feature/c2-clipboard-window` with Noel's yes, local only.
 - C3 plan agreed (nine answers, plan section 3 "C3 plan"); Noel added "No limit" for items
   and asked for the window's look to wait for his new design system. Built on

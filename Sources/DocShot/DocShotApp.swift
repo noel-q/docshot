@@ -21,7 +21,9 @@ struct DocShotApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("DocShot", systemImage: "viewfinder") {
+        // The Viewfinder mark (Quiet icon bake-off, chosen 24 November 2026), a template image
+        // so macOS tints it for the menu bar.
+        MenuBarExtra("DocShot", image: "MenuBarIcon") {
             Button("Capture Screenshot (\(hotkeyService.binding(for: .screenshot).shortcutDisplay))") {
                 CaptureCoordinator.shared.startCapture()
             }

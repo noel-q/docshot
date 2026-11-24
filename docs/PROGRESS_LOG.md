@@ -4,6 +4,14 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Quiet restyle committed as 9a1120d on `feature/quiet-clipboard` with Noel's yes.
+- New app icon "Viewfinder" (Noel's pick from the Quiet icon bake-off; files from
+  `~/Documents/quiet-design/icons/docshot/final/`) installed: AppIcon PNGs swapped (same names
+  and Contents.json), and a `MenuBarIcon` template image set replaces the "viewfinder" SF
+  Symbol in the menu bar. Verified: the built Assets.car holds both, the menu bar image in
+  template mode; macOS's own icon for the built app shows Viewfinder; DocShot's status item,
+  rendered through the DEBUG hook (`menubar:`), draws black in light and white in dark.
+  swift test 352, parity OK. Uncommitted.
 - C3 committed as 9ef04d1 on `feature/c3-paste` with Noel's yes, local only.
 - Quiet restyle of the clipboard window (plan section 3, "Quiet restyle", eight answers
   agreed) built on `feature/quiet-clipboard`, uncommitted: generated `QuietTokens.swift`

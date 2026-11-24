@@ -39,7 +39,7 @@ enum ClipboardDebugHooks {
 
     /// `open:<bundle id>` (only while that app is in front; it becomes the paste target),
     /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
-    /// `select:<n>`, `snapshot:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
+    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
     /// `escape`, `state`.
     static func run(_ command: String) {
         let window = ClipboardWindowController.shared
@@ -111,6 +111,25 @@ enum ClipboardDebugHooks {
                model.rows.indices.contains(number - 1) {
                 model.select(model.rows[number - 1].id)
                 break
+            }
+            if command.hasPrefix("menubar:") {
+                // The menu bar item, drawn by DocShot itself, in dark and light.
+                let prefix = URL(fileURLWithPath: String(command.dropFirst("menubar:".count)))
+                let bars = NSApp.windows.filter { String(describing: type(of: $0)).contains("StatusBar") }
+                for (index, bar) in bars.enumerated() {
+                    guard let view = bar.contentView else { continue }
+                    for (name, appearance) in [("dark", NSAppearance.Name.darkAqua), ("light", .aqua)] {
+                        view.appearance = NSAppearance(named: appearance)
+                        view.layoutSubtreeIfNeeded()
+                        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
+                        view.cacheDisplay(in: view.bounds, to: rep)
+                        let url = prefix.deletingLastPathComponent()
+                            .appendingPathComponent(prefix.lastPathComponent + "-\(index)-\(name).png")
+                        try? rep.representation(using: .png, properties: [:])?.write(to: url)
+                    }
+                    view.appearance = nil
+                }
+                return writeState("menubar: \(bars.count) item(s)")
             }
             if command.hasPrefix("snapshot:") {
                 snapshot(to: URL(fileURLWithPath: String(command.dropFirst("snapshot:".count))))

@@ -7,7 +7,7 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
-- 2026-11-24: Quiet restyle of the clipboard window (pilot step 1) built on feature/quiet-clipboard; Fable review fixed; swift test 352, xcodebuild test 353, ClipboardKit 76; Noel: "Looks good", clicks work. Verified (agent snapshots) and user-reported.
+- 2026-11-24: Quiet restyle of the clipboard window (pilot step 1) committed as 9a1120d on feature/quiet-clipboard; Fable review fixed; swift test 352, xcodebuild test 353, ClipboardKit 76; Noel: "Looks good", clicks work. Verified (agent snapshots) and user-reported.
 - 2026-11-24: C3 paste, search, keys, pins, editable limits and excluded apps committed as 9ef04d1 on feature/c3-paste. Fable review, re-review and a final check; all fixes in. swift test 339, xcodebuild test 340, ClipboardKit 76; parity OK. Device: paste verified in TextEdit (agent, screenshot) and user-reported in Chrome, the Claude app and Terminal; pin, delete, Escape agent-run via a DEBUG-only hook. Verified.
 - 2026-11-24: C2 clipboard window committed as b89d700 on feature/c2-clipboard-window, local only. Fable review and re-review: seven defects found and fixed. swift test 316, xcodebuild test 317, ClipboardKit 69 pass with the hotkey suites skipped; parity audit OK. Device checks: recording, skips, idle CPU, relaunch and off agent-run in the app (verified by reading the store); window, copy-back, Escape, menu and Clear user-reported. Pause tests only. Noel likes the behaviour, not the look.
 - 2026-11-23: C1 ClipboardKit core committed as ff490d2 on feature/c1-clipboardkit, local only. Verified.
@@ -32,7 +32,7 @@
 - None.
 
 ## Next action
-- Quiet restyle of the clipboard window done on feature/quiet-clipboard (from C3's 9ef04d1), uncommitted: Noel says it looks good; tests pass. Next: commit with Noel's yes. After that, per the Quiet migration plan: step 2 (DocShot tokens and themes as accent swaps, needs Noel's theme-name decision), then the other screens. Do not merge or push without Noel's say.
+- Viewfinder app icon and menu bar image installed on feature/quiet-clipboard (on top of 9a1120d), uncommitted; seen in the built app. Next: commit with Noel's yes; then Quiet pilot step 2 (tokens and themes as accent swaps), which needs Noel's theme-name decision. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

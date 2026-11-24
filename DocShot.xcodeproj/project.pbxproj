@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2000002C2000000000000A1 /* ClipboardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000001C2000000000000A1 /* ClipboardSettings.swift */; };
+		C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000001C2000000000000A1 /* ClipboardSettings.swift */; };
+		C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
+		C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
+		C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
+		C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
+		C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010C2000000000000A1 /* ClipboardWindowController.swift */; };
+		C2000013C2000000000000A1 /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000012C2000000000000A1 /* ClipboardHistoryView.swift */; };
+		C2000015C2000000000000A1 /* ClipboardSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */; };
+		C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */; };
+		C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000018C2000000000000A1 /* PasteboardReaderTests.swift */; };
+		C2000021C2000000000000A1 /* ClipboardHistoryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */; };
+		C2000903C2000000000000A1 /* ClipboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2000901C2000000000000A1 /* ClipboardKit */; };
+		C2000904C2000000000000A1 /* ClipboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2000902C2000000000000A1 /* ClipboardKit */; };
 		DA0000012C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
 		DA0000022C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
 		DA0000032C50000000000001 /* LaunchAtLoginServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000022C50000000000001 /* LaunchAtLoginServiceTests.swift */; };
@@ -290,6 +304,16 @@
 		CA00001F2C50000000000001 /* VideoProjectExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportService.swift; path = Sources/DocShot/Services/VideoProjectExportService.swift; sourceTree = "<group>"; };
 		CA0000222C50000000000001 /* VideoProjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectTests.swift; path = Tests/DocShotTests/VideoProjectTests.swift; sourceTree = "<group>"; };
 		CA0000232C50000000000001 /* VideoProjectExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportTests.swift; path = Tests/DocShotTests/VideoProjectExportTests.swift; sourceTree = "<group>"; };
+		C2000001C2000000000000A1 /* ClipboardSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettings.swift; path = Sources/DocShot/Clipboard/ClipboardSettings.swift; sourceTree = "<group>"; };
+		C2000004C2000000000000A1 /* PasteboardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteboardReader.swift; path = Sources/DocShot/Clipboard/PasteboardReader.swift; sourceTree = "<group>"; };
+		C2000007C2000000000000A1 /* ClipboardHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryController.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryController.swift; sourceTree = "<group>"; };
+		C2000010C2000000000000A1 /* ClipboardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardWindowController.swift; path = Sources/DocShot/Clipboard/ClipboardWindowController.swift; sourceTree = "<group>"; };
+		C2000012C2000000000000A1 /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryView.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryView.swift; sourceTree = "<group>"; };
+		C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettingsSection.swift; path = Sources/DocShot/Clipboard/ClipboardSettingsSection.swift; sourceTree = "<group>"; };
+		C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettingsTests.swift; path = Tests/DocShotTests/ClipboardSettingsTests.swift; sourceTree = "<group>"; };
+		C2000018C2000000000000A1 /* PasteboardReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteboardReaderTests.swift; path = Tests/DocShotTests/PasteboardReaderTests.swift; sourceTree = "<group>"; };
+		C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryControllerTests.swift; path = Tests/DocShotTests/ClipboardHistoryControllerTests.swift; sourceTree = "<group>"; };
+		C2000900C2000000000000A1 /* ClipboardKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Packages/ClipboardKit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -297,6 +321,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2000903C2000000000000A1 /* ClipboardKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,6 +329,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2000904C2000000000000A1 /* ClipboardKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -341,6 +367,12 @@
 				C0600003C0600000000000A1 /* PreviewThumbnail.swift */,
 				C0600005C0600000000000A1 /* PreviewThumbnailController.swift */,
 				C0700003C0700000000000A1 /* ColorTheme.swift */,
+				C2000001C2000000000000A1 /* ClipboardSettings.swift */,
+				C2000004C2000000000000A1 /* PasteboardReader.swift */,
+				C2000007C2000000000000A1 /* ClipboardHistoryController.swift */,
+				C2000010C2000000000000A1 /* ClipboardWindowController.swift */,
+				C2000012C2000000000000A1 /* ClipboardHistoryView.swift */,
+				C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */,
 				C0700006C0700000000000A1 /* ThemeController.swift */,
 				B00000042C50000000000001 /* CaptureState.swift */,
 				B00000052C50000000000001 /* DisplayGeometry.swift */,
@@ -419,6 +451,9 @@
 				C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */,
 				C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */,
 				C0700008C0700000000000A1 /* ColorThemeTests.swift */,
+				C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */,
+				C2000018C2000000000000A1 /* PasteboardReaderTests.swift */,
+				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
 				B000001A2C50000000000001 /* CropRenderingTests.swift */,
@@ -449,6 +484,7 @@
 		100000000000000000000005 = {
 			isa = PBXGroup;
 			children = (
+				C2000900C2000000000000A1 /* ClipboardKit */,
 				100000000000000000000003 /* Sources */,
 				100000000000000000000004 /* Tests */,
 				100000000000000000000002 /* Products */,
@@ -480,6 +516,9 @@
 			dependencies = (
 			);
 			name = DocShot;
+			packageProductDependencies = (
+				C2000901C2000000000000A1 /* ClipboardKit */,
+			);
 			productName = DocShot;
 			productReference = E00000012C50000000000001 /* DocShot.app */;
 			productType = "com.apple.product-type.application";
@@ -497,6 +536,9 @@
 				T00000012C50000000000001 /* PBXTargetDependency */,
 			);
 			name = DocShotTests;
+			packageProductDependencies = (
+				C2000902C2000000000000A1 /* ClipboardKit */,
+			);
 			productName = DocShotTests;
 			productReference = E00000022C50000000000001 /* DocShotTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -557,6 +599,12 @@
 				C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
 				C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */,
 				C0700002C0700000000000A1 /* ColorTheme.swift in Sources */,
+				C2000002C2000000000000A1 /* ClipboardSettings.swift in Sources */,
+				C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
+				C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */,
+				C2000013C2000000000000A1 /* ClipboardHistoryView.swift in Sources */,
+				C2000015C2000000000000A1 /* ClipboardSettingsSection.swift in Sources */,
 				C0700005C0700000000000A1 /* ThemeController.swift in Sources */,
 				A00000042C50000000000001 /* CaptureState.swift in Sources */,
 				A00000052C50000000000001 /* DisplayGeometry.swift in Sources */,
@@ -665,6 +713,12 @@
 				C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */,
 				C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */,
 				C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */,
+				C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */,
+				C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
+				C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */,
+				C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */,
+				C2000021C2000000000000A1 /* ClipboardHistoryControllerTests.swift in Sources */,
 				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
 				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
 				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,
@@ -848,6 +902,17 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C2000901C2000000000000A1 /* ClipboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClipboardKit;
+		};
+		C2000902C2000000000000A1 /* ClipboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClipboardKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
 		G00000012C50000000000001 /* Build configuration list for PBXNativeTarget "DocShot" */ = {

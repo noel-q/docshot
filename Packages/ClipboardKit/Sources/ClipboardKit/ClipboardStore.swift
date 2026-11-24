@@ -107,6 +107,16 @@ public actor ClipboardStore {
         }
     }
 
+    /// The saved file of an image item, for thumbnails; nil for other kinds or a missing file.
+    public func imageFileURL(for id: UUID) throws -> URL? {
+        guard state.item(id)?.kind == .image else { return nil }
+        let statement = try db.prepare("SELECT payload_file FROM items WHERE id = ?")
+        try statement.bind(1, id.uuidString)
+        guard try statement.step(), let name = statement.text(0) else { return nil }
+        let url = imagesDirectory.appendingPathComponent(name)
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
     // MARK: - Changes
 
     /// Records a copy. Skipping by marker, app or pause happens before this, in `RecordingRules`.

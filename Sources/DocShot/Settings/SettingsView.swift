@@ -70,6 +70,11 @@ public struct SettingsView: View {
 
             Divider()
 
+            // Clipboard history (C2)
+            ClipboardSettingsSection()
+
+            Divider()
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("App Launch")
                     .font(.system(size: 13, weight: .semibold))

@@ -3,6 +3,21 @@
 Dated detail that does not fit on the one-page STATUS.md. Newest first. Each entry keeps
 its original evidence label (verified, inherited, assumed, unknown).
 
+## 2026-11-24
+
+- C2 device checks run with Noel's go; full table in DEVICE_VERIFICATION.md ("C2 Clipboard
+  History"). Agent-run passes (verified by reading the store): text, file, colour, PNG,
+  TIFF converted to PNG, concealed copy skipped, copy from Passwords skipped, idle CPU about
+  0.1%, history kept over a relaunch, off records nothing. Noel's window steps (⌃⌥⌘V,
+  click to copy back, Escape, menu, Clear) user-reported as passing; Clear confirmed in the
+  store. Pause tested by tests only. Screen control cannot see a menu bar app, so the
+  window was not seen by the agent.
+- During the run a password-like copy Noel made in WhatsApp was recorded (no concealed
+  marker); the agent deleted it with secure delete. Expected behaviour; for C3 planning.
+- End state: history off, store empty, C2 debug build running. Nothing committed.
+- Noel is happy with C2's behaviour but not its look. He asked how to settle one design
+  language and UI/UX system for all his products before more UI work; open question.
+
 ## 2026-11-23
 
 - C0 findings committed as 70132a5 on `feature/c0.7-themes`, local only.
@@ -34,6 +49,31 @@ its original evidence label (verified, inherited, assumed, unknown).
 - After the fixes: ClipboardKit `swift test` 68 and its `xcodebuild test` 68, all passing;
   app `swift test` 290 with the hotkey suites skipped, unchanged; parity audit OK. Verified
   (tests only). No device checks: C1 has no UI and no real clipboard.
+- C1 committed as ff490d2 on `feature/c1-clipboardkit`, local only.
+- C2 plan agreed by Noel ("Yes to all"), seven answers written into plan section 3 ("C2
+  plan"); testing rule 3 changed at his request: the agent runs clipboard device checks with
+  screen control, after telling him. Built on `feature/c2-clipboard-window`, cut from ff490d2.
+- C2 built, uncommitted: ClipboardKit linked into the app and, by hand, the Xcode project
+  (both targets); `Sources/DocShot/Clipboard/` with settings, the pasteboard reader (files,
+  then text, then image, then colour; TIFF-only converted to PNG off the main thread), the
+  history controller (polls twice a second only while on and not paused; skip rules before
+  any read; own copy-backs ignored; store work queued in order), the DocShot window
+  (Control+Option+Command+V now registered, Escape returns focus, click copies back and
+  closes), menu bar Open/Pause/Clear, and a Clipboard History section in Settings. ClipboardKit
+  gained `imageFileURL(for:)`. 19 new app tests on private pasteboards, scratch defaults and
+  temporary folders.
+- Fable reviewed C2: history off does nothing and capture code is untouched (proven). Defects
+  found and fixed: an image beat the text it accompanied (spreadsheet and word-processor
+  copies); switching off and on while saving could open a second store; the copy-back test
+  could not tell an ignored own write from de-duplication; TIFF conversion dropped DPI; the
+  new Xcode object IDs were 23 characters. Re-review: all fixed; one new edge (empty text or
+  the inline-picture placeholder beating an image), also fixed with tests. Own-write, store
+  reuse and DPI tests mutation-checked. Nits left: a stale app may be refocused if the user
+  switched apps while the window stayed open; a failed store open at launch switches history
+  off for later launches.
+- After the fixes: app `swift test` 316 and `xcodebuild test` 317 with the hotkey suites
+  skipped; ClipboardKit 69 in SwiftPM; parity audit OK. Verified (tests only). Not yet run in
+  the app.
 - Spike cleanup with Noel's yes: `spikes/` (app, build, log), the `spike/c0d-package`
   worktree and branch removed. No `com.docshot.spike` preferences existed; nothing for Noel
   to remove from System Settings. Other old worktrees left untouched. Verified (git, ls).

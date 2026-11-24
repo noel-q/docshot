@@ -41,6 +41,15 @@ The window has its own global shortcut. Defaults for all shortcuts are in sectio
 
 The app stays a menu bar app (`LSUIElement`). The window is an ordinary window, not a floating overlay, so it behaves predictably with Spaces and full-screen apps.
 
+**C2 plan (agreed 23 November 2026).**
+1. Clicking an item copies it back to the clipboard and closes the window; the user presses Cmd+V. Keyboard navigation, Return to paste and search arrive in C3.
+2. Settings stays its own window in C2 and gains a "Clipboard history" section; moving Settings into the DocShot window waits for C4, when Captures arrives.
+3. The limits and excluded apps are shown read-only in C2; editing them arrives in C3.
+4. Control+Option+Command+V is registered always. With history off, the window says so and offers to turn it on.
+5. A copy that offers only TIFF is converted to PNG before saving; PNG is used as is.
+6. Only copies made from the history window are ignored as DocShot's own writes; a screenshot copied from the thumbnail or editor is recorded like any other image (4.5).
+7. Turning history off stops recording; what is already stored stays until Clear.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary
@@ -151,7 +160,7 @@ Each milestone is designed, built and verified on its own, the same gate the rec
 **Testing rules (decided 17 November 2026).**
 1. Automated tests use a private, uniquely named pasteboard and scratch preferences, never the general pasteboard or `com.docshot.app`.
 2. An agent tells Noel first before driving the running app against the real clipboard, the real preferences or the system hotkey table.
-3. Clipboard device checks are run by Noel.
+3. Clipboard device checks are run by the agent with screen control, after telling Noel; they overwrite the real clipboard. Noel approves screen control and says go. (Changed 23 November 2026 at Noel's request; until then these checks were Noel's.)
 
 ### C0 findings (18 November 2026)
 

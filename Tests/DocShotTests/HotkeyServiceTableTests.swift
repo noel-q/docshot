@@ -38,13 +38,16 @@ struct HotkeyServiceTableTests {
         #expect(service.isUsingDefault(.openWindow))
     }
 
-    @Test("openWindow is never registered with the system")
-    func testOpenWindowIsNotRegistered() {
+    @Test("openWindow registers with the system like the other two (C2)")
+    func testOpenWindowRegisters() {
         let (service, _, defaults, name) = makeService()
-        defer { defaults.removePersistentDomain(forName: name) }
+        defer {
+            service.unregister(.openWindow)
+            defaults.removePersistentDomain(forName: name)
+        }
 
-        #expect(service.register(.openWindow) { } == false)
-        #expect(service.lastError == nil, "Declining to register openWindow is not a failure")
+        #expect(service.register(.openWindow) { } == true)
+        #expect(service.lastError == nil)
     }
 
     @Test("Rebinding registers the new chord, saves it and survives a relaunch")

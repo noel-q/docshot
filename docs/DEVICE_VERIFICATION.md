@@ -232,6 +232,36 @@ after 3 s, driven with real key presses in TextEdit), and (b) moved to C3.
 | (b) Paste in Terminal | Not run; moved to C3 by Noel | Overwrites the clipboard. Same at a Terminal prompt; the text appears at the prompt. Do not press Return there. |
 | Cleanup | Done (23 Nov 2026): spike folder, log, worktree and branch removed; no `com.docshot.spike` preferences existed; the spike was never granted Accessibility and raised no paste alert, so no privacy list holds it | Quit the spike. Noel removes DocShotSpike from Accessibility and from the paste list if it appeared; the agent deletes the build, its log and any `com.docshot.spike` preferences, with Noel's yes. |
 
+## C2 Clipboard History (read-only window)
+
+Debug build from `build/c2-dd` (branch `feature/c2-clipboard-window`, uncommitted), run on
+24 November 2026 on macOS 26.5.2 against Noel's real `com.docshot.app` preferences and
+general clipboard, with his go (testing rule 3). Screen control cannot see or grant a menu
+bar app, so the agent put test content on the clipboard with a scratch helper and read the
+store with `sqlite3 -readonly`; the window steps were Noel's. Test content only; previews of
+anything Noel copied himself were not printed.
+
+| Check | Status | Expected result |
+| --- | --- | --- |
+| Turn on, store created | Agent-run pass (24 Nov 2026), switched on through the preference and a relaunch, not the in-app toggle | `~/Library/Application Support/DocShot/Clipboard` and `Images` created as 0700; database files are 0644 inside them. |
+| Text, file, colour, PNG | Agent-run pass (24 Nov 2026) | Each copy appears once with its kind, source app and size; images stored as files. |
+| TIFF-only image | Agent-run pass (24 Nov 2026): stored as `public.png` | Converted to PNG before storing. |
+| Concealed marker skipped | Agent-run pass (24 Nov 2026) | A copy carrying `org.nspasteboard.ConcealedType` is not stored. |
+| Excluded app skipped | Agent-run pass (24 Nov 2026), plain text copied while Passwords was in front; a real password entry was not copied | Not stored. |
+| Idle CPU | Agent-run pass (24 Nov 2026): 0.05 s CPU in 60 s (about 0.1%) | Near zero while watching. |
+| Quit and relaunch | Agent-run pass (24 Nov 2026) | History kept; what was already on the clipboard at launch not recorded; a repeat copy moves to the top without a duplicate. |
+| Window by ⌃⌥⌘V, rows and thumbnails | User-reported pass (24 Nov 2026), "nothing looked wrong" | Lists the items newest first; image thumbnails and a colour swatch. |
+| Click copies back and closes | User-reported pass (24 Nov 2026); not confirmed in the store, which was cleared next | Window closes, the previous app returns to the front. |
+| Escape returns focus | User-reported pass (24 Nov 2026) | Window closes, the previous app returns to the front. Carries the C0 (c) Escape row. |
+| Window from the menu | User-reported pass (24 Nov 2026) | Open DocShot Window opens the same window. Carries the C0 (c) menu row. |
+| Screenshot copy recorded | User-reported screenshot taken (24 Nov 2026); recording not confirmed, store cleared next | A screenshot copied by DocShot appears in history (C2 decision 6). |
+| Clear with confirm | Pass (24 Nov 2026): Noel cleared, the agent read the store | Confirmation shown; with the default "Pinned only" and no pins the store is empty, image files deleted, WAL truncated. |
+| Off records nothing | Agent-run pass (24 Nov 2026) | After switching off and relaunching, a copy is not stored and the database is not open. |
+| Pause and Resume | Not run in the app; covered by tests only | Copies made while paused are not recorded. |
+| Password from a chat app | Observed (24 Nov 2026) | A password-like copy Noel made in WhatsApp during the run was recorded, because WhatsApp sets no concealed marker; the agent deleted it with secure delete and confirmed it is gone from the file. Expected behaviour, noted for C3 planning. |
+
+End state: history off, store folder empty, the C2 debug build left running.
+
 ## Still Unverified
 
 The following require the corresponding connected hardware or display mode and remain unverified:

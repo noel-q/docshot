@@ -18,12 +18,11 @@ public enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// `openWindow` is defined so its default and storage are settled, but it is not
-    /// registered with the system until the window it opens exists.
+    /// Every action is registered with the system. `openWindow` was held back until the window
+    /// it opens existed; that window arrived in C2.
     public var isRegistrable: Bool {
         switch self {
-        case .screenshot, .record: return true
-        case .openWindow: return false
+        case .screenshot, .record, .openWindow: return true
         }
     }
 

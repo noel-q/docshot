@@ -90,6 +90,23 @@ struct ClipboardStoreTests {
         #expect(await store.items.isEmpty)
     }
 
+    @Test("An image item gives its file for thumbnails; other kinds give none")
+    func testImageFileURL() async throws {
+        let folder = try TemporaryDirectory()
+        defer { folder.remove() }
+        let store = try ClipboardStore(directory: folder.url)
+        try await store.add(.image(data: samplePNG, typeIdentifier: "public.png"), sourceApp: nil, now: referenceDate)
+        try await store.add(.text("words"), sourceApp: nil, now: referenceDate.addingTimeInterval(1))
+        let items = await store.items
+        let image = try #require(items.first { $0.kind == .image })
+        let text = try #require(items.first { $0.kind == .text })
+
+        let url = try #require(try await store.imageFileURL(for: image.id))
+        #expect(try Data(contentsOf: url) == samplePNG)
+        #expect(try await store.imageFileURL(for: text.id) == nil)
+        #expect(try await store.imageFileURL(for: UUID()) == nil)
+    }
+
     @Test("Clear removes images from disk and keeps pinned items")
     func testClearRemovesFiles() async throws {
         let folder = try TemporaryDirectory()

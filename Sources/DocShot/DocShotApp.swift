@@ -9,6 +9,7 @@ struct DocShotApp: App {
     @ObservedObject private var hotkeyService = HotkeyService.shared
     @ObservedObject private var captureCoordinator = CaptureCoordinator.shared
     @ObservedObject private var recordingCoordinator = RecordingCoordinator.shared
+    @ObservedObject private var clipboardHistory = ClipboardHistoryController.shared
 
     /// Only one DocShot capture activity may run at a time. The policy is evaluated here rather
     /// than inside either coordinator, so screenshot capture keeps its existing behaviour.
@@ -35,6 +36,22 @@ struct DocShotApp: App {
                 Button("Stop Recording") {
                     RecordingCoordinator.shared.stopRecording()
                 }
+            }
+
+            Divider()
+
+            Button("Open DocShot Window (\(hotkeyService.binding(for: .openWindow).shortcutDisplay))") {
+                ClipboardWindowController.shared.show()
+            }
+
+            if clipboardHistory.isEnabled {
+                Button(clipboardHistory.isPaused ? "Resume Clipboard History" : "Pause Clipboard History") {
+                    clipboardHistory.setPaused(!clipboardHistory.isPaused)
+                }
+                Button("Clear Clipboard History...") {
+                    AppDelegate.confirmClearClipboardHistory()
+                }
+                .disabled(clipboardHistory.items.isEmpty)
             }
 
             Divider()
@@ -72,6 +89,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard policy.allowsRecordingCapture else { NSSound.beep(); return }
             RecordingCoordinator.shared.startRecording()
         }
+        HotkeyService.shared.register(.openWindow) {
+            ClipboardWindowController.shared.toggle()
+        }
+
+        // Clipboard history does nothing unless the user switched it on (plan section 2.3).
+        MainActor.assumeIsolated {
+            ClipboardHistoryController.shared.start()
+        }
 
         // Show onboarding guide on first launch
         Task { @MainActor in
@@ -80,6 +105,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // A previous run that ended abnormally can leave a partial recording behind. Only
             // DocShot's own temporary recordings directory is swept.
             RecordingCoordinator.shared.purgeOrphanTemporaries()
+        }
+    }
+
+    /// Clearing from the menu bar asks first, like the window and Settings.
+    @MainActor
+    static func confirmClearClipboardHistory() {
+        let controller = ClipboardHistoryController.shared
+        NSApp.activate()
+        let alert = NSAlert()
+        alert.messageText = "Clear clipboard history?"
+        alert.informativeText = "Keeps: \(controller.clearKeep.title.lowercased()). This cannot be undone."
+        alert.addButton(withTitle: "Clear")
+        alert.addButton(withTitle: "Cancel")
+        alert.buttons.first?.hasDestructiveAction = true
+        if alert.runModal() == .alertFirstButtonReturn {
+            controller.clear()
         }
     }
 

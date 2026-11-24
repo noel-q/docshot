@@ -36,11 +36,11 @@ struct GlobalShortcutDefaultTableTests {
         #expect(ShortcutAction.openWindow.defaultBinding.shortcutDisplay == "⌃⌥⌘V")
     }
 
-    @Test("openWindow is defined but not registered until its window exists")
-    func testOpenWindowIsNotRegistrable() {
+    @Test("All three shortcuts are registered now that the DocShot window exists (C2)")
+    func testAllRegistrable() {
         #expect(ShortcutAction.screenshot.isRegistrable)
         #expect(ShortcutAction.record.isRegistrable)
-        #expect(ShortcutAction.openWindow.isRegistrable == false)
+        #expect(ShortcutAction.openWindow.isRegistrable)
     }
 
     @Test("Hotkey identifiers are unique and leave 2 for the temporary Escape")

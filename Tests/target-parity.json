@@ -52,7 +52,10 @@
     "Sources/DocShot/Services/RecordingVideoWriter.swift",
     "Sources/DocShot/Services/TemporaryRecordingStore.swift",
     "Sources/DocShot/Services/VideoAnnotationOverlayRenderer.swift",
-    "Sources/DocShot/Services/VideoProjectExportService.swift"
+    "Sources/DocShot/Services/VideoProjectExportService.swift",
+    "Sources/DocShot/Clipboard/ClipboardSettings.swift",
+    "Sources/DocShot/Clipboard/PasteboardReader.swift",
+    "Sources/DocShot/Clipboard/ClipboardHistoryController.swift"
   ],
 
   "appOnlyProductionSources": [
@@ -85,7 +88,10 @@
     "Sources/DocShot/Services/ScreenCaptureService.swift",
     "Sources/DocShot/Services/WindowDiscoveryService.swift",
     "Sources/DocShot/Settings/CustomShortcutRecorder.swift",
-    "Sources/DocShot/Settings/SettingsView.swift"
+    "Sources/DocShot/Settings/SettingsView.swift",
+    "Sources/DocShot/Clipboard/ClipboardWindowController.swift",
+    "Sources/DocShot/Clipboard/ClipboardHistoryView.swift",
+    "Sources/DocShot/Clipboard/ClipboardSettingsSection.swift"
   ],
 
   "swiftPackageOnlySuites": [

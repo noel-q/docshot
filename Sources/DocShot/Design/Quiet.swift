@@ -113,3 +113,15 @@ extension NSColor {
         )
     }
 }
+
+/// A one-point `line` rule: across, or up and down beside controls in a bar.
+struct QuietRule: View {
+    var vertical = false
+
+    var body: some View {
+        Rectangle()
+            .fill(Quiet.line)
+            .frame(width: vertical ? 1 : nil, height: vertical ? Quiet.Space.s6 : 1)
+            .accessibilityHidden(true)
+    }
+}

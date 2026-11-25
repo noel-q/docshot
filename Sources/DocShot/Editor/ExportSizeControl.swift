@@ -25,23 +25,25 @@ public struct ExportSizeControl: View {
 
     public var body: some View {
         Button(action: { isPopoverPresented.toggle() }) {
-            HStack(spacing: 6) {
+            HStack(spacing: Quiet.Space.s1) {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 11, weight: .semibold))
-                Text(viewModel.resolvedExportSizeLabel ?? "Invalid size")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(viewModel.exportSizeErrorMessage == nil ? .primary : .red)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+                Text(viewModel.resolvedExportSizeLabel.map { "\($0) px" } ?? "Size not valid")
+                    .font(Quiet.Font.caption.monospacedDigit())
+                    .foregroundStyle(viewModel.exportSizeErrorMessage == nil ? Quiet.ink : Quiet.danger)
                 Image(systemName: "chevron.up.chevron.down")
-                    .font(.system(size: 8, weight: .semibold))
-                    .foregroundColor(DesignTokens.secondaryText)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(RoundedRectangle(cornerRadius: 6).fill(DesignTokens.cardBackground))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(DesignTokens.borderAdaptive, lineWidth: 1))
+            .padding(.horizontal, Quiet.Space.s2)
+            .padding(.vertical, Quiet.Space.s1)
+            .background(RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous).fill(Quiet.controlSurface))
+            .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous).stroke(Quiet.line, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .help("Output size for Copy and Save")
+        .help("The size Copy and Save make")
+        .accessibilityLabel("Output size, \(viewModel.resolvedExportSizeLabel ?? "not valid")")
         .popover(isPresented: $isPopoverPresented, arrowEdge: .bottom) {
             popoverContent
         }
@@ -52,28 +54,35 @@ public struct ExportSizeControl: View {
     }
 
     private var popoverContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Export Size")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(DesignTokens.secondaryText)
+        VStack(alignment: .leading, spacing: Quiet.Space.s3) {
+            Text("Output size")
+                .font(Quiet.Font.label)
+                .foregroundStyle(Quiet.inkMuted)
 
-            HStack(spacing: 6) {
+            // Neutral selection: the chosen size is filled in `ink-muted`, never the accent.
+            HStack(spacing: Quiet.Space.s1) {
                 ForEach(presets, id: \.label) { preset in
-                    Button(preset.label) {
-                        viewModel.exportSize = preset.size
-                        syncFieldsFromResolvedSize()
+                    if viewModel.exportSize == preset.size {
+                        Button(preset.label) {}
+                            .buttonStyle(.borderedProminent)
+                            .tint(Quiet.inkMuted)
+                            .accessibilityAddTraits(.isSelected)
+                    } else {
+                        Button(preset.label) {
+                            viewModel.exportSize = preset.size
+                            syncFieldsFromResolvedSize()
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(viewModel.exportSize == preset.size ? DesignTokens.primaryAccent : nil)
                 }
             }
 
-            Divider()
+            QuietRule()
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Quiet.Space.s2) {
                 Text("Custom")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(DesignTokens.secondaryText)
+                    .font(Quiet.Font.label)
+                    .foregroundStyle(Quiet.inkMuted)
 
                 HStack(spacing: 8) {
                     TextField("Width", text: $widthField)
@@ -82,7 +91,7 @@ public struct ExportSizeControl: View {
                         .onChange(of: widthField) { _, _ in applyCustomSize(changedEdge: .width) }
 
                     Text("×")
-                        .foregroundColor(DesignTokens.secondaryText)
+                        .foregroundStyle(Quiet.inkMuted)
 
                     TextField("Height", text: $heightField)
                         .textFieldStyle(.roundedBorder)
@@ -90,38 +99,38 @@ public struct ExportSizeControl: View {
                         .onChange(of: heightField) { _, _ in applyCustomSize(changedEdge: .height) }
 
                     Text("px")
-                        .font(.system(size: 11))
-                        .foregroundColor(DesignTokens.secondaryText)
+                        .font(Quiet.Font.caption)
+                        .foregroundStyle(Quiet.inkMuted)
                 }
 
                 Toggle("Lock aspect ratio", isOn: $aspectLocked)
                     .toggleStyle(.checkbox)
-                    .font(.system(size: 12))
+                    .font(Quiet.Font.caption)
             }
 
-            Divider()
+            QuietRule()
 
             if let error = viewModel.exportSizeErrorMessage {
                 Text(error)
-                    .font(.system(size: 11))
-                    .foregroundColor(.red)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.danger)
                     .fixedSize(horizontal: false, vertical: true)
             } else if let label = viewModel.resolvedExportSizeLabel {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Copy and Save will output \(label) px")
-                        .font(.system(size: 11))
-                        .foregroundColor(DesignTokens.secondaryText)
+                VStack(alignment: .leading, spacing: Quiet.Space.s1) {
+                    Text("Copy and Save make \(label) px.")
+                        .font(Quiet.Font.caption)
+                        .foregroundStyle(Quiet.inkMuted)
                     if isUpscaling {
-                        Text("Enlarging past native size will look softer.")
-                            .font(.system(size: 11))
-                            .foregroundColor(DesignTokens.secondaryText)
+                        Text("Larger than the original looks softer.")
+                            .font(Quiet.Font.caption)
+                            .foregroundStyle(Quiet.inkMuted)
                     }
                 }
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(14)
-        .frame(width: 290)
+        .padding(Quiet.Space.s4)
+        .frame(width: 300)
     }
 
     private enum ChangedEdge { case width, height }

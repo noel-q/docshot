@@ -7,6 +7,13 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Unit 2, image editor in Quiet, on `feature/quiet-image-editor`: toolbar and action bar
+  on `surface`, canvas on `canvas` with a margin, title bar blended; tool, width and colour
+  selection neutral (`selection`, an `ink` ring), annotation colours untouched; Copy the one
+  accent with its key, Save with its key, esc Discard; size control and its popover on
+  tokens, nothing under 12 pt; every behaviour and shortcut kept. swift test 375,
+  xcodebuild test 375. Verified (agent): snapshots in dark and light. Not seen: drawing,
+  the size popover, Save and Copy in use.
 - Unit 1, permission window in Quiet, on `feature/quiet-permission-window`: compact panel,
   three numbered steps, the accent moves from Open to Restart, Return and Escape, re-check on
   coming back. swift test 375, xcodebuild test 375. Verified (agent): snapshots of both

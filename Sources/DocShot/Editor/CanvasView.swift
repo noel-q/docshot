@@ -26,7 +26,7 @@ public struct CanvasView: View {
             let displayedHeight = imageHeight * canvasScale
             
             ZStack {
-                Color(nsColor: .windowBackgroundColor)
+                Quiet.canvas
                     .ignoresSafeArea()
                 
                 // Base Image

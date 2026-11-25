@@ -27,217 +27,218 @@ public struct EditorView: View {
     
     public var body: some View {
         VStack(spacing: 0) {
-            // Top Toolbar
-            HStack(spacing: 12) {
-                // Annotation Tools
-                HStack(spacing: 4) {
-                    ForEach(AnnotationTool.allCases) { tool in
-                        Button(action: {
-                            viewModel.activeTool = tool
-                        }) {
-                            Image(systemName: tool.systemImage)
-                                .font(.system(size: 13, weight: .semibold))
-                                .frame(width: 28, height: 26)
-                                .foregroundColor(viewModel.activeTool == tool ? DesignTokens.primaryAccent : .primary)
-                        }
-                        .buttonStyle(.plain)
-                        .background(viewModel.activeTool == tool ? DesignTokens.primaryAccent.opacity(0.15) : Color.clear)
-                        .cornerRadius(6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(viewModel.activeTool == tool ? DesignTokens.primaryAccent : Color.clear, lineWidth: 1)
-                        )
-                        .help(tool.tooltip)
-                    }
-                }
-                .padding(4)
-                .background(RoundedRectangle(cornerRadius: 8).fill(DesignTokens.cardBackground))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.borderAdaptive, lineWidth: 1))
-                
-                Divider()
-                    .frame(height: 20)
-                
-                // Color Picker Presets
-                HStack(spacing: 6) {
-                    ForEach(availableColors.indices, id: \.self) { index in
-                        let color = availableColors[index]
-                        Circle()
-                            .fill(color.swiftUIColor)
-                            .frame(width: 18, height: 18)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white, lineWidth: viewModel.selectedColor == color ? 2 : 0)
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(DesignTokens.borderSubtle, lineWidth: 1)
-                            )
-                            .onTapGesture {
-                                viewModel.selectedColor = color
-                            }
-                    }
-                }
-                
-                Divider()
-                    .frame(height: 20)
-                
-                // Line Widths
-                HStack(spacing: 6) {
-                    ForEach(availableWidths, id: \.self) { w in
-                        Button(action: {
-                            viewModel.selectedStrokeWidth = w
-                        }) {
-                            Circle()
-                                .fill(Color.primary)
-                                .frame(width: w * 1.5 + 4, height: w * 1.5 + 4)
-                        }
-                        .buttonStyle(.plain)
-                        .frame(width: 22, height: 22)
-                        .background(viewModel.selectedStrokeWidth == w ? DesignTokens.primaryAccent.opacity(0.15) : Color.clear)
-                        .cornerRadius(4)
-                    }
-                }
-                
-                Spacer()
-                
-                // Undo / Redo / Delete
-                HStack(spacing: 6) {
-                    Button(action: { viewModel.undo() }) {
-                        Image(systemName: "arrow.uturn.backward")
-                    }
-                    .disabled(!viewModel.canUndo)
-                    .keyboardShortcut("z", modifiers: [.command])
-                    .help("Undo (⌘Z)")
-                    
-                    Button(action: { viewModel.redo() }) {
-                        Image(systemName: "arrow.uturn.forward")
-                    }
-                    .disabled(!viewModel.canRedo)
-                    .keyboardShortcut("z", modifiers: [.command, .shift])
-                    .help("Redo (⇧⌘Z)")
-                    
-                    Button(action: { viewModel.deleteSelectedAnnotation() }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                    .disabled(viewModel.selectedAnnotationID == nil)
-                    .keyboardShortcut(.delete, modifiers: [])
-                    .help("Delete Selection (Backspace/Delete)")
-                }
-                .buttonStyle(.borderless)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(DesignTokens.windowBackground)
-            
-            Divider()
-            
-            // Center Canvas View
+            toolbar
+            QuietRule()
+            // The image sits on the canvas, the bars on surface (image editor in Quiet).
             CanvasView(viewModel: viewModel)
-            
-            Divider()
-            
-            // Bottom Action Bar: Copy, Save, Discard
-            HStack(spacing: 16) {
-                // Discard Button (Explicit Exit Path)
-                Button(action: {
-                    onClose()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "xmark.circle")
-                        Text("Discard")
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(DesignTokens.secondaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                }
-                .buttonStyle(.plain)
-                .disabled(isExporting)
-                .keyboardShortcut(.escape, modifiers: [])
-                .help("Discard screenshot (Esc)")
-                
-                ExportSizeControl(viewModel: viewModel)
-
-                Spacer()
-
-                if isExporting {
-                    ProgressView()
-                        .controlSize(.small)
-                        .padding(.trailing, 8)
-                } else if let issue = exportIssue ?? viewModel.exportSizeErrorMessage {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text(issue)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.red)
-                    }
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                } else if let outputStatus {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(DesignTokens.primaryAccent)
-                        Text(outputStatus)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(DesignTokens.secondaryText)
-                    }
-                    .lineLimit(1)
-                }
-                
-                // Save Button
-                Button(action: {
-                    performSave()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.down")
-                        Text("Save...")
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 7)
-                }
-                .disabled(isExporting)
-                .keyboardShortcut("s", modifiers: [.command])
-                .help("Save PNG to file (⌘S)")
-                
-                // Copy Button (Default Action)
-                Button(action: {
-                    performCopy()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "doc.on.doc")
-                        Text("Copy PNG")
-                    }
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(DesignTokens.onAccent)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 7)
-                    .background(isExporting ? Color.gray : DesignTokens.primaryAccent)
-                    .cornerRadius(6)
-                }
-                .buttonStyle(.plain)
-                .disabled(isExporting)
-                .keyboardShortcut("c", modifiers: [.command])
-                .help("Copy flattened PNG to clipboard (⌘C). Return copies and closes.")
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(DesignTokens.windowBackground)
+                .padding(Quiet.Space.s6)
+                .background(Quiet.canvas)
+            QuietRule()
+            actionBar
         }
         .frame(minWidth: 700, minHeight: 500)
+        // Behind the see-through rules, so they blend as `line` should.
+        .background(Quiet.surface)
         .onAppear { installKeyMonitor() }
         .onDisappear { removeKeyMonitor() }
         .alert(isPresented: $showErrorAlert) {
             Alert(
-                title: Text("Export Failure"),
-                message: Text(errorMessage ?? "An error occurred while exporting image."),
+                title: Text("Could not export"),
+                message: Text(errorMessage ?? "Something went wrong while exporting the image."),
                 dismissButton: .default(Text("OK"))
             )
         }
     }
-    
+
+    // MARK: Toolbar
+
+    /// Tools, colours, widths, then undo, redo and delete. Selection is neutral: `selection`
+    /// behind, `ink` in front; the accent stays for Copy.
+    private var toolbar: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(AnnotationTool.allCases) { tool in
+                    let isActive = viewModel.activeTool == tool
+                    Button {
+                        viewModel.activeTool = tool
+                    } label: {
+                        Image(systemName: tool.systemImage)
+                            .font(Quiet.Font.ui)
+                            .foregroundStyle(isActive ? Quiet.ink : Quiet.inkMuted)
+                            .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isActive ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(tool.tooltip)
+                    .accessibilityLabel(tool.tooltip)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            // Annotation colours are the picture's colours, not the interface's.
+            HStack(spacing: Quiet.Space.s2) {
+                ForEach(availableColors.indices, id: \.self) { index in
+                    let color = availableColors[index]
+                    let isSelected = viewModel.selectedColor == color
+                    Button {
+                        viewModel.selectedColor = color
+                    } label: {
+                        Circle()
+                            .fill(color.swiftUIColor)
+                            .frame(width: Quiet.Space.s4, height: Quiet.Space.s4)
+                            .overlay(Circle().strokeBorder(Quiet.line, lineWidth: 1))
+                            .padding(Quiet.Space.s1)
+                            .overlay(Circle().strokeBorder(isSelected ? Quiet.ink : Color.clear, lineWidth: 2))
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(Self.colourName(color))
+                    .accessibilityLabel(Self.colourName(color))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(availableWidths, id: \.self) { width in
+                    let isSelected = viewModel.selectedStrokeWidth == width
+                    Button {
+                        viewModel.selectedStrokeWidth = width
+                    } label: {
+                        Circle()
+                            .fill(Quiet.ink)
+                            .frame(width: width * 1.5 + 4, height: width * 1.5 + 4)
+                            .frame(width: Quiet.Space.s6, height: Quiet.Space.s6)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isSelected ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Line width \(Int(width))")
+                    .accessibilityLabel("Line width \(Int(width))")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: Quiet.Space.s1) {
+                iconButton("arrow.uturn.backward", help: "Undo (⌘Z)", disabled: !viewModel.canUndo) { viewModel.undo() }
+                    .keyboardShortcut("z", modifiers: [.command])
+                iconButton("arrow.uturn.forward", help: "Redo (⇧⌘Z)", disabled: !viewModel.canRedo) { viewModel.redo() }
+                    .keyboardShortcut("z", modifiers: [.command, .shift])
+                iconButton("trash", help: "Delete the selected mark (⌫)", disabled: viewModel.selectedAnnotationID == nil) {
+                    viewModel.deleteSelectedAnnotation()
+                }
+                .keyboardShortcut(.delete, modifiers: [])
+            }
+        }
+        .padding(.horizontal, Quiet.Space.s4)
+        .padding(.vertical, Quiet.Space.s2)
+        .background(Quiet.surface)
+    }
+
+    private func iconButton(_ symbol: String, help: String, disabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(Quiet.Font.ui)
+                .foregroundStyle(disabled ? Quiet.inkFaint : Quiet.inkMuted)
+                .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
+        .help(help)
+        .accessibilityLabel(help)
+    }
+
+    static func colourName(_ color: CodableColor) -> String {
+        switch color {
+        case .red: return "Red"
+        case .green: return "Green"
+        case .blue: return "Blue"
+        case .yellow: return "Yellow"
+        case .orange: return "Orange"
+        case .white: return "White"
+        case .black: return "Black"
+        default: return "Colour"
+        }
+    }
+
+    // MARK: Action bar
+
+    /// Discard and the size on the left; the result, Save and the one accent button, Copy, on
+    /// the right, each with its key.
+    private var actionBar: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            Button(action: onClose) {
+                HStack(spacing: Quiet.Space.s1) {
+                    KeyHint(keys: "esc")
+                    Text("Discard").font(Quiet.Font.ui).foregroundStyle(Quiet.inkMuted)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(isExporting)
+            .keyboardShortcut(.escape, modifiers: [])
+            .help("Discard the screenshot (esc)")
+            .accessibilityLabel("Discard")
+
+            ExportSizeControl(viewModel: viewModel)
+
+            Spacer(minLength: Quiet.Space.s2)
+
+            if isExporting {
+                ProgressView()
+                    .controlSize(.small)
+            } else if let issue = exportIssue ?? viewModel.exportSizeErrorMessage {
+                Label(issue, systemImage: "exclamationmark.triangle")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.danger)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let outputStatus {
+                Label(outputStatus, systemImage: "checkmark")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+                    .lineLimit(1)
+            }
+
+            Button(action: performSave) {
+                Text("Save…  ⌘S")
+            }
+            .controlSize(.large)
+            .disabled(isExporting)
+            .keyboardShortcut("s", modifiers: [.command])
+            .help("Save a PNG (⌘S)")
+            .accessibilityLabel("Save")
+
+            Button {
+                performCopy()
+            } label: {
+                AccentButtonLabel("Copy  ↵")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Quiet.accent)
+            .controlSize(.large)
+            .disabled(isExporting)
+            .keyboardShortcut("c", modifiers: [.command])
+            .help("Copy the PNG (⌘C). Return copies and closes.")
+            .accessibilityLabel("Copy")
+        }
+        .padding(.horizontal, Quiet.Space.s4)
+        .padding(.vertical, Quiet.Space.s3)
+        .background(Quiet.surface)
+    }
+
     /// Renders the export, or reports why it could not be produced. An invalid export size is
     /// reported inline next to the size control; only a genuine render failure raises an alert.
     private func renderExport() async -> Data? {

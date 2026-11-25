@@ -47,6 +47,9 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         )
         
         window.title = "DocShot Editor"
+        // The title bar takes the toolbar's `surface`, so the two read as one bar.
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(Quiet.surface)
         window.center()
         window.contentView = hostingView
         window.isReleasedWhenClosed = false

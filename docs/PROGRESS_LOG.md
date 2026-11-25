@@ -4,6 +4,25 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-24
+- Compact clipboard panel committed as 4f5544c with Noel's yes ("Feels right").
+- Compact Settings panel (compact panels, point 4) built on `feature/quiet-compact-panels`,
+  uncommitted. Settings... opens a 380 pt borderless panel under the menu bar icon with the
+  everyday settings (theme dots, clipboard history and pause, the open-history shortcut,
+  how saving works, open at login); "All settings" grows it in place to an in-panel tab strip
+  with a back arrow and returns to the tab last open; Change... expands to the right tab
+  instead of a sheet. It closes on Escape, Cmd+W, the menu item, a click on another DocShot
+  window or another app, but stays open while DocShot's own sheet, folder picker or a trip
+  to System Settings for a permission is under way. On a short screen the page cap drops so
+  the tab strip stays on screen. Fable review: two defects (closing on the trip to System
+  Settings; not closing on a click on another DocShot window) and seven smaller points, all
+  fixed except one choice kept on purpose: the panel fill stays `canvas` so the `surface`
+  groups inside read. Also added Cmd+Y to the Shortcuts tab's window keys, with a test.
+  swift test 371, xcodebuild test 371, parity OK, no debug symbols in Release.
+  Verified (agent, DEBUG hooks and scratch store): frame traces ease with no jumps (expand
+  380x506 to 560x415, switch to Shortcuts 415 to 690, General 276); opening the clipboard
+  panel closed Settings; snapshots of compact and Shortcuts in dark and light. Not yet seen:
+  Cmd+W, "All settings" returning to the last tab, staying open through System Settings,
+  and opening from the real menu bar icon (Noel's look).
 - Preview thumbnail committed as bd76322 with Noel's yes.
 - Compact panels (six answers agreed): the clipboard part built on
   `feature/quiet-compact-panels`, uncommitted. A borderless rounded panel (420 pt, `surface`,

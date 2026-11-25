@@ -388,3 +388,45 @@ struct ClipboardPanelLayoutTests {
         #expect(ClipboardPanelLayout.resized(widened, toWidth: 420, within: screen).minX == widened.minX)
     }
 }
+
+@Suite("Settings panel layout")
+struct SettingsPanelLayoutTests {
+    let screen = CGRect(x: 0, y: 0, width: 1440, height: 875)
+    let icon = CGRect(x: 1200, y: 875, width: 30, height: 24) // in the menu bar, above `screen`
+
+    @Test("The panel drops down under the menu bar icon, right edges lined up")
+    func testUnderIcon() {
+        let frame = SettingsPanelLayout.frame(size: CGSize(width: 380, height: 400), anchor: icon, visible: screen)
+        #expect(frame.maxX == icon.maxX)
+        #expect(frame.maxY == icon.minY - SettingsPanelLayout.gapBelowAnchor)
+    }
+
+    @Test("Near the left of the screen it is nudged on screen; with no icon it takes the top right")
+    func testEdges() {
+        let leftIcon = CGRect(x: 40, y: 875, width: 30, height: 24)
+        #expect(SettingsPanelLayout.frame(size: CGSize(width: 380, height: 400), anchor: leftIcon, visible: screen).minX == 0)
+        let none = SettingsPanelLayout.frame(size: CGSize(width: 380, height: 400), anchor: nil, visible: screen)
+        #expect(screen.contains(none))
+        #expect(none.maxX == screen.maxX - SettingsPanelLayout.gapBelowAnchor)
+    }
+
+    @Test("Expanding keeps the top-right corner, growing left and down, and stays on screen")
+    func testGrow() {
+        let compact = SettingsPanelLayout.frame(size: CGSize(width: 380, height: 400), anchor: icon, visible: screen)
+        let full = SettingsPanelLayout.resized(compact, to: CGSize(width: 560, height: 700), within: screen)
+        #expect(full.maxX == compact.maxX)
+        #expect(full.maxY == compact.maxY)
+        let tall = SettingsPanelLayout.resized(compact, to: CGSize(width: 560, height: 2000), within: screen)
+        #expect(tall.minY == screen.minY)
+        #expect(screen.contains(tall), "never taller than the screen, so the tab strip stays on it")
+    }
+
+    @Test("On a short screen the page cap drops so the expanded panel fits")
+    func pageCapFitsTheScreen() {
+        #expect(SettingsPanelLayout.pageMaxHeight(within: screen, cap: 640) == 640)
+        let short = CGRect(x: 0, y: 0, width: 1280, height: 660)
+        let cap = SettingsPanelLayout.pageMaxHeight(within: short, cap: 640)
+        #expect(cap + SettingsPanelLayout.tabStripAllowance + SettingsPanelLayout.gapBelowAnchor <= short.height)
+        #expect(SettingsPanelLayout.pageMaxHeight(within: CGRect(x: 0, y: 0, width: 800, height: 100), cap: 640) == 200)
+    }
+}

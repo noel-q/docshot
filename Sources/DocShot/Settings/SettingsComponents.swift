@@ -6,8 +6,23 @@ import SwiftUI
 /// control on the right.
 
 /// One Settings tab: a fixed-width column of groups on the window canvas.
+/// The tallest a page may be where it is shown (the compact Settings panel lowers it on a
+/// short screen so the page scrolls instead of the panel running off the screen).
+private struct SettingsPageMaxHeightKey: EnvironmentKey {
+    static let defaultValue: CGFloat = 640
+}
+
+extension EnvironmentValues {
+    var settingsPageMaxHeight: CGFloat {
+        get { self[SettingsPageMaxHeightKey.self] }
+        set { self[SettingsPageMaxHeightKey.self] = newValue }
+    }
+}
+
 struct SettingsPage<Content: View>: View {
     @ObservedObject var themeController = ThemeController.shared
+    @Environment(\.settingsPageMaxHeight) private var maxHeight
+    var width: CGFloat = 560
     @ViewBuilder let content: Content
 
     static var width: CGFloat { 560 }
@@ -21,13 +36,13 @@ struct SettingsPage<Content: View>: View {
                 content
             }
             .padding(Quiet.Space.s6)
-            .frame(width: Self.width, alignment: .topLeading)
+            .frame(width: width, alignment: .topLeading)
         }
         .scrollBounceBehavior(.basedOnSize)
         // The page's ideal height is its content's, up to the cap, known at once (no measuring
         // after drawing), so the window can size itself before the tab appears.
-        .frame(width: Self.width)
-        .frame(maxHeight: Self.maxHeight)
+        .frame(width: width)
+        .frame(maxHeight: maxHeight)
         .fixedSize(horizontal: false, vertical: true)
         .background(Quiet.canvas)
         // No page-wide tint: only switches take the accent (one accent per view); buttons and

@@ -7,6 +7,7 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-24: Compact Settings panel under the menu bar icon, growing in place to the four tabs. Fable review fixed; swift test 371, xcodebuild test 371. Verified (snapshots, traces) and user-reported ("Feels right").
 - 2026-11-24: Compact clipboard panel: borderless rounded 420 pt panel, preview on Cmd+Y to 780 pt, remembered place, smooth resizing (frame-traced). Fable review fixed; swift test 367, xcodebuild test 367. Verified (snapshots, traces) and user-reported ("Feels right").
 - 2026-11-24: Preview thumbnail restyled in Quiet (pilot step 3): floating panel, accent Copy with its key, keys under icons, Cmd+E for Edit, rise-in. Fable review fixed; swift test 358, xcodebuild test 358. Verified (snapshots) and user-reported ("Looks right").
 - 2026-11-24: Settings restyled in Quiet (pilot step 3, first screen): toolbar tabs with eased resizing, grouped panels, switches, exact-count Clear, clipboard window keys and the open-history shortcut in Settings. Fable review fixed; swift test 355, xcodebuild test 355, ClipboardKit 76. Verified (agent snapshots and frame traces) and user-reported ("Looks right").
@@ -35,7 +36,7 @@
 - None.
 
 ## Next action
-- Compact clipboard panel committed on feature/quiet-compact-panels (from bd76322), local only; Noel: "Feels right". Next: the compact Settings panel (compact panels plan, point 4); then the onboarding update (five-page plan waiting for Noel's yes); then permission window and editors; then C4. Do not merge or push without Noel's say.
+- Compact Settings panel built and agent-verified on feature/quiet-compact-panels (on top of 4f5544c), uncommitted; waiting for Noel's look, then his yes to commit. Next: the onboarding update (five-page plan waiting for Noel's yes); then permission window and editors; then C4. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

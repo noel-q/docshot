@@ -76,7 +76,6 @@ struct DocShotApp: App {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var settingsWindow: NSWindow?
 #if DEBUG
     /// For the debug hook: SwiftUI's `NSApp.delegate` is not this object.
     @MainActor static weak var debugInstance: AppDelegate?
@@ -171,16 +170,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @MainActor
     func openSettingsWindow() {
-        if let window = settingsWindow {
-            window.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
-            return
-        }
-
-        // Toolbar tabs in Quiet (pilot step 3); the window takes each tab's height.
-        let window = SettingsWindowFactory.make()
-        self.settingsWindow = window
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        // The compact Settings panel under the menu bar icon (compact panels, decision 4).
+        SettingsWindowController.shared.toggle()
     }
+
 }

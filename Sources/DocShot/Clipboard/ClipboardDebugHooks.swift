@@ -120,7 +120,7 @@ enum ClipboardDebugHooks {
             // and snapshot any DocShot window by a word in its title or class.
             switch command {
             case "open-settings":
-                AppDelegate.debugInstance?.openSettingsWindow()
+                SettingsWindowController.shared.show()
                 return writeState(command)
             case "open-onboarding":
                 OnboardingWindowController.shared.showOnboarding()
@@ -185,6 +185,10 @@ enum ClipboardDebugHooks {
                 }
                 return
             }
+            if command == "collapse-settings" {
+                SettingsWindowController.shared.collapse()
+                return writeState(command)
+            }
             if command.hasPrefix("settings-tab:"), let index = Int(command.dropFirst("settings-tab:".count)) {
                 SettingsWindowFactory.controller.select(index)
                 return writeState(command)
@@ -197,10 +201,10 @@ enum ClipboardDebugHooks {
                     var samples: [Int] = []
                     SettingsWindowFactory.controller.select(index)
                     for _ in 0..<48 {
-                        samples.append(Int(window.frame.height))
+                        samples.append(Int(window.frame.width) * 10_000 + Int(window.frame.height))
                         try? await Task.sleep(for: .milliseconds(16))
                     }
-                    writeState("tabtrace \(index): " + samples.map(String.init).joined(separator: " "))
+                    writeState("tabtrace \(index): " + samples.map { "\($0 / 10_000)x\($0 % 10_000)" }.joined(separator: " "))
                 }
                 return
             }

@@ -60,7 +60,8 @@
     "Sources/DocShot/Clipboard/ClipboardListModel.swift",
     "Sources/DocShot/Design/QuietTokens.swift",
     "Sources/DocShot/Design/Quiet.swift",
-    "Sources/DocShot/Clipboard/ClipPreviewText.swift"
+    "Sources/DocShot/Clipboard/ClipPreviewText.swift",
+    "Sources/DocShot/Settings/SettingsPanelLayout.swift"
   ],
 
   "appOnlyProductionSources": [

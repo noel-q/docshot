@@ -1,140 +1,489 @@
 import AppKit
 import SwiftUI
 
-/// Settings in Quiet (pilot step 3, agreed 24 November 2026): its own window with toolbar tabs
-/// (General, Clipboard, Capture, Shortcuts), groups of rows in `surface` panels, and switches.
-/// Every setting behaves as before; only where it sits and how it looks changed.
+/// Settings as a compact panel (compact panels, decision 4; 24 November 2026): it drops down
+/// under the menu bar icon with the everyday settings, and "All settings" grows it in place
+/// into the four tabs (General, Clipboard, Capture, Shortcuts). The thumbnail's style:
+/// borderless, `radius-lg`, the system shadow; its fill is `canvas`, not `surface`, because
+/// the groups inside are `surface` panels and need the step between them to read. Every size change eases over
+/// `dur-base` (content first, then the panel's edge on the next turn of the run loop; traced).
 @MainActor
 enum SettingsWindowFactory {
     static let identifier = NSUserInterfaceItemIdentifier("DocShotSettings")
 
-    static func make() -> NSWindow {
-        SettingsWindowController.shared.window!
-    }
-
-    /// The window's tabs, for the debug hook.
+    /// The panel's controller, for the debug hook.
     static var controller: SettingsWindowController { .shared }
 }
 
-/// Settings tabs the way Mac Settings windows switch: a preferences toolbar, the new tab's
-/// content at once, and the window easing to its height over Quiet's `dur-base` with the top
-/// edge kept in place (a plain change under Reduce Motion). Drives the switch itself, because
-/// `NSTabViewController` cross-faded and then jumped (Noel, 24 November 2026: "like a
-/// PowerPoint"). A tab whose own height changes eases the same way.
+/// The two states the panel shows.
 @MainActor
-final class SettingsWindowController: NSWindowController, NSToolbarDelegate {
+final class SettingsPanelModel: ObservableObject {
+    @Published var expanded = false
+    @Published var tab = 0
+    /// The tallest a tab's page may be on this screen, so the tab strip never goes off it.
+    @Published var pageMaxHeight = SettingsPage<EmptyView>.maxHeight
+
+    static let tabs: [(label: String, symbol: String)] = [
+        ("General", "gearshape"), ("Clipboard", "doc.on.clipboard"),
+        ("Capture", "camera.viewfinder"), ("Shortcuts", "command"),
+    ]
+}
+
+@MainActor
+final class SettingsWindowController: NSObject, NSWindowDelegate {
     static let shared = SettingsWindowController()
 
-    private struct Tab {
-        let id: NSToolbarItem.Identifier
-        let label: String
-        let symbol: String
-        let view: SettingsHostingView
-    }
+    let model = SettingsPanelModel()
+    private(set) var panel: SettingsPanel!
+    private var host: SettingsHostingView!
+    private var keyMonitor: Any?
+    private var resignObserver: NSObjectProtocol?
+    private var becomeActiveObserver: NSObjectProtocol?
+    /// DocShot's own animations running, so a size change is never started on top of one.
+    private var animationsRunning = 0
+    /// A size change asked for while an animation runs; done once it ends.
+    private var needsResize = false
+    /// DocShot itself sent the user to System Settings: stay open until they come back, so the
+    /// row shows the new permission.
+    private var awayOnPurpose = false
 
-    private var tabs: [Tab] = []
-    private let container = NSView()
-    private(set) var selectedIndex = 0
+    var isShowing: Bool { panel?.isVisible == true }
 
-    private init() {
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: SettingsPage<EmptyView>.width, height: 400),
-            styleMask: [.titled, .closable],
+    private override init() {
+        super.init()
+        let panel = SettingsPanel(
+            contentRect: NSRect(x: 0, y: 0, width: SettingsPanelLayout.compactWidth, height: 300),
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
-        window.identifier = SettingsWindowFactory.identifier
-        window.isReleasedWhenClosed = false
-        window.toolbarStyle = .preference
-        super.init(window: window)
-
-        tabs = [
-            Tab(id: .init("general"), label: "General", symbol: "gearshape", view: SettingsHostingView(GeneralSettingsView())),
-            Tab(id: .init("clipboard"), label: "Clipboard", symbol: "doc.on.clipboard", view: SettingsHostingView(ClipboardSettingsSection())),
-            Tab(id: .init("capture"), label: "Capture", symbol: "camera.viewfinder", view: SettingsHostingView(CaptureSettingsView())),
-            Tab(id: .init("shortcuts"), label: "Shortcuts", symbol: "command", view: SettingsHostingView(ShortcutsSettingsView())),
-        ]
-        for tab in tabs {
-            tab.view.onIdealSizeChange = { [weak self, weak view = tab.view] in
-                guard let self, let view, self.tabs[self.selectedIndex].view === view else { return }
-                self.resize(animated: true)
-            }
-        }
-
-        container.autoresizingMask = [.width, .height]
-        window.contentView = container
-        let toolbar = NSToolbar(identifier: "DocShotSettingsToolbar")
-        toolbar.delegate = self
-        toolbar.displayMode = .iconAndLabel
-        toolbar.allowsUserCustomization = false
-        window.toolbar = toolbar
-        select(0, animated: false)
-        window.center()
+        panel.identifier = SettingsWindowFactory.identifier
+        panel.title = "DocShot Settings"
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.isReleasedWhenClosed = false
+        panel.hidesOnDeactivate = false
+        panel.isFloatingPanel = false
+        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        panel.delegate = self
+        let host = SettingsHostingView(SettingsPanelView(
+            model: model,
+            onExpand: { [weak self] tab in self?.expand(to: tab) },
+            onCollapse: { [weak self] in self?.collapse() },
+            onClose: { [weak self] in self?.close() }
+        ))
+        host.onIdealSizeChange = { [weak self] in self?.resize(animated: true) }
+        panel.contentView = host
+        self.panel = panel
+        self.host = host
     }
 
-    required init?(coder: NSCoder) { nil }
+    /// The menu's Settings... item: open compact, close it if it is in front, or bring it
+    /// forward if it is open behind something.
+    func toggle() {
+        if isShowing && panel.isKeyWindow {
+            close()
+        } else if isShowing {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        } else {
+            show()
+        }
+    }
 
-    func select(_ index: Int, animated: Bool = true) {
-        guard tabs.indices.contains(index) else { return }
-        selectedIndex = index
-        let tab = tabs[index]
-        window?.toolbar?.selectedItemIdentifier = tab.id
-        window?.title = tab.label
-        container.subviews.forEach { $0.removeFromSuperview() }
-        tab.view.frame = container.bounds
-        tab.view.autoresizingMask = [.width, .height]
-        container.addSubview(tab.view)
-        resize(animated: animated)
+    /// Called just before DocShot opens System Settings for a permission.
+    func stayOpenWhileAway() {
+        guard isShowing else { return }
+        awayOnPurpose = true
+    }
+
+    func show() {
+        model.expanded = false
+        awayOnPurpose = false
+        let visible = Self.anchorScreen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        model.pageMaxHeight = SettingsPanelLayout.pageMaxHeight(within: visible, cap: SettingsPage<EmptyView>.maxHeight)
+        let size = measuredSize()
+        let frame = SettingsPanelLayout.frame(size: size, anchor: Self.statusItemFrame, visible: visible)
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        // Drops 8 points down from the menu bar and fades in (Reduce Motion: fade only).
+        panel.setFrame(reduceMotion ? frame : frame.offsetBy(dx: 0, dy: Quiet.Space.s2), display: false)
+        panel.alphaValue = 0
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+        installKeyMonitor()
+        watchDeactivation()
+        animate(reduceMotion: false) { [panel] in
+            panel!.animator().alphaValue = 1
+            if !reduceMotion { panel!.animator().setFrame(frame, display: true) }
+        }
+    }
+
+    func close() {
+        removeKeyMonitor()
+        stopWatchingDeactivation()
+        awayOnPurpose = false
+        needsResize = false
+        panel.orderOut(nil)
+    }
+
+    /// "All settings", or a Change... that needs a full tab: grow in place to the tabs.
+    func expand(to tab: Int) {
+        guard SettingsPanelModel.tabs.indices.contains(tab) else { return }
+        if !isShowing { show() }
+        model.tab = tab
+        model.expanded = true
+        resizeOnNextTurn()
+    }
+
+    func collapse() {
+        model.expanded = false
+        resizeOnNextTurn()
+    }
+
+    /// The debug hook's tab selection.
+    func select(_ tab: Int) { expand(to: tab) }
+
+    // MARK: Size
+
+    /// What the content wants: its ideal size once laid out.
+    private func measuredSize() -> CGSize {
+        host.layoutSubtreeIfNeeded()
+        let size = host.fittingSize
+        return CGSize(width: max(size.width, 1), height: max(size.height, 1))
+    }
+
+    /// Content changes first; the panel's edge animates on the next turn of the run loop, so a
+    /// layout pass never cuts the animation short.
+    private func resizeOnNextTurn() {
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated { self?.resize(animated: true) }
+        }
     }
 
     private func resize(animated: Bool) {
-        guard let window else { return }
-        let view = tabs[selectedIndex].view
-        // Lay a tab out before measuring it: a tab not shown before otherwise measures a few
-        // points off, and the correction a moment later restarts the animation with a jump.
-        view.layoutSubtreeIfNeeded()
-        let size = view.fittingSize
-        guard size.height > 0 else { return }
-        var frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: size))
-        frame.origin.x = window.frame.minX
-        frame.origin.y = window.frame.maxY - frame.height
-        guard frame.size != window.frame.size else { return }
-        if !animated || !window.isVisible || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-            window.setFrame(frame, display: true)
-        } else {
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = QuietTokens.durBase
-                context.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1) // ease-out
-                window.animator().setFrame(frame, display: true)
-            }
+        guard isShowing else { return }
+        guard animationsRunning == 0 else {
+            needsResize = true // done once the running animation ends
+            return
+        }
+        needsResize = false
+        let size = measuredSize()
+        let visible = panel.screen?.visibleFrame ?? NSScreen.main?.visibleFrame ?? panel.frame
+        let target = SettingsPanelLayout.resized(panel.frame, to: size, within: visible)
+        guard target.size != panel.frame.size || target.origin != panel.frame.origin else { return }
+        let reduceMotion = !animated || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        animate(reduceMotion: reduceMotion) { [panel] in
+            if reduceMotion { panel!.setFrame(target, display: true) } else { panel!.animator().setFrame(target, display: true) }
         }
     }
 
-    @objc private func toolbarItemClicked(_ sender: NSToolbarItem) {
-        guard let index = tabs.firstIndex(where: { $0.id == sender.itemIdentifier }) else { return }
-        select(index)
+    private func animate(reduceMotion: Bool, changes: @escaping () -> Void) {
+        animationsRunning += 1
+        if reduceMotion {
+            changes()
+            animationsRunning -= 1
+            return
+        }
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = QuietTokens.durBase
+            context.timingFunction = Quiet.Motion.easeOutCurve
+            changes()
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.animationsRunning -= 1
+                if self.animationsRunning == 0 && self.needsResize { self.resize(animated: true) }
+            }
+        })
     }
 
-    // MARK: NSToolbarDelegate
+    // MARK: Where the menu bar icon is
 
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { tabs.map(\.id) }
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { tabs.map(\.id) }
-    func toolbarSelectableItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] { tabs.map(\.id) }
+    /// DocShot's status item, drawn in its own small window in the menu bar. With several
+    /// displays each has a copy: take the one on the display the pointer is on (the user just
+    /// clicked it). Nil if hidden, which places the panel at the top right of that display.
+    static var statusItemFrame: CGRect? {
+        let items = NSApp.windows
+            .filter { String(describing: type(of: $0)).contains("StatusBar") && $0.isVisible }
+            .map(\.frame)
+        let mouse = NSEvent.mouseLocation
+        if let screen = NSScreen.screens.first(where: { NSMouseInRect(mouse, $0.frame, false) }),
+           let onScreen = items.first(where: { screen.frame.intersects($0) }) {
+            return onScreen
+        }
+        return items.first
+    }
 
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier id: NSToolbarItem.Identifier,
-                 willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
-        guard let tab = tabs.first(where: { $0.id == id }) else { return nil }
-        let item = NSToolbarItem(itemIdentifier: id)
-        item.label = tab.label
-        item.image = NSImage(systemSymbolName: tab.symbol, accessibilityDescription: tab.label)
-        item.target = self
-        item.action = #selector(toolbarItemClicked(_:))
-        return item
+    static var anchorScreen: NSScreen? {
+        guard let anchor = statusItemFrame else {
+            let mouse = NSEvent.mouseLocation
+            return NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+        }
+        return NSScreen.screens.first { $0.frame.intersects(anchor) } ?? NSScreen.main
+    }
+
+    // MARK: Closing
+
+    private func installKeyMonitor() {
+        guard keyMonitor == nil else { return }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, event.window === self.panel, self.panel.attachedSheet == nil else { return event }
+            let modifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
+            let escape = event.keyCode == 53 && modifiers.isEmpty
+            let commandW = event.charactersIgnoringModifiers?.lowercased() == "w" && modifiers == .command
+            guard escape || commandW else { return event }
+            self.close()
+            return nil
+        }
+    }
+
+    private func removeKeyMonitor() {
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        keyMonitor = nil
+    }
+
+    /// Closes when the user goes to another app, like a popover, unless DocShot sent them to
+    /// System Settings. DocShot's own folder picker and shortcut recorder keep it open.
+    private func watchDeactivation() {
+        guard resignObserver == nil else { return }
+        resignObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, !self.awayOnPurpose else { return }
+                self.close()
+            }
+        }
+        becomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.awayOnPurpose = false }
+        }
+    }
+
+    private func stopWatchingDeactivation() {
+        if let resignObserver { NotificationCenter.default.removeObserver(resignObserver) }
+        if let becomeActiveObserver { NotificationCenter.default.removeObserver(becomeActiveObserver) }
+        resignObserver = nil
+        becomeActiveObserver = nil
+    }
+
+    /// A click on another DocShot window closes it too. Checked on the next turn, once a sheet
+    /// or modal picker that took the keyboard is in place: those keep it open.
+    func windowDidResignKey(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.isShowing, !self.panel.isKeyWindow, !self.awayOnPurpose,
+                      self.panel.attachedSheet == nil, NSApp.modalWindow == nil else { return }
+                // DocShot no longer active: the deactivation observer decides.
+                guard NSApp.isActive else { return }
+                self.close()
+            }
+        }
     }
 }
 
-/// A tab's SwiftUI content. It is placed by frame, not constraints, so it never forces the
-/// window's size; it reports when its ideal size changes so the window can ease to it.
+/// A borderless panel that still takes the keyboard.
+final class SettingsPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
+/// The panel's content: the compact everyday settings, or the four tabs.
+struct SettingsPanelView: View {
+    @ObservedObject var themeController = ThemeController.shared
+    @ObservedObject var model: SettingsPanelModel
+    let onExpand: (Int) -> Void
+    let onCollapse: () -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        // One container, so the background, clip and edge are drawn once while the two states
+        // cross-fade.
+        ZStack(alignment: .topLeading) {
+            if model.expanded {
+                VStack(spacing: 0) {
+                    tabStrip
+                    Rectangle().fill(Quiet.line).frame(height: 1)
+                    switch model.tab {
+                    case 0: GeneralSettingsView()
+                    case 1: ClipboardSettingsSection()
+                    case 2: CaptureSettingsView()
+                    default: ShortcutsSettingsView()
+                    }
+                }
+                .transition(.opacity.animation(Quiet.Motion.fade))
+            } else {
+                CompactSettingsView(onExpand: onExpand, onAllSettings: { onExpand(model.tab) }, onClose: onClose)
+                    .transition(.opacity.animation(Quiet.Motion.fade))
+            }
+        }
+        .environment(\.settingsPageMaxHeight, model.pageMaxHeight)
+        .fixedSize()
+        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
+        .background(Quiet.canvas)
+        .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1))
+        .ignoresSafeArea()
+    }
+
+    /// Back to the compact view, then the four tabs as one neutral segmented strip.
+    private var tabStrip: some View {
+        HStack(spacing: Quiet.Space.s2) {
+            Button(action: onCollapse) {
+                Image(systemName: "chevron.left")
+                    .font(Quiet.Font.ui)
+                    .foregroundStyle(Quiet.inkMuted)
+                    .padding(Quiet.Space.s2)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Fewer settings")
+            .accessibilityLabel("Fewer settings")
+            ForEach(Array(SettingsPanelModel.tabs.enumerated()), id: \.offset) { index, tab in
+                Button {
+                    model.tab = index
+                    onExpand(index)
+                } label: {
+                    Label(tab.label, systemImage: tab.symbol)
+                        .font(Quiet.Font.ui)
+                        .foregroundStyle(model.tab == index ? Quiet.ink : Quiet.inkMuted)
+                        .padding(.horizontal, Quiet.Space.s3)
+                        .padding(.vertical, Quiet.Space.s1)
+                        .background(
+                            RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                .fill(model.tab == index ? Quiet.selection : Color.clear)
+                        )
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(model.tab == index ? .isSelected : [])
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Quiet.Space.s4)
+        .padding(.vertical, Quiet.Space.s3)
+        .frame(width: SettingsPage<EmptyView>.width)
+    }
+}
+
+/// The everyday settings (compact panels, decision 4): theme, clipboard history, the
+/// open-clipboard shortcut, how saving works, open at login; "All settings" for the rest.
+struct CompactSettingsView: View {
+    @ObservedObject private var themeController = ThemeController.shared
+    @ObservedObject private var history = ClipboardHistoryController.shared
+    @ObservedObject private var hotkeyService = HotkeyService.shared
+    @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
+    let onExpand: (Int) -> Void
+    /// Back to the tab last open.
+    let onAllSettings: () -> Void
+    let onClose: () -> Void
+
+    var body: some View {
+        SettingsPage(width: SettingsPanelLayout.compactWidth) {
+            SettingsGroup(title: "Appearance") {
+                HStack(spacing: Quiet.Space.s4) {
+                    ForEach(ColorTheme.allCases) { theme in
+                        CompactThemeButton(theme: theme, isSelected: themeController.theme == theme) {
+                            themeController.select(theme)
+                        }
+                    }
+                }
+                .padding(Quiet.Space.s4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            SettingsGroup(title: "Clipboard") {
+                SettingsToggleRow(
+                    title: "Keep clipboard history",
+                    isOn: Binding(get: { history.isEnabled }, set: { history.setEnabled($0) })
+                )
+                if history.isEnabled {
+                    SettingsDivider()
+                    SettingsToggleRow(
+                        title: "Pause recording",
+                        isOn: Binding(get: { history.isPaused }, set: { history.setPaused($0) })
+                    )
+                }
+                SettingsDivider()
+                SettingsRow(title: "Open history") {
+                    KeyHint(keys: hotkeyService.binding(for: .openWindow).shortcutDisplay)
+                    Button("Change…") { onExpand(3) }
+                }
+            }
+            SettingsGroup(title: "Saving and startup") {
+                SettingsRow(title: "When you save", detail: saveSummary) {
+                    Button("Change…") { onExpand(0) }
+                }
+                SettingsDivider()
+                SettingsToggleRow(
+                    title: "Open at login",
+                    detail: launchAtLoginService.errorMessage,
+                    detailIsError: launchAtLoginService.errorMessage != nil,
+                    isOn: Binding(get: { launchAtLoginService.isEnabled }, set: { launchAtLoginService.setEnabled($0) })
+                )
+            }
+            HStack {
+                Button(action: onAllSettings) {
+                    Label("All settings", systemImage: "slider.horizontal.3")
+                }
+                Spacer()
+                Button(action: onClose) {
+                    HStack(spacing: Quiet.Space.s1) {
+                        KeyHint(keys: "esc")
+                        Text("Close").font(Quiet.Font.caption).foregroundStyle(Quiet.inkFaint)
+                    }
+                }
+                .buttonStyle(.plain)
+                .help("Close (esc)")
+                .accessibilityLabel("Close")
+            }
+        }
+        .onAppear { launchAtLoginService.refresh() }
+    }
+
+    private var saveSummary: String {
+        switch OutputFolderService.shared.currentMode {
+        case .askWhereToSave: return "Asks where each time"
+        case .useDefaultFolder:
+            let path = OutputFolderService.shared.displayPath ?? ""
+            return path.isEmpty ? "Uses a folder" : "Into " + (path as NSString).lastPathComponent
+        }
+    }
+}
+
+/// A theme as a coloured dot with its name, for the compact panel.
+private struct CompactThemeButton: View {
+    let theme: ColorTheme
+    let isSelected: Bool
+    let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let accent = Color(nsColor: NSColor(themeRGB: theme.surfaces(isDark: colorScheme == .dark).accent))
+        Button(action: action) {
+            VStack(spacing: Quiet.Space.s1) {
+                Circle()
+                    .fill(accent)
+                    .frame(width: 24, height: 24)
+                    // The selected ring sits one space-1 outside the dot.
+                    .padding(Quiet.Space.s1)
+                    .overlay(Circle().strokeBorder(isSelected ? Quiet.ink : Color.clear, lineWidth: 2))
+                Text(theme.displayName)
+                    .font(Quiet.Font.caption.weight(isSelected ? .semibold : .regular))
+                    .foregroundStyle(Quiet.ink)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("\(theme.displayName): \(theme.summary)")
+        .accessibilityLabel(theme.displayName)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// SwiftUI content placed by frame, not constraints, so it never forces the panel's size; it
+/// reports when its ideal size changes so the panel can ease to it.
 final class SettingsHostingView: NSHostingView<AnyView> {
     var onIdealSizeChange: (() -> Void)?
 
@@ -241,6 +590,7 @@ struct GeneralSettingsView: View {
                     detailIsError: !hasPermission
                 ) {
                     Button("Open System Settings") {
+                        SettingsWindowController.shared.stayOpenWhileAway()
                         PermissionService.shared.openSystemSettingsScreenRecording()
                     }
                 }
@@ -435,6 +785,7 @@ struct ShortcutsSettingsView: View {
         ("Copy without pasting", "⌘C"),
         ("Pin or unpin", "⌘P"),
         ("Delete", "⌘⌫"),
+        ("Show or hide the preview", "⌘Y"),
         ("Move through the list", "↑ ↓"),
         ("Clear the search, then close", "esc"),
     ]

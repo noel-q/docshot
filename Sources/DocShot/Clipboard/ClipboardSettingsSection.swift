@@ -183,6 +183,7 @@ struct ClipboardSettingsSection: View {
                 SettingsRow(title: "Accessibility", detail: "Not allowed yet. Until then, Return copies and you press ⌘V.") {
                     Button("Allow…") {
                         controller.markAccessRequested()
+                        SettingsWindowController.shared.stayOpenWhileAway()
                         AccessibilityAccess.request()
                         AccessibilityAccess.openSettings()
                     }

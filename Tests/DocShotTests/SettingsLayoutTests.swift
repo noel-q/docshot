@@ -45,12 +45,13 @@ struct SettingsLayoutTests {
                                  hasTextSelection: false, queryIsEmpty: query.isEmpty)
         }
         let listed = Dictionary(uniqueKeysWithValues: ShortcutsSettingsView.windowKeys.map { ($0.keys, $0.action) })
-        #expect(listed.count == 7)
+        #expect(listed.count == 8)
         #expect(listed["↵"] != nil && action(36) == .choose)
         #expect(listed["⌘1–⌘9"] != nil && action(18, .command, "1") == .pick(1) && action(25, .command, "9") == .pick(9))
         #expect(listed["⌘C"] != nil && action(8, .command, "c") == .copy)
         #expect(listed["⌘P"] != nil && action(35, .command, "p") == .togglePin)
         #expect(listed["⌘⌫"] != nil && action(51, .command) == .delete)
+        #expect(listed["⌘Y"] != nil && action(16, .command, "y") == .togglePreview)
         #expect(listed["↑ ↓"] != nil && action(126) == .up && action(125) == .down)
         #expect(listed["esc"] != nil && action(53, query: "x") == .clearSearch && action(53) == .close)
     }

@@ -133,6 +133,28 @@ enum ClipboardDebugHooks {
                 }
                 return
             }
+            if command == "float-sample" {
+                if let image = sampleCGImage() { FloatController.shared.float(image) }
+                return writeState("floats: \(FloatController.shared.count)")
+            }
+            if command == "floats" {
+                return writeState("floats: \(FloatController.shared.count)")
+            }
+            if command.hasPrefix("float-key:"), let parts = Optional(command.dropFirst("float-key:".count).split(separator: ",")),
+               let code = parts.first.flatMap({ UInt16($0) }),
+               let window = NSApp.windows.last(where: { $0 is FloatPanel && $0.isVisible }) {
+                // float-key:<code>[,cmd,<character>]: a key press for the newest float.
+                let command = parts.contains("cmd")
+                let typed = parts.count > 2 ? String(parts[2]) : ""
+                if let event = NSEvent.keyEvent(
+                    with: .keyDown, location: .zero, modifierFlags: command ? [.command] : [],
+                    timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil,
+                    characters: typed, charactersIgnoringModifiers: typed, isARepeat: false, keyCode: code
+                ) {
+                    NSApp.postEvent(event, atStart: false)
+                }
+                return writeState("float-key: \(code)")
+            }
             if command == "seed-captures" {
                 // Five screenshots (the desktop picture, cropped differently) and two recording
                 // references: the scratch test clip, and one whose file is gone.

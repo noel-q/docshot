@@ -60,6 +60,9 @@ public struct EditorView: View {
             Spacer(minLength: 0)
 
             HStack(spacing: Quiet.Space.s1) {
+                EditorIconButton("pip.enter", help: "Float on screen (⌘F)", disabled: isExporting) { performFloat() }
+                    .keyboardShortcut("f", modifiers: [.command])
+                QuietRule(vertical: true)
                 EditorIconButton("arrow.uturn.backward", help: "Undo (⌘Z)", disabled: !viewModel.canUndo) { viewModel.undo() }
                     .keyboardShortcut("z", modifiers: [.command])
                 EditorIconButton("arrow.uturn.forward", help: "Redo (⇧⌘Z)", disabled: !viewModel.canRedo) { viewModel.redo() }
@@ -226,6 +229,23 @@ public struct EditorView: View {
                 self.errorMessage = "Failed to copy screenshot to the clipboard."
                 self.showErrorAlert = true
             }
+        }
+    }
+
+    /// Float (C4b): the image with its marks, in its own window above the others. The editor
+    /// stays open; nothing is written to disk.
+    private func performFloat() {
+        guard !isExporting else { return }
+        Task {
+            let result = await ExportService.shared.exportPNGResult(
+                baseImage: viewModel.baseImage, annotations: viewModel.annotations,
+                cropRect: viewModel.cropRect, exportSize: .native
+            )
+            guard case .success(let png) = result, let image = FloatController.image(fromPNG: png) else {
+                NSSound.beep()
+                return
+            }
+            FloatController.shared.float(image)
         }
     }
 

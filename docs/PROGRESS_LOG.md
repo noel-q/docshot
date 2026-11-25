@@ -7,6 +7,15 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Unit 6, C4b Float, on `feature/c4b-float`: an image in its own borderless window above the
+  others, at most 480 points on its long side, cascaded from the centre of the screen in use;
+  from the editor (a Float button and Cmd+F, marks drawn in), from Captures (Cmd+F, with marks)
+  and from an image in history (Cmd+F); several at once; drag to move; Cmd+C copies; Escape,
+  Cmd+W or the close button on hover removes it; held in memory only. swift test 381,
+  xcodebuild test 381, Release build has no debug symbols. Verified (agent, scratch store): two
+  floats at once, one from Captures through the real key monitor (250x400 with marks), Escape
+  removed each, a snapshot, and no new file in the store after floating. Not run: Float from the
+  editor and from history in the app, Cmd+C on a float (real clipboard), dragging.
 - Unit 5, C4a text in images, on `feature/c4a-ocr`: schema 3 adds the recognised text to image
   items; Vision reads each stored image once, in the background at low priority, only while
   history is on (new images at once, older ones when history turns on); unreadable images are

@@ -14,6 +14,8 @@ enum ClipboardKeyAction: Equatable {
     case switchSection
     /// Shift+Cmd+C: copy the text found in an image (C4a).
     case copyText
+    /// Cmd+F: float an image item on screen (C4b).
+    case float
     /// Not ours: the search field gets it.
     case passThrough
 }
@@ -54,6 +56,7 @@ enum ClipboardKeys {
         case "c": return hasTextSelection ? .passThrough : .copy
         case "p": return .togglePin
         case "y": return .togglePreview
+        case "f": return .float
         default: return .passThrough
         }
     }
@@ -418,12 +421,14 @@ enum CaptureKeyAction: Equatable {
     case save
     /// Cmd+Delete.
     case delete
+    /// Cmd+F: float the screenshot with its marks (C4b).
+    case float
     case passThrough
 }
 
 enum CaptureKeys {
     static let left: UInt16 = 123, right: UInt16 = 124
-    static let ansiE: UInt16 = 14, ansiS: UInt16 = 1
+    static let ansiE: UInt16 = 14, ansiS: UInt16 = 1, ansiF: UInt16 = 3
 
     static func action(
         keyCode: UInt16, modifiers: NSEvent.ModifierFlags, characters: String?, charactersIgnoringModifiers: String?
@@ -448,10 +453,12 @@ enum CaptureKeys {
         case "c": return .copy
         case "e": return .edit
         case "s": return .save
+        case "f": return .float
         default:
-            // Non-Latin layouts: E and S by position.
+            // Non-Latin layouts: E, S and F by position.
             if keyCode == ansiE { return .edit }
             if keyCode == ansiS { return .save }
+            if keyCode == ansiF { return .float }
             return .passThrough
         }
     }

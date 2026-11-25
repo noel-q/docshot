@@ -122,6 +122,10 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 4. Window: the clipboard panel gains a Captures section, switched with Tab (shown in the header). Screenshots show as a grid of thumbnails with their time; Return copies the screenshot with its marks, Cmd+E opens it in the editor with its marks, Cmd+S saves it, Cmd+Delete deletes it; arrows move. Recordings list below by file name and date with Show in Finder; a moved or deleted file says so. Empty states say what to do.
 5. Checks: store tests (migration from schema 1, limits, Clear, files removed on delete and Clear, orphan files removed on open) and app tests (annotation state round trip, the section keys); snapshots of the section through DEBUG hooks on the scratch store. Fable reviews with the batch.
 
+**C4a and C4b plans (Claude's choices under the road to C5, 25 November 2026; Noel reviews at the end).**
+- C4a: schema 3 keeps the recognised text with each image item; Vision reads each stored image once at background priority, only while history is on; unreadable images are marked read; search finds images by their text; the preview pane shows the text with Copy text (Shift+Cmd+C), written as DocShot's own copy.
+- C4b: Float puts an image in its own small borderless window above other windows, fitted to at most 480 points on its long side and cascaded from the centre of the screen in use. It opens from the editor (a Float button, Cmd+F, with the marks drawn in), from a screenshot in Captures (Cmd+F, with its marks) and from an image item in history (Cmd+F). Several can float. Each can be dragged; Cmd+C copies it; Escape, Cmd+W or its close button (on hover) removes it. Images are held in memory only, so nothing is written to disk and nothing survives quit; it works with history off.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

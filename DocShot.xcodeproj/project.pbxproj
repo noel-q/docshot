@@ -23,6 +23,10 @@
 		D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000007D4000000000000A1 /* ClipPreviewText.swift */; };
 		D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
 		D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
+		D8000002D8000000000000A1 /* FloatLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000001D8000000000000A1 /* FloatLayout.swift */; };
+		D8000003D8000000000000A1 /* FloatLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000001D8000000000000A1 /* FloatLayout.swift */; };
+		D8000005D8000000000000A1 /* FloatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000004D8000000000000A1 /* FloatController.swift */; };
+		D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000006D8000000000000A1 /* FloatLayoutTests.swift */; };
 		D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
 		D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
 		D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */; };
@@ -335,6 +339,9 @@
 		D4000007D4000000000000A1 /* ClipPreviewText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipPreviewText.swift; path = Sources/DocShot/Clipboard/ClipPreviewText.swift; sourceTree = "<group>"; };
 		D6000001D6000000000000A1 /* SettingsPanelLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsPanelLayout.swift; path = Sources/DocShot/Settings/SettingsPanelLayout.swift; sourceTree = "<group>"; };
 		D7000001D7000000000000A1 /* OnboardingPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingPages.swift; path = Sources/DocShot/Onboarding/OnboardingPages.swift; sourceTree = "<group>"; };
+		D8000001D8000000000000A1 /* FloatLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayout.swift; path = Sources/DocShot/Capture/FloatLayout.swift; sourceTree = "<group>"; };
+		D8000004D8000000000000A1 /* FloatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatController.swift; path = Sources/DocShot/Capture/FloatController.swift; sourceTree = "<group>"; };
+		D8000006D8000000000000A1 /* FloatLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayoutTests.swift; path = Tests/DocShotTests/FloatLayoutTests.swift; sourceTree = "<group>"; };
 		D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardPreviewPane.swift; path = Sources/DocShot/Clipboard/ClipboardPreviewPane.swift; sourceTree = "<group>"; };
 		D4000012D4000000000000A1 /* QuietTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QuietTokensTests.swift; path = Tests/DocShotTests/QuietTokensTests.swift; sourceTree = "<group>"; };
 		C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardDebugHooks.swift; path = Sources/DocShot/Clipboard/ClipboardDebugHooks.swift; sourceTree = "<group>"; };
@@ -455,6 +462,8 @@
 				B00000182C50000000000001 /* PermissionWindowController.swift */,
 				B000001B2C50000000000001 /* OnboardingView.swift */,
 				D7000001D7000000000000A1 /* OnboardingPages.swift */,
+				D8000001D8000000000000A1 /* FloatLayout.swift */,
+				D8000004D8000000000000A1 /* FloatController.swift */,
 				CA0000012C50000000000001 /* RecordingTarget.swift */,
 				CA0000022C50000000000001 /* RecordingOptions.swift */,
 				CA0000032C50000000000001 /* RecordingFailure.swift */,
@@ -501,6 +510,7 @@
 				C3000007C3000000000000A1 /* PasteActionTests.swift */,
 				C3000009C3000000000000A1 /* ClipboardListModelTests.swift */,
 				D7000004D7000000000000A1 /* OnboardingPagesTests.swift */,
+				D8000006D8000000000000A1 /* FloatLayoutTests.swift */,
 				D4000012D4000000000000A1 /* QuietTokensTests.swift */,
 				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
@@ -657,6 +667,8 @@
 				D4000008D4000000000000A1 /* ClipPreviewText.swift in Sources */,
 				D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
 				D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */,
+				D8000002D8000000000000A1 /* FloatLayout.swift in Sources */,
+				D8000005D8000000000000A1 /* FloatController.swift in Sources */,
 				D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */,
 				C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */,
 				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
@@ -781,6 +793,8 @@
 				D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */,
 				D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
 				D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */,
+				D8000003D8000000000000A1 /* FloatLayout.swift in Sources */,
+				D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */,
 				D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */,
 				C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */,
 				C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */,

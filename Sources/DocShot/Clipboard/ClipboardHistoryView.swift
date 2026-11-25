@@ -133,6 +133,7 @@ struct ClipboardHistoryView: View {
                     hint("↵", "Copy")
                     hint("⌘E", "Edit")
                     hint("⌘S", "Save")
+                    hint("⌘F", "Float")
                 } else {
                     hint("↵", "Show in Finder")
                 }

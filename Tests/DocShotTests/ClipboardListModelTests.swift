@@ -499,5 +499,9 @@ struct CopyTextKeyTests {
         }
         #expect(action([.command, .shift], "C") == .copyText)
         #expect(action([.command], "c") == .copy)
+        #expect(ClipboardKeys.action(keyCode: 3, modifiers: [.command], characters: "f", charactersIgnoringModifiers: "f",
+                                     hasMarkedText: false, hasTextSelection: false, queryIsEmpty: true) == .float)
+        #expect(CaptureKeys.action(keyCode: 3, modifiers: [.command], characters: "f", charactersIgnoringModifiers: "f") == .float)
+        #expect(CaptureKeys.action(keyCode: 3, modifiers: [.command], characters: "а", charactersIgnoringModifiers: "а") == .float)
     }
 }

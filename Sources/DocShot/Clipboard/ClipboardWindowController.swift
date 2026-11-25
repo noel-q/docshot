@@ -362,6 +362,16 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             togglePreview()
         case .switchSection:
             model.switchSection()
+        case .float:
+            Task {
+                guard let item = await self.model.settledSelection(), item.kind == .image,
+                      let url = await history.imageFileURL(for: item),
+                      let data = try? Data(contentsOf: url), let image = FloatController.image(fromPNG: data) else {
+                    NSSound.beep()
+                    return
+                }
+                FloatController.shared.float(image)
+            }
         case .copyText:
             Task {
                 guard let item = await self.model.settledSelection(), item.kind == .image,
@@ -412,7 +422,7 @@ extension ClipboardWindowController {
             model.switchSection()
         case .left, .right, .up, .down:
             model.moveCaptureSelection(action)
-        case .choose, .copy, .edit, .save, .delete:
+        case .choose, .copy, .edit, .save, .delete, .float:
             guard let capture = model.selectedCapture else {
                 NSSound.beep()
                 return true
@@ -464,6 +474,14 @@ extension ClipboardWindowController {
             }
         case .delete:
             history.deleteCapture(capture)
+        case .float:
+            Task {
+                guard let png = await history.renderedCapture(capture), let image = FloatController.image(fromPNG: png) else {
+                    NSSound.beep()
+                    return
+                }
+                FloatController.shared.float(image)
+            }
         default:
             break
         }

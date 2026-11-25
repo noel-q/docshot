@@ -4,7 +4,8 @@ import Vision
 
 /// Runs clipboard history in the app (plan sections 4.3 and C2): watches the general pasteboard
 /// while history is on and not paused, saves copies through `ClipboardStore`, and copies items
-/// back. With history off it does nothing at all: no timer, no store, no reads.
+/// back. With history off it watches nothing: no timer and no clipboard reads. The store opens
+/// only to count or clear what was kept before (decided 25 November 2026), then closes again.
 @MainActor
 final class ClipboardHistoryController: ObservableObject {
     static let shared: ClipboardHistoryController = {
@@ -26,6 +27,10 @@ final class ClipboardHistoryController: ObservableObject {
     /// Screenshots and saved recordings, newest first (C4).
     @Published private(set) var captures: [CaptureItem] = []
     @Published private(set) var isEnabled = false
+    /// What stays stored while history is off, so Clear can still remove it. Read at launch,
+    /// when history is switched off and after a Clear; empty while history is on.
+    @Published private(set) var storedItems: [ClipItem] = []
+    @Published private(set) var storedCaptures: [CaptureItem] = []
     @Published private(set) var isPaused = false
     @Published private(set) var clearKeep: ClearKeep = .defaultValue
     /// macOS asks before, or refuses, clipboard reads for DocShot (plan 4.3, C0 finding).
@@ -102,6 +107,8 @@ final class ClipboardHistoryController: ObservableObject {
         refreshPasteAccess()
         if settings.historyEnabled {
             turnOn()
+        } else {
+            readStoredWhileOff()
         }
     }
 
@@ -240,16 +247,31 @@ final class ClipboardHistoryController: ObservableObject {
 
     // MARK: - Actions
 
-    /// How many items Clear would remove now, for the confirmation.
+    /// How many items Clear would remove now, for the confirmation. With history off, counts
+    /// what is still stored.
     var clearCount: Int {
-        RetentionPolicy.itemsToRemoveOnClear(from: items, keep: clearKeep).count
-            + CaptureRetention.toRemoveOnClear(captures, keep: clearKeep).count
+        let keptItems = isEnabled ? items : storedItems
+        let keptCaptures = isEnabled ? captures : storedCaptures
+        return RetentionPolicy.itemsToRemoveOnClear(from: keptItems, keep: clearKeep).count
+            + CaptureRetention.toRemoveOnClear(keptCaptures, keep: clearKeep).count
     }
 
-    /// Clears history, keeping what the Clear setting says.
+    /// History is off but items or captures are still stored, so Clear is offered.
+    var hasStoredWhileOff: Bool {
+        !isEnabled && !(storedItems.isEmpty && storedCaptures.isEmpty)
+    }
+
+    /// Clears history, keeping what the Clear setting says. Works with history off too.
     func clear() {
-        enqueue { store in
-            try await store.clear(keeping: self.clearKeep)
+        let keep = clearKeep
+        if isEnabled {
+            enqueue { store in
+                try await store.clear(keeping: keep)
+            }
+        } else {
+            withStoreWhileOff { store in
+                try await store.clear(keeping: keep)
+            }
         }
     }
 
@@ -337,6 +359,8 @@ final class ClipboardHistoryController: ObservableObject {
     private func turnOn() {
         // Switched off and on again before the store closed: keep using the open one, so two
         // stores never share the folder.
+        storedItems = []
+        storedCaptures = []
         if store == nil {
             do {
                 let directory = try storeDirectory ?? ClipboardStore.defaultDirectory()
@@ -379,10 +403,70 @@ final class ClipboardHistoryController: ObservableObject {
         let previous = pendingWork
         pendingWork = Task {
             await previous?.value
+            guard !self.isEnabled, let store = self.store else { return }
+            // Remember what stays stored, so Clear can still reach it.
+            let keptItems = await store.items
+            let keptCaptures = await store.captures
             guard !self.isEnabled else { return }
+            self.storedItems = keptItems
+            self.storedCaptures = keptCaptures
             self.store = nil
             self.items = []
             self.captures = []
+        }
+    }
+
+    /// Counts what is stored while history is off. Opens nothing if history was never kept.
+    private func readStoredWhileOff() {
+        withStoreWhileOff { _ in }
+    }
+
+    /// Runs `work` on the store while history is off: opens it only if history was ever kept
+    /// (never creates an empty one), updates the stored counts, and closes it again. Queued
+    /// with the other store work, and the open store is the controller's own, so switching
+    /// history on meanwhile reuses it and two stores never share the folder.
+    private func withStoreWhileOff(_ work: @escaping @MainActor (ClipboardStore) async throws -> Void) {
+        let previous = pendingWork
+        pendingWork = Task {
+            await previous?.value
+            guard let store = self.store ?? self.openStoredHistory() else {
+                self.storedItems = []
+                self.storedCaptures = []
+                return
+            }
+            self.store = store
+            do {
+                try await work(store)
+                self.problem = nil
+            } catch {
+                self.problem = "Clipboard history could not save a change: \(error)"
+            }
+            if self.isEnabled {
+                await self.reloadItems()
+                return
+            }
+            let keptItems = await store.items
+            let keptCaptures = await store.captures
+            guard !self.isEnabled else {
+                await self.reloadItems()
+                return
+            }
+            self.storedItems = keptItems
+            self.storedCaptures = keptCaptures
+            self.store = nil
+        }
+    }
+
+    /// The store, if history was kept before; nil, creating nothing, if it never was.
+    private func openStoredHistory() -> ClipboardStore? {
+        do {
+            let directory = try storeDirectory ?? ClipboardStore.defaultDirectory()
+            let database = directory.appendingPathComponent(ClipboardStore.databaseName)
+            guard FileManager.default.fileExists(atPath: database.path) else { return nil }
+            return try ClipboardStore(directory: directory, limits: settings.limits)
+        } catch {
+            problem = "Stored clipboard history could not be opened: \(error)"
+            return nil
         }
     }
 

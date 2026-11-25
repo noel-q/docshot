@@ -70,6 +70,9 @@ struct ClipboardSettingsSection: View {
                 pasting
                 excludedApps
                 clearing
+            } else if controller.hasStoredWhileOff {
+                // History is off but something is still stored: Clear can still remove it.
+                clearing
             }
 
             if let problem = controller.problem {
@@ -261,7 +264,13 @@ struct ClipboardSettingsSection: View {
 
     private var clearDetail: String {
         let count = controller.clearCount
-        return count == 0 ? "Nothing to clear." : "Removes \(ClipPreviewText.count(count, "item")) now."
+        if controller.isEnabled {
+            return count == 0 ? "Nothing to clear." : "Removes \(ClipPreviewText.count(count, "item")) now."
+        }
+        let stored = ClipPreviewText.count(controller.storedItems.count + controller.storedCaptures.count, "item")
+        return count == 0
+            ? "History is off. \(stored) still stored, all kept by the choice above."
+            : "History is off. \(stored) still stored; this removes \(count)."
     }
 
     private func chooseApp() {

@@ -50,6 +50,9 @@ struct DocShotApp: App {
                 Button(clipboardHistory.isPaused ? "Resume Clipboard History" : "Pause Clipboard History") {
                     clipboardHistory.setPaused(!clipboardHistory.isPaused)
                 }
+            }
+            // With history off, Clear stays while anything is still stored.
+            if clipboardHistory.isEnabled || clipboardHistory.hasStoredWhileOff {
                 Button("Clear Clipboard History...") {
                     AppDelegate.confirmClearClipboardHistory()
                 }

@@ -91,10 +91,22 @@ enum ClipboardDebugHooks {
             }
             // Commands that add or change history run only against the scratch store, never the
             // real one (`DOCSHOT_DEBUG_STORE`).
-            if ["pause", "resume", "enable", "disable", "seed", "previewtrace", "seed-captures", "seed-text-image"].contains(command)
+            if ["pause", "resume", "enable", "disable", "seed", "previewtrace", "seed-captures", "seed-text-image", "clear-history"].contains(command)
                 || command.hasPrefix("widthtrace:"),
                (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
                 return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
+            }
+            if command == "stored-state" {
+                return writeState("stored: enabled \(history.isEnabled) items \(history.storedItems.count) captures \(history.storedCaptures.count) clearCount \(history.clearCount) offered \(history.isEnabled || history.hasStoredWhileOff)")
+            }
+            if command == "clear-history" {
+                // What the Clear confirmation does after a yes, with history on or off.
+                history.clear()
+                Task { @MainActor in
+                    await history.waitUntilIdle()
+                    writeState("cleared: enabled \(history.isEnabled) stored \(history.storedItems.count + history.storedCaptures.count) items \(history.items.count)")
+                }
+                return
             }
             if command == "pause" || command == "resume" {
                 history.setPaused(command == "pause")

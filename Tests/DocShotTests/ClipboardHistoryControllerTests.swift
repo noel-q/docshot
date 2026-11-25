@@ -190,6 +190,79 @@ struct ClipboardHistoryControllerTests {
         #expect(relaunched.items.isEmpty)
     }
 
+    @Test("With history off, Clear still removes what was kept; the count survives a relaunch")
+    func testClearWhileOff() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        for index in 1...7 {
+            await copyAndPoll(fixture, controller, "kept \(index)")
+        }
+        controller.setEnabled(false)
+        await controller.waitUntilIdle()
+        #expect(controller.items.isEmpty)
+        #expect(controller.storedItems.count == 7)
+        #expect(controller.hasStoredWhileOff)
+        controller.setClearKeep(.lastFive)
+        #expect(controller.clearCount == 2)
+
+        let relaunched = fixture.makeController()
+        relaunched.start()
+        await relaunched.waitUntilIdle()
+        #expect(relaunched.isEnabled == false)
+        #expect(relaunched.storedItems.count == 7)
+
+        relaunched.setClearKeep(.nothing)
+        #expect(relaunched.clearCount == 7)
+        relaunched.clear()
+        await relaunched.waitUntilIdle()
+        #expect(relaunched.storedItems.isEmpty)
+        #expect(relaunched.hasStoredWhileOff == false)
+        #expect(relaunched.isEnabled == false)
+        #expect(relaunched.problem == nil)
+
+        // Gone from disk, not just from the list: switching on shows nothing.
+        relaunched.setEnabled(true)
+        await relaunched.waitUntilIdle()
+        #expect(relaunched.items.isEmpty)
+    }
+
+    @Test("Switching on while a Clear with history off is still running uses one store and clears")
+    func testClearWhileOffThenOn() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        await copyAndPoll(fixture, controller, "old")
+        controller.setEnabled(false)
+        controller.setClearKeep(.nothing)
+        controller.clear()
+        controller.setEnabled(true)
+        await controller.waitUntilIdle()
+        #expect(controller.isEnabled)
+        #expect(controller.items.isEmpty)
+        #expect(controller.problem == nil)
+
+        await copyAndPoll(fixture, controller, "new")
+        #expect(controller.items.map(\.preview) == ["new"])
+    }
+
+    @Test("With history never kept, Clear while off opens and creates nothing")
+    func testClearWhileOffNeverKept() async {
+        let fixture = Fixture()
+        defer { fixture.tearDown() }
+        let controller = fixture.makeController()
+        controller.start()
+        controller.clear()
+        await controller.waitUntilIdle()
+        #expect(controller.hasStoredWhileOff == false)
+        #expect(controller.clearCount == 0)
+        #expect(FileManager.default.fileExists(atPath: fixture.folder.path) == false)
+    }
+
     @Test("An app added to the excluded list stops being recorded; Restore Defaults brings back the defaults")
     func testExcludedAppsEdit() async {
         let fixture = Fixture()

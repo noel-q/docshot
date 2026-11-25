@@ -39,7 +39,7 @@
 - None.
 
 ## Next action
-- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Noel said yes to the launch: his real history database is now schema 3 (13 items kept, captures table empty, Captures folder owner-only; verified 25 Nov). Waiting for Noel: (2) whether Clear should work while history is off, since kept screenshots stay on disk; (3) his look at all six. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
+- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Noel said yes to the launch: his real history database is now schema 3 (13 items kept, captures table empty, Captures folder owner-only; verified 25 Nov). Decided (Noel left it to Claude): Clear works while history is off; build it next. Test build for Noel's work laptop made from f413c26 (universal, macOS 14+, Apple Development-signed, not notarised; DMG in dist/test-2026-11-25, install steps in docs/INSTALL_TEST_BUILD.md) and sent to Noel. Waiting for Noel's look at all six. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

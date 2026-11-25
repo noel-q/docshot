@@ -21,10 +21,21 @@ struct ClipboardHistoryView: View {
 
     static var listWidth: CGFloat { ClipboardPanelLayout.listWidth }
     let onTogglePreview: () -> Void
+    /// A click or double-click in Captures (C4).
+    var onCaptureAction: (CaptureKeyAction, CaptureItem) -> Void = { _, _ in }
 
     var body: some View {
         VStack(spacing: 0) {
             if controller.isEnabled {
+                sectionTabs
+            }
+            if controller.isEnabled && model.section == .captures {
+                Rectangle().fill(Quiet.line).frame(height: 1)
+                CapturesSectionView(model: model, controller: controller, onAction: onCaptureAction)
+                    .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
+                Rectangle().fill(Quiet.line).frame(height: 1)
+                capturesFooter
+            } else if controller.isEnabled {
                 topBar
                 if controller.isPaused {
                     pausedLine
@@ -71,6 +82,67 @@ struct ClipboardHistoryView: View {
         } message: {
             Text("Keeps \(controller.clearKeep.title.lowercased()). \(ClipboardSettings.clearWarning)")
         }
+    }
+
+    // MARK: - Sections (C4)
+
+    /// Clipboard and Captures, with Tab to switch. Neutral selection: `selection` behind.
+    private var sectionTabs: some View {
+        HStack(spacing: Quiet.Space.s1) {
+            tabButton("Clipboard", .clipboard)
+            tabButton("Captures", .captures)
+            Spacer(minLength: 0)
+            Button { model.switchSection() } label: {
+                hint("tab", "Switch")
+            }
+            .buttonStyle(.plain)
+            .help("Switch between Clipboard and Captures (Tab)")
+        }
+        .font(Quiet.Font.caption)
+        .padding(.horizontal, Quiet.Space.s3)
+        .padding(.top, Quiet.Space.s2)
+        .padding(.bottom, Quiet.Space.s1)
+    }
+
+    private func tabButton(_ title: String, _ section: PanelSection) -> some View {
+        let selected = model.section == section
+        return Button {
+            if !selected { model.switchSection() }
+        } label: {
+            Text(title)
+                .font(Quiet.Font.ui)
+                .foregroundStyle(selected ? Quiet.ink : Quiet.inkMuted)
+                .padding(.horizontal, Quiet.Space.s2)
+                .padding(.vertical, Quiet.Space.s1)
+                .background(
+                    RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                        .fill(selected ? Quiet.selection : Color.clear)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private var capturesFooter: some View {
+        HStack(spacing: Quiet.Space.s4) {
+            if let problem = controller.problem {
+                Text(problem).foregroundStyle(Quiet.danger).lineLimit(1)
+            } else if let capture = model.selectedCapture {
+                if capture.kind == .screenshot {
+                    hint("↵", "Copy")
+                    hint("⌘E", "Edit")
+                    hint("⌘S", "Save")
+                } else {
+                    hint("↵", "Show in Finder")
+                }
+            }
+            Spacer(minLength: 0)
+            closeHint
+        }
+        .font(Quiet.Font.caption)
+        .padding(.horizontal, Quiet.Space.s4)
+        .frame(height: 36)
     }
 
     // MARK: - Top bar
@@ -529,5 +601,179 @@ extension Color {
         let b = Double((value >> (hasAlpha ? 8 : 0)) & 0xFF) / 255
         let a = hasAlpha ? Double(value & 0xFF) / 255 : 1
         self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
+    }
+}
+
+// MARK: - Captures section (C4)
+
+/// Recent screenshots as a grid of thumbnails, then saved recordings by name (C4 plan,
+/// decision 4). Selection is neutral; a double-click opens a screenshot in the editor or shows
+/// a recording in Finder.
+struct CapturesSectionView: View {
+    @ObservedObject var model: ClipboardWindowModel
+    @ObservedObject var controller: ClipboardHistoryController
+    let onAction: (CaptureKeyAction, CaptureItem) -> Void
+
+    private var screenshots: [CaptureItem] { controller.captures.filter { $0.kind == .screenshot } }
+    private var recordings: [CaptureItem] { controller.captures.filter { $0.kind == .recording } }
+    private var selectedID: UUID? { model.selectedCapture?.id }
+
+    var body: some View {
+        if controller.captures.isEmpty {
+            VStack(alignment: .leading, spacing: Quiet.Space.s2) {
+                Text(controller.isPaused ? "History is paused" : "No captures yet")
+                    .font(Quiet.Font.title3)
+                    .foregroundStyle(Quiet.ink)
+                Text(controller.isPaused
+                     ? "New screenshots are not kept until you resume."
+                     : "Screenshots you take, and recordings you save, appear here.")
+                    .font(Quiet.Font.body)
+                    .foregroundStyle(Quiet.inkMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.top, Quiet.Space.s12)
+        } else {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Quiet.Space.s2) {
+                        if !screenshots.isEmpty {
+                            heading("Screenshots")
+                            LazyVGrid(
+                                columns: Array(repeating: GridItem(.flexible(), spacing: Quiet.Space.s2), count: CaptureGrid.columns),
+                                spacing: Quiet.Space.s2
+                            ) {
+                                ForEach(screenshots) { capture in
+                                    CaptureThumbnailView(capture: capture, controller: controller, selected: capture.id == selectedID)
+                                        .id(capture.id)
+                                        .onTapGesture(count: 2) { onAction(.edit, capture) }
+                                        .onTapGesture { model.selectedCaptureID = capture.id }
+                                }
+                            }
+                        }
+                        if !recordings.isEmpty {
+                            heading("Recordings")
+                            ForEach(recordings) { capture in
+                                RecordingReferenceRow(capture: capture, selected: capture.id == selectedID)
+                                    .id(capture.id)
+                                    .onTapGesture(count: 2) { onAction(.choose, capture) }
+                                    .onTapGesture { model.selectedCaptureID = capture.id }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, Quiet.Space.s3)
+                    .padding(.bottom, Quiet.Space.s3)
+                }
+                .onChange(of: model.selectedCaptureID) { _, id in
+                    if let id { proxy.scrollTo(id) }
+                }
+            }
+        }
+    }
+
+    private func heading(_ title: String) -> some View {
+        Text(title)
+            .font(Quiet.Font.label)
+            .foregroundStyle(Quiet.inkMuted)
+            .padding(.horizontal, Quiet.Space.s1)
+            .padding(.top, Quiet.Space.s3)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// One screenshot: its thumbnail and when it was taken.
+private struct CaptureThumbnailView: View {
+    let capture: CaptureItem
+    @ObservedObject var controller: ClipboardHistoryController
+    let selected: Bool
+    @State private var image: NSImage?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Quiet.Space.s1) {
+            ZStack {
+                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                    .fill(Quiet.canvas)
+                if let image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .padding(Quiet.Space.s1)
+                }
+            }
+            .aspectRatio(4 / 3, contentMode: .fit)
+            .overlay(
+                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                    .strokeBorder(selected ? Quiet.ink : Quiet.line, lineWidth: selected ? 2 : 1)
+            )
+            Text(capture.createdAt, format: .relative(presentation: .numeric, unitsStyle: .abbreviated))
+                .font(Quiet.Font.caption)
+                .foregroundStyle(Quiet.inkMuted)
+                .lineLimit(1)
+        }
+        .padding(Quiet.Space.s1)
+        .background(
+            RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous)
+                .fill(selected ? Quiet.selection : Color.clear)
+        )
+        .contentShape(Rectangle())
+        .task(id: capture.id) {
+            guard let url = await controller.captureImageURL(capture) else { return }
+            image = await Task.detached(priority: .utility) { CaptureThumbnailView.thumbnail(url) }.value
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Screenshot, \(capture.pixelWidth) by \(capture.pixelHeight)")
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+    }
+
+    nonisolated static func thumbnail(_ url: URL) -> NSImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceThumbnailMaxPixelSize: 360,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+        ]
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        return NSImage(cgImage: image, size: NSSize(width: image.width, height: image.height))
+    }
+}
+
+/// One saved recording: its file name and when it was saved; says so if the file has moved.
+private struct RecordingReferenceRow: View {
+    let capture: CaptureItem
+    let selected: Bool
+
+    private var exists: Bool { capture.filePath.map { FileManager.default.fileExists(atPath: $0) } ?? false }
+
+    var body: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            Image(systemName: "film")
+                .font(Quiet.Font.ui)
+                .foregroundStyle(Quiet.inkMuted)
+                .frame(width: Quiet.Space.s6)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(capture.filePath.map { ($0 as NSString).lastPathComponent } ?? "Recording")
+                    .font(Quiet.Font.ui)
+                    .foregroundStyle(exists ? Quiet.ink : Quiet.inkMuted)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(exists
+                     ? capture.createdAt.formatted(.relative(presentation: .numeric, unitsStyle: .abbreviated))
+                     : "Moved or deleted")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Quiet.Space.s2)
+        .padding(.vertical, Quiet.Space.s2)
+        .background(
+            RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                .fill(selected ? Quiet.selection : Color.clear)
+        )
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 }

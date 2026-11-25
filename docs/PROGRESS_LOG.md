@@ -7,6 +7,19 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Unit 4, C4 Captures, on `feature/c4-captures` (plan "C4 plan" in section 3): schema 2 adds a
+  `captures` table and an owner-only `Captures` folder; screenshots are kept when taken (history
+  on and not paused) and their marks and crop are saved whenever the editor closes; MP4, edited
+  MP4 and GIF saves add a recording reference; limits are 20 screenshots and 20 recordings, the
+  age limit, and the shared storage cap (oldest screenshots first); one Clear removes history and
+  captures together. The panel gains Clipboard and Captures tabs (Tab switches): a thumbnail grid,
+  then recordings (a moved file says so); Return copies with marks and closes, Cmd+C copies,
+  Cmd+E reopens in the editor with marks, Cmd+S saves, Cmd+Delete deletes, arrows move.
+  ClipboardKit 81 tests (5 new), swift test 378, xcodebuild test 378. Verified (agent, scratch
+  store): seeded section snapshots in dark and light; arrows, Cmd+Delete and Cmd+E through the
+  real key monitor. Not run: Return, Cmd+C and Cmd+S (they would change the real clipboard or
+  open a save panel), a real screenshot and its marks coming back after Discard, a real recording
+  save adding a reference.
 - Unit 3, video editor in Quiet, on `feature/quiet-video-editor`: the tools, colours and
   widths are one shared bar for both editors (`AnnotationStyleBar`), with shared icon buttons;
   top bar with esc Back, the recording's details, Discard... and Save MP4... as the one accent

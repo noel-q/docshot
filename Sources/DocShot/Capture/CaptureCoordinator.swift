@@ -416,6 +416,11 @@ public final class CaptureCoordinator: ObservableObject {
     /// `.editing` until the thumbnail or the editor it opens is done with the capture.
     private func presentCapture(_ image: CGImage, capturedRect: CGRect) {
         self.state = .editing
+        // Captures (C4): kept while history is on; the editor adds its marks when it closes.
+        currentCaptureID = nil
+        Task { @MainActor in
+            self.currentCaptureID = await ClipboardHistoryController.shared.recordScreenshot(image)
+        }
         let centre = CGPoint(x: capturedRect.midX, y: capturedRect.midY)
         let screen = NSScreen.screens.first { $0.frame.contains(centre) } ?? NSScreen.main
         PreviewThumbnailController.shared.present(image: image, on: screen, focusReturnApp: focusReturnApp)
@@ -424,5 +429,17 @@ public final class CaptureCoordinator: ObservableObject {
     public func finishEditing() {
         self.state = .idle
         self.hoveredWindow = nil
+    }
+
+    /// The Captures entry of the screenshot being handled now, once it is stored (C4).
+    public private(set) var currentCaptureID: UUID?
+
+    /// A screenshot reopened from Captures: the editor owns the screen like a fresh capture,
+    /// so a new capture waits until it closes. False if a capture is already under way.
+    public func beginReopenedEditing() -> Bool {
+        guard state == .idle || state == .cancelled else { return false }
+        currentCaptureID = nil
+        state = .editing
+        return true
     }
 }

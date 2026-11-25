@@ -10,13 +10,15 @@ enum ClipboardKeyAction: Equatable {
     case pick(Int)
     /// Cmd+Y: show or hide the preview pane (compact panels, decision 3).
     case togglePreview
+    /// Tab: between Clipboard and Captures (C4 plan, decision 4).
+    case switchSection
     /// Not ours: the search field gets it.
     case passThrough
 }
 
 enum ClipboardKeys {
     static let escape: UInt16 = 53, up: UInt16 = 126, down: UInt16 = 125
-    static let returnKey: UInt16 = 36, enter: UInt16 = 76, delete: UInt16 = 51
+    static let returnKey: UInt16 = 36, enter: UInt16 = 76, delete: UInt16 = 51, tab: UInt16 = 48
     /// ANSI positions of C, P and Y, used only when the layout gives no Latin letter (Russian, Greek).
     static let ansiC: UInt16 = 8, ansiP: UInt16 = 35, ansiY: UInt16 = 16
     /// ANSI digit row, 1 to 9, used when the layout types something else there (AZERTY).
@@ -35,6 +37,7 @@ enum ClipboardKeys {
         case (down, []): return .down
         case (returnKey, []), (enter, []): return .choose
         case (delete, [.command]): return .delete
+        case (tab, []): return .switchSection
         default: break
         }
         guard flags == [.command] else { return .passThrough }
@@ -220,6 +223,10 @@ final class ClipboardWindowModel: ObservableObject {
     }
     @Published private(set) var groups = ClipboardGroups()
     @Published private(set) var selectedID: UUID?
+    /// Clipboard or Captures; Clipboard each time the window opens (C4 plan, decision 4).
+    @Published var section: PanelSection = .clipboard
+    /// The selected screenshot or recording in Captures.
+    @Published var selectedCaptureID: UUID?
     /// Bumped when the window opens, so the view puts focus in the search field.
     @Published private(set) var focusRequest = 0
     /// The preview pane is out (compact panels, decision 3); remembered between openings.
@@ -276,7 +283,36 @@ final class ClipboardWindowModel: ObservableObject {
         latestItems = controller.items
         arrange()
         selectedID = rows.first?.id
+        section = .clipboard
+        selectedCaptureID = nil
         focusRequest += 1
+    }
+
+    /// Captures in panel order: screenshots, then recordings.
+    var captureOrder: [CaptureItem] {
+        controller.captures.filter { $0.kind == .screenshot } + controller.captures.filter { $0.kind == .recording }
+    }
+
+    var selectedCapture: CaptureItem? {
+        let order = captureOrder
+        return order.first { $0.id == selectedCaptureID } ?? order.first
+    }
+
+    func switchSection() {
+        section = section == .clipboard ? .captures : .clipboard
+        if section == .captures, selectedCaptureID == nil || !captureOrder.contains(where: { $0.id == selectedCaptureID }) {
+            selectedCaptureID = captureOrder.first?.id
+        }
+        if section == .clipboard { focusRequest += 1 }
+    }
+
+    func moveCaptureSelection(_ action: CaptureKeyAction) {
+        let order = captureOrder
+        let current = order.firstIndex { $0.id == selectedCaptureID }
+        let screenshots = order.filter { $0.kind == .screenshot }.count
+        if let index = CaptureGrid.move(current, action, screenshots: screenshots, total: order.count) {
+            selectedCaptureID = order[index].id
+        }
     }
 
     func moveSelection(by step: Int) {
@@ -353,4 +389,95 @@ final class ClipboardWindowModel: ObservableObject {
         selectedID = ClipboardList.keepSelection(selectedID, old: old, new: rows)
     }
 
+}
+
+// MARK: - Captures (C4)
+
+/// The panel's two sections (C4 plan, decision 4).
+enum PanelSection: Equatable {
+    case clipboard, captures
+}
+
+/// What a key does in Captures (C4 plan, decision 4). Pure, so the map is tested.
+enum CaptureKeyAction: Equatable {
+    case close, switchSection, left, right, up, down
+    /// Return: a screenshot is copied with its marks and the panel closes; a recording is shown
+    /// in Finder.
+    case choose
+    /// Cmd+C: copy the screenshot with its marks; the panel stays.
+    case copy
+    /// Cmd+E: open the screenshot in the editor with its marks.
+    case edit
+    /// Cmd+S: save the screenshot with its marks.
+    case save
+    /// Cmd+Delete.
+    case delete
+    case passThrough
+}
+
+enum CaptureKeys {
+    static let left: UInt16 = 123, right: UInt16 = 124
+    static let ansiE: UInt16 = 14, ansiS: UInt16 = 1
+
+    static func action(
+        keyCode: UInt16, modifiers: NSEvent.ModifierFlags, characters: String?, charactersIgnoringModifiers: String?
+    ) -> CaptureKeyAction {
+        let flags = modifiers.intersection([.command, .option, .control, .shift])
+        switch (keyCode, flags) {
+        case (ClipboardKeys.escape, []): return .close
+        case (ClipboardKeys.tab, []): return .switchSection
+        case (left, []): return .left
+        case (right, []): return .right
+        case (ClipboardKeys.up, []): return .up
+        case (ClipboardKeys.down, []): return .down
+        case (ClipboardKeys.returnKey, []), (ClipboardKeys.enter, []): return .choose
+        case (ClipboardKeys.delete, [.command]): return .delete
+        default: break
+        }
+        guard flags == [.command] else { return .passThrough }
+        let letter = ClipboardKeys.commandLetter(
+            keyCode: keyCode, characters: characters, charactersIgnoringModifiers: charactersIgnoringModifiers
+        )
+        switch letter {
+        case "c": return .copy
+        case "e": return .edit
+        case "s": return .save
+        default:
+            // Non-Latin layouts: E and S by position.
+            if keyCode == ansiE { return .edit }
+            if keyCode == ansiS { return .save }
+            return .passThrough
+        }
+    }
+}
+
+/// Moving through Captures: screenshots in a grid of `columns`, then recordings one per row.
+/// Indexes run over screenshots first, then recordings. Pure, so it is tested.
+enum CaptureGrid {
+    static let columns = 4
+
+    static func move(_ index: Int?, _ action: CaptureKeyAction, screenshots: Int, total: Int) -> Int? {
+        guard total > 0 else { return nil }
+        guard let index else { return 0 }
+        let inGrid = index < screenshots
+        var target = index
+        switch action {
+        case .left: target = index - 1
+        case .right: target = index + 1
+        case .up:
+            if inGrid { target = index - columns }
+            else if index == screenshots, screenshots > 0 {
+                // From the first recording up to the last row of screenshots.
+                target = screenshots - 1
+            } else { target = index - 1 }
+        case .down:
+            if inGrid {
+                let below = index + columns
+                // The last row of screenshots goes down to the first recording.
+                target = below < screenshots ? below : (screenshots < total ? screenshots : index)
+            } else { target = index + 1 }
+        default: return index
+        }
+        return min(max(target, 0), total - 1)
+    }
 }

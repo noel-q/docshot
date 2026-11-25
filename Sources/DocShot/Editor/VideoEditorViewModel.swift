@@ -252,6 +252,7 @@ public final class VideoEditorViewModel: ObservableObject {
                     switch saveResult {
                     case .saved(let destinationURL):
                         self.saveCompletedURL = destinationURL
+                        ClipboardHistoryController.shared.recordSavedRecording(destinationURL, pixelSize: self.project.sourcePixelSize)
                         self.statusMessage = "Saved \(destinationURL.lastPathComponent)"
                         self.isClosed = true
                     case .cancelled:

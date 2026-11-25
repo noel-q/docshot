@@ -91,7 +91,7 @@ enum ClipboardDebugHooks {
             }
             // Commands that add or change history run only against the scratch store, never the
             // real one (`DOCSHOT_DEBUG_STORE`).
-            if ["pause", "resume", "enable", "disable", "seed", "previewtrace"].contains(command)
+            if ["pause", "resume", "enable", "disable", "seed", "previewtrace", "seed-captures"].contains(command)
                 || command.hasPrefix("widthtrace:"),
                (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
                 return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
@@ -107,6 +107,53 @@ enum ClipboardDebugHooks {
             if command == "seed" {
                 seed()
                 return
+            }
+            if command == "seed-captures" {
+                // Five screenshots (the desktop picture, cropped differently) and two recording
+                // references: the scratch test clip, and one whose file is gone.
+                Task { @MainActor in
+                    guard let picture = sampleCGImage() else { return writeState("seed-captures: no image") }
+                    let crops = [CGRect(x: 0, y: 0, width: 1600, height: 1000), CGRect(x: 200, y: 300, width: 900, height: 900),
+                                 CGRect(x: 600, y: 100, width: 1000, height: 600), CGRect(x: 0, y: 800, width: 1600, height: 800),
+                                 CGRect(x: 400, y: 400, width: 500, height: 800)]
+                    for rect in crops {
+                        if let image = picture.cropping(to: rect) {
+                            _ = await history.recordScreenshot(image)
+                        }
+                    }
+                    let folder = ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? ""
+                    let clip = URL(fileURLWithPath: folder).deletingLastPathComponent().appendingPathComponent("vid/sample.mp4")
+                    history.recordSavedRecording(URL(fileURLWithPath: folder + "/gone.mp4"), pixelSize: CGSize(width: 1280, height: 720))
+                    history.recordSavedRecording(clip, pixelSize: CGSize(width: 1280, height: 720))
+                    await history.waitUntilIdle()
+                    writeState("seed-captures: \(history.captures.count)")
+                }
+                return
+            }
+            if command == "section" {
+                model.switchSection()
+                return writeState("section: \(model.section == .captures ? "captures" : "clipboard")")
+            }
+            if command == "captures-state" {
+                let selected = model.selectedCapture.map { "\($0.kind.rawValue) \(model.captureOrder.firstIndex(of: $0) ?? -1)" } ?? "none"
+                return writeState("captures: \(history.captures.count) selected \(selected) editor \(EditorWindowController.shared.currentWindow != nil)")
+            }
+            if command.hasPrefix("panel-key:"), let parts = Optional(command.dropFirst("panel-key:".count).split(separator: ",")),
+               let code = parts.first.flatMap({ UInt16($0) }),
+               let window = NSApp.windows.first(where: { $0 is ClipboardPanel && $0.isVisible }) {
+                // panel-key:<code>[,cmd][,<character>]: a key press queued for the clipboard panel,
+                // through its real key monitor.
+                let command = parts.contains("cmd")
+                let character = parts.count > 1 ? String(parts.last!) : ""
+                let typed = character == "cmd" ? "" : character
+                if let event = NSEvent.keyEvent(
+                    with: .keyDown, location: .zero, modifierFlags: command ? [.command] : [],
+                    timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: window.windowNumber, context: nil,
+                    characters: typed, charactersIgnoringModifiers: typed, isARepeat: false, keyCode: code
+                ) {
+                    NSApp.postEvent(event, atStart: false)
+                }
+                return writeState("panel-key: \(code)")
             }
             if command.hasPrefix("filter:"), let filter = ClipboardFilter(rawValue: String(command.dropFirst("filter:".count))) {
                 model.filter = filter

@@ -22,6 +22,8 @@ final class ClipboardHistoryController: ObservableObject {
     }()
 
     @Published private(set) var items: [ClipItem] = []
+    /// Screenshots and saved recordings, newest first (C4).
+    @Published private(set) var captures: [CaptureItem] = []
     @Published private(set) var isEnabled = false
     @Published private(set) var isPaused = false
     @Published private(set) var clearKeep: ClearKeep = .defaultValue
@@ -240,6 +242,7 @@ final class ClipboardHistoryController: ObservableObject {
     /// How many items Clear would remove now, for the confirmation.
     var clearCount: Int {
         RetentionPolicy.itemsToRemoveOnClear(from: items, keep: clearKeep).count
+            + CaptureRetention.toRemoveOnClear(captures, keep: clearKeep).count
     }
 
     /// Clears history, keeping what the Clear setting says.
@@ -370,6 +373,7 @@ final class ClipboardHistoryController: ObservableObject {
             guard !self.isEnabled else { return }
             self.store = nil
             self.items = []
+            self.captures = []
         }
     }
 
@@ -445,8 +449,89 @@ final class ClipboardHistoryController: ObservableObject {
     private func reloadItems() async {
         guard let store else {
             items = []
+            captures = []
             return
         }
         items = await store.items
+        captures = await store.captures
+    }
+
+    // MARK: - Captures (C4)
+
+    /// Whether new captures are kept: only while history is on and not paused (C4 plan, 2).
+    var keepsCaptures: Bool { store != nil && isEnabled && !isPaused }
+
+    /// Keeps a new screenshot. Returns its Captures id, or nil when captures are not kept.
+    func recordScreenshot(_ image: CGImage) async -> UUID? {
+        guard keepsCaptures, let store else { return nil }
+        let width = image.width, height = image.height
+        let png = await Task.detached(priority: .utility) { Self.pngData(image) }.value
+        guard let png else { return nil }
+        do {
+            let id = try await store.addScreenshot(png: png, pixelWidth: width, pixelHeight: height)
+            await reloadItems()
+            return id
+        } catch {
+            problem = "Captures could not keep that screenshot: \(error)"
+            return nil
+        }
+    }
+
+    /// The editor closed: keep its marks and crop with the screenshot.
+    func updateCaptureState(_ id: UUID, _ state: CaptureEditorState) {
+        guard let data = state.encoded() else { return }
+        enqueue { store in
+            try await store.updateCaptureAnnotations(id, data)
+        }
+    }
+
+    /// A recording was saved: keep where, by path only.
+    func recordSavedRecording(_ url: URL, pixelSize: CGSize) {
+        guard keepsCaptures else { return }
+        enqueue { store in
+            try await store.addRecordingReference(
+                path: url.path, pixelWidth: Int(pixelSize.width), pixelHeight: Int(pixelSize.height)
+            )
+        }
+    }
+
+    func deleteCapture(_ capture: CaptureItem) {
+        enqueue { store in
+            try await store.deleteCapture(capture.id)
+        }
+    }
+
+    func captureImageURL(_ capture: CaptureItem) async -> URL? {
+        guard let store else { return nil }
+        return await store.captureImageURL(capture.id)
+    }
+
+    /// The screenshot and its saved marks, for reopening, copying or saving.
+    func captureContents(_ capture: CaptureItem) async -> (image: CGImage, state: CaptureEditorState)? {
+        guard let store, let url = await store.captureImageURL(capture.id),
+              let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+        let state = CaptureEditorState.decoded(try? await store.captureAnnotations(capture.id)) ?? CaptureEditorState()
+        return (image, state)
+    }
+
+    /// The screenshot with its marks, as the editor would export it at native size.
+    func renderedCapture(_ capture: CaptureItem) async -> Data? {
+        guard let contents = await captureContents(capture) else { return nil }
+        let result = await ExportService.shared.exportPNGResult(
+            baseImage: contents.image,
+            annotations: contents.state.annotations,
+            cropRect: contents.state.cropRect,
+            exportSize: .native
+        )
+        if case .success(let data) = result { return data }
+        return nil
+    }
+
+    nonisolated static func pngData(_ image: CGImage) -> Data? {
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil) else { return nil }
+        CGImageDestinationAddImage(destination, image, nil)
+        return CGImageDestinationFinalize(destination) ? data as Data : nil
     }
 }

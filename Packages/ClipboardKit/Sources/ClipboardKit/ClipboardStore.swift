@@ -14,9 +14,11 @@ public enum ClipboardStoreError: Error, Equatable, Sendable {
 /// as files beside it. Every change runs through `HistoryReducer`, and its effects are applied in
 /// one transaction, so the database and the in-memory list never disagree.
 public actor ClipboardStore {
-    public static let schemaVersion: Int32 = 1
+    /// 1: clipboard items (C1). 2: captures (C4).
+    public static let schemaVersion: Int32 = 2
     public static let databaseName = "history.sqlite"
     public static let imagesFolderName = "Images"
+    public static let capturesFolderName = "Captures"
 
     /// `~/Library/Application Support/DocShot/Clipboard`.
     public static func defaultDirectory() throws -> URL {
@@ -28,8 +30,11 @@ public actor ClipboardStore {
 
     public nonisolated let directory: URL
     private let imagesDirectory: URL
+    private let capturesDirectory: URL
     private let db: SQLiteConnection
     private var state: HistoryState
+    /// Captures, newest first (C4).
+    private var captureList: [CaptureItem]
     public private(set) var limits: RetentionLimits
     /// Folded searchable text by item, built on the first search and kept up to date after.
     private var searchIndex: [UUID: String]?
@@ -41,8 +46,9 @@ public actor ClipboardStore {
     public init(directory: URL, limits: RetentionLimits = .standard) throws {
         let fileManager = FileManager.default
         let images = directory.appendingPathComponent(Self.imagesFolderName, isDirectory: true)
+        let captures = directory.appendingPathComponent(Self.capturesFolderName, isDirectory: true)
         // History is private: owner-only folders, tightened even if they already existed.
-        for folder in [directory, images] {
+        for folder in [directory, images, captures] {
             try fileManager.createDirectory(
                 at: folder, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700]
             )
@@ -58,12 +64,16 @@ public actor ClipboardStore {
         try Self.removeUnreadableRows(connection, imagesDirectory: images)
         let items = try Self.loadItems(connection)
         try Self.removeOrphanImages(connection, imagesDirectory: images)
+        let captureItems = try Self.loadCaptures(connection, capturesDirectory: captures)
+        Self.removeOrphanCaptureFiles(captureItems, capturesDirectory: captures)
 
         self.directory = directory
         self.imagesDirectory = images
+        self.capturesDirectory = captures
         self.db = connection
         self.limits = limits
         self.state = HistoryState(items: items)
+        self.captureList = captureItems
     }
 
     // MARK: - Reading
@@ -182,14 +192,20 @@ public actor ClipboardStore {
         try run(.delete(id), now: now)
     }
 
+    /// One Clear removes history and captures together, keeping what `keep` says (C4 plan,
+    /// decision 3).
     @discardableResult
     public func clear(keeping keep: ClearKeep, now: Date = Date()) throws -> HistoryOutcome {
-        try run(.clear(keep), now: now)
+        let outcome = try run(.clear(keep), now: now)
+        try removeCaptures(CaptureRetention.toRemoveOnClear(captureList, keep: keep))
+        return outcome
     }
 
     @discardableResult
     public func applyRetention(now: Date = Date()) throws -> HistoryOutcome {
-        try run(.applyRetention, now: now)
+        let outcome = try run(.applyRetention, now: now)
+        try applyCaptureRetention(limits: limits, now: now)
+        return outcome
     }
 
     /// New limits take effect at once.
@@ -197,7 +213,130 @@ public actor ClipboardStore {
     public func setLimits(_ newLimits: RetentionLimits, now: Date = Date()) throws -> HistoryOutcome {
         let outcome = try run(.applyRetention, now: now, limits: newLimits)
         limits = newLimits
+        try applyCaptureRetention(limits: newLimits, now: now)
         return outcome
+    }
+
+    // MARK: - Captures (C4)
+
+    /// Screenshots and recording references, newest first.
+    public var captures: [CaptureItem] { captureList }
+
+    /// Bytes the kept screenshots take on disk.
+    public var captureBytes: Int { captureList.reduce(0) { $0 + $1.byteSize } }
+
+    /// Keeps a screenshot: its PNG as a file, and the app's annotation state, if any.
+    @discardableResult
+    public func addScreenshot(
+        png: Data, pixelWidth: Int, pixelHeight: Int, annotations: Data? = nil, now: Date = Date()
+    ) throws -> UUID {
+        let id = UUID()
+        let name = id.uuidString + ".png"
+        let url = capturesDirectory.appendingPathComponent(name)
+        try png.write(to: url, options: .atomic)
+        let item = CaptureItem(
+            id: id, createdAt: now, kind: .screenshot, pixelWidth: pixelWidth, pixelHeight: pixelHeight,
+            byteSize: png.count, imageFile: name, filePath: nil
+        )
+        do {
+            try insertCapture(item, annotations: annotations)
+        } catch {
+            try? FileManager.default.removeItem(at: url)
+            throw error
+        }
+        captureList.insert(item, at: 0)
+        try applyCaptureRetention(limits: limits, now: now)
+        return id
+    }
+
+    /// Keeps a saved recording by its path. Saving to the same path again moves it to the top.
+    @discardableResult
+    public func addRecordingReference(
+        path: String, pixelWidth: Int = 0, pixelHeight: Int = 0, now: Date = Date()
+    ) throws -> UUID {
+        try removeCaptures(Set(captureList.filter { $0.kind == .recording && $0.filePath == path }.map(\.id)))
+        let item = CaptureItem(
+            id: UUID(), createdAt: now, kind: .recording, pixelWidth: pixelWidth, pixelHeight: pixelHeight,
+            byteSize: 0, imageFile: nil, filePath: path
+        )
+        try insertCapture(item, annotations: nil)
+        captureList.insert(item, at: 0)
+        try applyCaptureRetention(limits: limits, now: now)
+        return item.id
+    }
+
+    /// Replaces a screenshot's annotation state (the editor closed). A capture removed in the
+    /// meantime is ignored.
+    public func updateCaptureAnnotations(_ id: UUID, _ annotations: Data?) throws {
+        guard captureList.contains(where: { $0.id == id }) else { return }
+        let statement = try db.prepare("UPDATE captures SET annotations = ? WHERE id = ?")
+        try statement.bind(1, annotations)
+        try statement.bind(2, id.uuidString)
+        try statement.run()
+    }
+
+    public func captureAnnotations(_ id: UUID) throws -> Data? {
+        let statement = try db.prepare("SELECT annotations FROM captures WHERE id = ?")
+        try statement.bind(1, id.uuidString)
+        guard try statement.step() else { throw ClipboardStoreError.notFound(id) }
+        return statement.blob(0)
+    }
+
+    /// A screenshot's image file; nil for a recording or a missing file.
+    public func captureImageURL(_ id: UUID) -> URL? {
+        guard let name = captureList.first(where: { $0.id == id })?.imageFile else { return nil }
+        let url = capturesDirectory.appendingPathComponent(name)
+        return FileManager.default.fileExists(atPath: url.path) ? url : nil
+    }
+
+    public func deleteCapture(_ id: UUID) throws {
+        try removeCaptures([id])
+    }
+
+    private func applyCaptureRetention(limits: RetentionLimits, now: Date) throws {
+        try removeCaptures(CaptureRetention.toRemove(captureList, limits: limits, historyBytes: state.totalBytes, now: now))
+    }
+
+    private func insertCapture(_ item: CaptureItem, annotations: Data?) throws {
+        let statement = try db.prepare("""
+            INSERT INTO captures (id, created_at, kind, pixel_width, pixel_height, byte_size, image_file,
+                                  file_path, annotations)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """)
+        try statement.bind(1, item.id.uuidString)
+        try statement.bind(2, item.createdAt.timeIntervalSince1970)
+        try statement.bind(3, item.kind.rawValue)
+        try statement.bind(4, item.pixelWidth)
+        try statement.bind(5, item.pixelHeight)
+        try statement.bind(6, item.byteSize)
+        try statement.bind(7, item.imageFile)
+        try statement.bind(8, item.filePath)
+        try statement.bind(9, annotations)
+        try statement.run()
+    }
+
+    /// Removes captures and their image files in one transaction; files go once it commits.
+    private func removeCaptures(_ ids: Set<UUID>) throws {
+        guard !ids.isEmpty else { return }
+        var files: [URL] = []
+        try db.execute("BEGIN IMMEDIATE")
+        do {
+            for id in ids {
+                if let name = captureList.first(where: { $0.id == id })?.imageFile {
+                    files.append(capturesDirectory.appendingPathComponent(name))
+                }
+                let statement = try db.prepare("DELETE FROM captures WHERE id = ?")
+                try statement.bind(1, id.uuidString)
+                try statement.run()
+            }
+            try db.execute("COMMIT")
+        } catch {
+            try? db.execute("ROLLBACK")
+            throw error
+        }
+        captureList.removeAll { ids.contains($0.id) }
+        files.forEach { try? FileManager.default.removeItem(at: $0) }
+        try? db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     }
 
     // MARK: - Applying effects
@@ -378,8 +517,22 @@ public actor ClipboardStore {
                     )
                     """)
             }
-            // Later migrations (captures in C4, OCR text in C4a) go here, one `if version < n`
-            // block each.
+            if version < 2 {
+                try db.execute("""
+                    CREATE TABLE captures (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        created_at REAL NOT NULL,
+                        kind TEXT NOT NULL,
+                        pixel_width INTEGER NOT NULL DEFAULT 0,
+                        pixel_height INTEGER NOT NULL DEFAULT 0,
+                        byte_size INTEGER NOT NULL DEFAULT 0,
+                        image_file TEXT,
+                        file_path TEXT,
+                        annotations BLOB
+                    )
+                    """)
+            }
+            // Later migrations (OCR text in C4a) go here, one `if version < n` block each.
             try db.execute("PRAGMA user_version = \(schemaVersion)")
             try db.execute("COMMIT")
         } catch {
@@ -435,6 +588,57 @@ public actor ClipboardStore {
             ))
         }
         return items
+    }
+
+    /// Captures, newest first. Rows this version cannot read, and screenshots whose image file
+    /// is gone, are removed.
+    private static func loadCaptures(_ db: SQLiteConnection, capturesDirectory: URL) throws -> [CaptureItem] {
+        let statement = try db.prepare("""
+            SELECT rowid, id, created_at, kind, pixel_width, pixel_height, byte_size, image_file, file_path
+            FROM captures ORDER BY created_at DESC
+            """)
+        var captures: [CaptureItem] = []
+        var bad: [Int] = []
+        while try statement.step() {
+            guard let id = statement.text(1).flatMap(UUID.init(uuidString:)),
+                  let kind = statement.text(3).flatMap(CaptureKind.init(rawValue:)) else {
+                bad.append(statement.int(0))
+                continue
+            }
+            let imageFile = statement.text(7)
+            if kind == .screenshot {
+                guard let imageFile,
+                      FileManager.default.fileExists(atPath: capturesDirectory.appendingPathComponent(imageFile).path) else {
+                    bad.append(statement.int(0))
+                    continue
+                }
+            }
+            captures.append(CaptureItem(
+                id: id,
+                createdAt: Date(timeIntervalSince1970: statement.double(2)),
+                kind: kind,
+                pixelWidth: statement.int(4),
+                pixelHeight: statement.int(5),
+                byteSize: statement.int(6),
+                imageFile: imageFile,
+                filePath: statement.text(8)
+            ))
+        }
+        for rowid in bad {
+            let delete = try db.prepare("DELETE FROM captures WHERE rowid = ?")
+            try delete.bind(1, rowid)
+            try delete.run()
+        }
+        return captures
+    }
+
+    /// Capture files no row refers to (a crash between writing the file and committing).
+    private static func removeOrphanCaptureFiles(_ captures: [CaptureItem], capturesDirectory: URL) {
+        let referenced = Set(captures.compactMap(\.imageFile))
+        let onDisk = (try? FileManager.default.contentsOfDirectory(atPath: capturesDirectory.path)) ?? []
+        for name in onDisk where !referenced.contains(name) {
+            try? FileManager.default.removeItem(at: capturesDirectory.appendingPathComponent(name))
+        }
     }
 
     private static func removeOrphanImages(_ db: SQLiteConnection, imagesDirectory: URL) throws {

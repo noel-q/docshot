@@ -430,3 +430,61 @@ struct SettingsPanelLayoutTests {
         #expect(SettingsPanelLayout.pageMaxHeight(within: CGRect(x: 0, y: 0, width: 800, height: 100), cap: 640) == 200)
     }
 }
+
+@Suite("Captures keys and grid")
+struct CaptureKeysTests {
+    func action(_ code: UInt16, _ flags: NSEvent.ModifierFlags = [], chars: String? = nil) -> CaptureKeyAction {
+        CaptureKeys.action(keyCode: code, modifiers: flags, characters: chars, charactersIgnoringModifiers: chars)
+    }
+
+    @Test("Tab switches; Return chooses; Cmd+C, E and S copy, edit and save; Cmd+Delete deletes")
+    func keys() {
+        #expect(action(48) == .switchSection)
+        #expect(action(53) == .close)
+        #expect(action(36) == .choose && action(76) == .choose)
+        #expect(action(8, .command, chars: "c") == .copy)
+        #expect(action(14, .command, chars: "e") == .edit)
+        #expect(action(1, .command, chars: "s") == .save)
+        #expect(action(14, .command, chars: "у") == .edit, "Cyrillic layout: E by position")
+        #expect(action(51, .command) == .delete)
+        #expect(action(51) == .passThrough)
+        #expect(action(123) == .left && action(124) == .right && action(126) == .up && action(125) == .down)
+        #expect(ClipboardKeys.action(keyCode: 48, modifiers: [], characters: "\t", charactersIgnoringModifiers: "\t",
+                                     hasMarkedText: false, hasTextSelection: false, queryIsEmpty: true) == .switchSection)
+    }
+
+    @Test("Arrows move through the grid of screenshots, then down into the recordings and back")
+    func grid() {
+        // 6 screenshots (rows of 4 and 2), then 2 recordings: indexes 6 and 7.
+        func move(_ index: Int?, _ action: CaptureKeyAction) -> Int? {
+            CaptureGrid.move(index, action, screenshots: 6, total: 8)
+        }
+        #expect(move(nil, .down) == 0)
+        #expect(move(0, .right) == 1 && move(0, .left) == 0)
+        #expect(move(1, .down) == 5)
+        #expect(move(3, .down) == 6, "no screenshot below: to the first recording")
+        #expect(move(5, .down) == 6)
+        #expect(move(6, .up) == 5)
+        #expect(move(6, .down) == 7 && move(7, .down) == 7)
+        #expect(move(4, .up) == 0)
+        #expect(CaptureGrid.move(0, .down, screenshots: 0, total: 0) == nil)
+    }
+}
+
+@Suite("Capture editor state")
+struct CaptureEditorStateTests {
+    @Test("Marks and crop survive the trip to storage and back; bad data reads as nothing")
+    func roundTrip() throws {
+        let state = CaptureEditorState(
+            annotations: [
+                AnnotationItem(type: .arrow(start: CGPoint(x: 1, y: 2), end: CGPoint(x: 30, y: 40)), color: .blue, strokeWidth: 6),
+                AnnotationItem(type: .redaction(rect: CGRect(x: 5, y: 5, width: 50, height: 20))),
+            ],
+            cropRect: CGRect(x: 10, y: 10, width: 200, height: 100)
+        )
+        let data = try #require(state.encoded())
+        #expect(CaptureEditorState.decoded(data) == state)
+        #expect(CaptureEditorState.decoded(Data("not json".utf8)) == nil)
+        #expect(CaptureEditorState.decoded(nil) == nil)
+    }
+}

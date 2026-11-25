@@ -248,6 +248,9 @@ public final class RecordingCoordinator: ObservableObject {
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 let result = await self.movieSaver.save(recording, parent: nil)
+                if case .saved(let url) = result {
+                    ClipboardHistoryController.shared.recordSavedRecording(url, pixelSize: recording.pixelSize)
+                }
                 self.send(.saveCompleted(result))
             }
 
@@ -544,6 +547,7 @@ public final class RecordingCoordinator: ObservableObject {
         }
         do {
             try store.move(gifURL, to: destination)
+            ClipboardHistoryController.shared.recordSavedRecording(destination, pixelSize: sourceMP4.pixelSize)
             store.removeIfPresent(sourceMP4.url)
             send(.discardRequested)
         } catch {

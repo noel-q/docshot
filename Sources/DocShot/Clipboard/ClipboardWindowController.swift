@@ -157,7 +157,8 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             controller: ClipboardHistoryController.shared,
             onChoose: { [weak self] item in self?.choose(item) },
             onClose: { [weak self] in self?.close() },
-            onTogglePreview: { [weak self] in self?.togglePreview() }
+            onTogglePreview: { [weak self] in self?.togglePreview() },
+            onCaptureAction: { [weak self] action, capture in self?.perform(action, on: capture) }
         ))
         // The panel's size is DocShot's to animate; the content must not force it (it would
         // snap the panel wide the moment the preview pane is laid out).
@@ -332,6 +333,9 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
 
     /// True when the key was used here; false lets the search field have it.
     private func handle(_ event: NSEvent, in window: NSWindow) -> Bool {
+        if model.section == .captures, ClipboardHistoryController.shared.isEnabled {
+            return handleCaptures(event)
+        }
         let fieldEditor = window.firstResponder as? NSTextView
         let action = ClipboardKeys.action(
             keyCode: event.keyCode, modifiers: event.modifierFlags, characters: event.characters,
@@ -356,6 +360,8 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             model.moveSelection(by: 1)
         case .togglePreview:
             togglePreview()
+        case .switchSection:
+            model.switchSection()
         case .pick(let number):
             Task {
                 guard let item = await self.model.settledRow(number), self.isShowing else { return }
@@ -376,6 +382,91 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             }
         }
         return true
+    }
+}
+
+// MARK: - Captures (C4)
+
+extension ClipboardWindowController {
+    /// Keys in Captures (C4 plan, decision 4).
+    func handleCaptures(_ event: NSEvent) -> Bool {
+        let action = CaptureKeys.action(
+            keyCode: event.keyCode, modifiers: event.modifierFlags, characters: event.characters,
+            charactersIgnoringModifiers: event.charactersIgnoringModifiers
+        )
+        switch action {
+        case .passThrough:
+            return false
+        case .close:
+            close()
+        case .switchSection:
+            model.switchSection()
+        case .left, .right, .up, .down:
+            model.moveCaptureSelection(action)
+        case .choose, .copy, .edit, .save, .delete:
+            guard let capture = model.selectedCapture else {
+                NSSound.beep()
+                return true
+            }
+            perform(action, on: capture)
+        }
+        return true
+    }
+
+    /// One action on a capture; clicks in the section come here too.
+    func perform(_ action: CaptureKeyAction, on capture: CaptureItem) {
+        let history = ClipboardHistoryController.shared
+        model.selectedCaptureID = capture.id
+        if capture.kind == .recording {
+            switch action {
+            case .choose: revealRecording(capture)
+            case .delete: history.deleteCapture(capture)
+            default: NSSound.beep()
+            }
+            return
+        }
+        switch action {
+        case .choose, .copy:
+            Task {
+                guard let png = await history.renderedCapture(capture), OutputService.shared.copyToClipboard(pngData: png) else {
+                    NSSound.beep()
+                    return
+                }
+                if action == .choose { self.close() }
+            }
+        case .edit:
+            Task {
+                guard let contents = await history.captureContents(capture),
+                      CaptureCoordinator.shared.beginReopenedEditing() else {
+                    NSSound.beep()
+                    return
+                }
+                self.close()
+                EditorWindowController.shared.presentEditor(with: contents.image, captureID: capture.id, state: contents.state)
+            }
+        case .save:
+            Task {
+                guard let png = await history.renderedCapture(capture) else {
+                    NSSound.beep()
+                    return
+                }
+                self.close()
+                _ = await OutputService.shared.saveWithPanel(pngData: png, parentWindow: nil)
+            }
+        case .delete:
+            history.deleteCapture(capture)
+        default:
+            break
+        }
+    }
+
+    func revealRecording(_ capture: CaptureItem) {
+        guard let path = capture.filePath, FileManager.default.fileExists(atPath: path) else {
+            NSSound.beep()
+            return
+        }
+        close()
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
     }
 }
 

@@ -115,6 +115,13 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 
 **Permission window in Quiet (agreed 25 November 2026, under the road to C5).** The guide's compact panel style; "Allow screen recording" with three numbered steps (Open System Settings, switch DocShot on, Restart DocShot); one accent button that moves from Open System Settings to Restart DocShot once Settings was opened; Return presses it, Escape cancels; it checks again when DocShot becomes active; restart refusal, the cancel and close callbacks and the Xcode-run message are kept.
 
+**C4 plan (Claude's choices under the road to C5, 25 November 2026; Noel reviews at the end).**
+1. Storage: schema 2 of the history database adds a `captures` table; screenshot images go in a `Captures` folder beside `Images`, owner-only like the rest. Each screenshot keeps its annotations and crop as opaque JSON from the app. Saved recordings are kept as a path only.
+2. What is kept: only while history is on and not paused. Every screenshot is kept when it is taken; its annotations are updated whenever its editor closes, Discard included (plan 4.5). MP4, edited MP4 and GIF saves add a recording reference. With history off nothing new is stored, as before.
+3. Limits: the 20 most recent screenshots and the 20 most recent recording references; both age out after the history age limit; screenshot bytes count towards the shared storage cap and the oldest screenshots go first when it is exceeded. Clear applies the same Clear setting: last 5 or last 10 keep that many of each; pinned only and nothing keep none (captures have no pins). One Clear removes history and captures together.
+4. Window: the clipboard panel gains a Captures section, switched with Tab (shown in the header). Screenshots show as a grid of thumbnails with their time; Return copies the screenshot with its marks, Cmd+E opens it in the editor with its marks, Cmd+S saves it, Cmd+Delete deletes it; arrows move. Recordings list below by file name and date with Show in Finder; a moved or deleted file says so. Empty states say what to do.
+5. Checks: store tests (migration from schema 1, limits, Clear, files removed on delete and Clear, orphan files removed on open) and app tests (annotation state round trip, the section keys); snapshots of the section through DEBUG hooks on the scratch store. Fable reviews with the batch.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

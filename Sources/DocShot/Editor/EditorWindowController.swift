@@ -13,13 +13,13 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         super.init()
     }
     
-    public func presentEditor(with baseImage: CGImage) {
+    public func presentEditor(with baseImage: CGImage, captureID: UUID? = nil, state: CaptureEditorState? = nil) {
         // If an editor window is already open, close it cleanly first
         if currentWindow != nil {
             closeEditor()
         }
         
-        let vm = EditorViewModel(baseImage: baseImage)
+        let vm = EditorViewModel(baseImage: baseImage, captureID: captureID, state: state)
         self.viewModel = vm
         
         let editorView = EditorView(viewModel: vm) { [weak self] in
@@ -68,7 +68,13 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         window.delegate = nil
         window.orderOut(nil)
         window.close()
-        
+
+        // Captures keeps the marks, whichever way the editor closed (plan 4.5: Discard keeps
+        // the capture in the cache while history is on).
+        if let viewModel, let id = viewModel.captureID ?? CaptureCoordinator.shared.currentCaptureID {
+            ClipboardHistoryController.shared.updateCaptureState(id, viewModel.captureState)
+        }
+
         self.currentWindow = nil
         self.viewModel = nil
         self.isClosing = false

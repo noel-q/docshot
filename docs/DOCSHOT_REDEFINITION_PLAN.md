@@ -126,7 +126,7 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 - C4a: schema 3 keeps the recognised text with each image item; Vision reads each stored image once at background priority, only while history is on; unreadable images are marked read; search finds images by their text; the preview pane shows the text with Copy text (Shift+Cmd+C), written as DocShot's own copy.
 - C4b: Float puts an image in its own small borderless window above other windows, fitted to at most 480 points on its long side and cascaded from the centre of the screen in use. It opens from the editor (a Float button, Cmd+F, with the marks drawn in), from a screenshot in Captures (Cmd+F, with its marks) and from an image item in history (Cmd+F). Several can float. Each can be dragged; Cmd+C copies it; Escape, Cmd+W or its close button (on hover) removes it. Images are held in memory only, so nothing is written to disk and nothing survives quit; it works with history off.
 
-**Clear while history is off (decided 25 November 2026; Noel: "You decide best").** Clear works while history is off too, so kept history and screenshots never sit on disk with no way to remove them from DocShot. To be built next, before the freeze.
+**Clear while history is off (decided 25 November 2026; Noel: "You decide best").** Clear works while history is off too, so kept history and screenshots never sit on disk with no way to remove them from DocShot. Built 25 November 2026: the count is read at launch and on switching off; Clear is offered in Settings and the menu while anything is stored; the store opens only if history was ever kept.
 
 ## 4. Architecture
 

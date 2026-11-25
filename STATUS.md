@@ -3,10 +3,11 @@
 - ID: P05
 - Tier: C
 - Status: Active
-- Last updated: 2026-11-24
+- Last updated: 2026-11-25
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-25: Clear works while history is off (07ed1ac on feature/clear-while-off): stored items and captures counted at launch and on switching off; Clear offered in Settings and the menu; the store opens only if history was ever kept. swift test 384, xcodebuild test 384, parity OK. Verified in the app on scratch data (Settings both themes, relaunch count, Clear removed 13, kept the pinned one, screenshot files gone); the menu bar item not seen.
 - 2026-11-25: Road to C5 units 1 to 6 (permission window, image editor, video editor, C4 Captures, C4a text in images, C4b Float), one Fable batch review, fixes in. ClipboardKit 83, swift test 381, xcodebuild test 381. Verified by agent in the app on scratch data; Noel's look pending.
 - 2026-11-25: Record shortcut now stops a live recording (it beeped before, despite the 17 Nov device-check entry). Fable: no defects; swift test 375, xcodebuild test 375. User-reported (Noel stopped a real recording).
 - 2026-11-25: Onboarding guide in Quiet: compact panel, five pages, Next as the one accent, Return and Escape. Fable review fixed (record-shortcut stop claim removed; the shortcut itself does not stop a recording, inherited). swift test 374, xcodebuild test 374. Verified (snapshots, hook-driven keys) and user-reported ("Feels right").
@@ -39,7 +40,7 @@
 - None.
 
 ## Next action
-- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Noel said yes to the launch: his real history database is now schema 3 (13 items kept, captures table empty, Captures folder owner-only; verified 25 Nov). Decided (Noel left it to Claude): Clear works while history is off; build it next. Test build for Noel's work laptop made from f413c26 (universal, macOS 14+, Apple Development-signed, not notarised; DMG in dist/test-2026-11-25, install steps in docs/INSTALL_TEST_BUILD.md) and sent to Noel. Waiting for Noel's look at all six. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
+- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Noel said yes to the launch: his real history database is now schema 3 (13 items kept, captures table empty, Captures folder owner-only; verified 25 Nov). Clear while history is off built as 07ed1ac on feature/clear-while-off (stacked on feature/c4b-float); not in the test build. Test build for Noel's work laptop made from f413c26 (universal, macOS 14+, Apple Development-signed, not notarised; DMG in dist/test-2026-11-25, install steps in docs/INSTALL_TEST_BUILD.md) and sent to Noel. Waiting for Noel's look at all six and at Clear while off; it gets its Fable review with the next batch. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

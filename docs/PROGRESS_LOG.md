@@ -4,6 +4,14 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-25
+- Clear while history is off (07ed1ac, feature/clear-while-off): with history off, DocShot
+  counts what is still stored at launch and on switching off, and offers Clear in Settings and
+  the menu bar menu. Clear opens the store only if history was ever kept and closes it after;
+  it shares the controller's store slot and queue, so switching on meanwhile reuses it. Three
+  new tests; swift test 384, xcodebuild test 384. In the app (scratch store): Settings showed
+  "History is off. 14 items still stored; this removes 13."; a relaunch read the same count;
+  Clear left the pinned item and removed all five screenshot files. Menu item not seen.
+  Fable review waits for the next batch.
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.

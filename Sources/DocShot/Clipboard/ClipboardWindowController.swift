@@ -361,12 +361,17 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
         case .togglePreview:
             togglePreview()
         case .switchSection:
+            // With Full Keyboard Access on, Tab moves focus between controls as usual; the tabs
+            // are still a click away.
+            if NSApp.isFullKeyboardAccessEnabled { return false }
             model.switchSection()
         case .float:
             Task {
                 guard let item = await self.model.settledSelection(), item.kind == .image,
                       let url = await history.imageFileURL(for: item),
-                      let data = try? Data(contentsOf: url), let image = FloatController.image(fromPNG: data) else {
+                      let image = await Task.detached(priority: .userInitiated, operation: {
+                          (try? Data(contentsOf: url)).flatMap(FloatController.image(fromPNG:))
+                      }).value else {
                     NSSound.beep()
                     return
                 }
@@ -419,6 +424,7 @@ extension ClipboardWindowController {
         case .close:
             close()
         case .switchSection:
+            if NSApp.isFullKeyboardAccessEnabled { return false }
             model.switchSection()
         case .left, .right, .up, .down:
             model.moveCaptureSelection(action)

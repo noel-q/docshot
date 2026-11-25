@@ -71,8 +71,17 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
 
         // Captures keeps the marks, whichever way the editor closed (plan 4.5: Discard keeps
         // the capture in the cache while history is on).
-        if let viewModel, let id = viewModel.captureID ?? CaptureCoordinator.shared.currentCaptureID {
-            ClipboardHistoryController.shared.updateCaptureState(id, viewModel.captureState)
+        if let viewModel {
+            let state = viewModel.captureState
+            if let id = viewModel.captureID {
+                ClipboardHistoryController.shared.updateCaptureState(id, state)
+            } else if let recording = CaptureCoordinator.shared.captureRecording {
+                Task { @MainActor in
+                    if let id = await recording.value {
+                        ClipboardHistoryController.shared.updateCaptureState(id, state)
+                    }
+                }
+            }
         }
 
         self.currentWindow = nil

@@ -276,7 +276,8 @@ public final class PermissionWindowController: NSObject {
                 self.closePermissionAlert()
                 return nil
             }
-            if (event.keyCode == 36 || event.keyCode == 76) && modifiers.isEmpty {
+            // A focused button (keyboard navigation) takes Return itself.
+            if (event.keyCode == 36 || event.keyCode == 76) && modifiers.isEmpty && !(panel.firstResponder is NSButton) {
                 if self.model?.openedSettings == true { self.restartIfPermissionGranted() } else { self.openSettings() }
                 return nil
             }

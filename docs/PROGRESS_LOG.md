@@ -7,6 +7,17 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Batch review (one Fable review of units 1 to 6, as Noel asked): no data-loss defect. Fixed:
+  the newest screenshot is never evicted for storage (history at the cap used to empty
+  Captures at once); text reading really runs at background priority, stops on a failed write
+  and does not retry an image in the same run; storing a screenshot or text re-checks that
+  history is still on, not paused and the same store after each wait; the editor's marks wait
+  for their own capture's id; Cmd+E in Captures is refused during a recording; Tab and Return
+  leave focused controls alone under keyboard navigation; one accent in the video editor; the
+  Float image file is read off the main thread. Left for Noel: with history off, Clear is
+  disabled while kept screenshots stay on disk (the inherited "stays until Clear" decision now
+  covers screenshots). ClipboardKit 83, swift test 381, xcodebuild test 381, no debug symbols
+  in Release. Re-verified in the app (agent): text read and found, Float from Captures, Cmd+E.
 - Unit 6, C4b Float, on `feature/c4b-float`: an image in its own borderless window above the
   others, at most 480 points on its long side, cascaded from the centre of the screen in use;
   from the editor (a Float button and Cmd+F, marks drawn in), from Captures (Cmd+F, with marks)

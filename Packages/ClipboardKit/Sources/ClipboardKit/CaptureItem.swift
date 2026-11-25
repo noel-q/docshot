@@ -47,7 +47,8 @@ public enum CaptureRetention {
     /// Captures the limits remove, in no particular order:
     /// 1. anything older than the history age limit;
     /// 2. screenshots beyond the 20 newest, and recording references beyond the 20 newest;
-    /// 3. while history and screenshots together are over the storage cap, the oldest screenshot.
+    /// 3. while history and screenshots together are over the storage cap, the oldest screenshot,
+    ///    but never the newest one, so the screenshot just taken can always be got back.
     public static func toRemove(
         _ captures: [CaptureItem], limits: RetentionLimits, historyBytes: Int, now: Date
     ) -> Set<UUID> {
@@ -65,8 +66,9 @@ public enum CaptureRetention {
         }
 
         var total = historyBytes + newestFirst.filter { !removed.contains($0.id) }.reduce(0) { $0 + $1.byteSize }
+        let newestScreenshot = newestFirst.first { $0.kind == .screenshot && !removed.contains($0.id) }?.id
         for capture in newestFirst.reversed() where total > limits.maxBytes {
-            guard capture.kind == .screenshot, !removed.contains(capture.id) else { continue }
+            guard capture.kind == .screenshot, !removed.contains(capture.id), capture.id != newestScreenshot else { continue }
             removed.insert(capture.id)
             total -= capture.byteSize
         }

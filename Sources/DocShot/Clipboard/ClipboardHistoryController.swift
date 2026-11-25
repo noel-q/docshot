@@ -476,16 +476,25 @@ final class ClipboardHistoryController: ObservableObject {
     /// image once (plan section 7). Only while history is on; nothing runs when there is nothing
     /// waiting, so idle costs nothing.
     func recogniseWaitingImages() {
-        guard recognitionTask == nil, isEnabled, store != nil else { return }
-        recognitionTask = Task { @MainActor in
-            while self.isEnabled, let store = self.store,
-                  let id = try? await store.imagesAwaitingText().first {
+        guard recognitionTask == nil, isEnabled, let store else { return }
+        recognitionTask = Task(priority: .background) { @MainActor in
+            var tried = Set<UUID>()
+            while self.isEnabled, self.store === store,
+                  let id = try? await store.imagesAwaitingText().first(where: { !tried.contains($0) }) {
+                tried.insert(id)
                 let url = try? await store.imageFileURL(for: id)
                 let text = await Task.detached(priority: .background) {
                     url.flatMap(TextRecognition.text(in:))
                 }.value
-                // Unreadable images are marked read too, so they are not tried again.
-                try? await store.setRecognisedText(id, text ?? "")
+                // History turned off, or reopened, while reading: keep nothing.
+                guard self.isEnabled, self.store === store else { break }
+                // Unreadable images are marked read too, so they are not tried again. A failed
+                // write stops the run; the next image or the next start tries again.
+                do {
+                    try await store.setRecognisedText(id, text ?? "")
+                } catch {
+                    break
+                }
             }
             self.recognitionTask = nil
             await self.reloadItems()
@@ -514,7 +523,8 @@ final class ClipboardHistoryController: ObservableObject {
         guard keepsCaptures, let store else { return nil }
         let width = image.width, height = image.height
         let png = await Task.detached(priority: .utility) { Self.pngData(image) }.value
-        guard let png else { return nil }
+        // Turned off or paused while encoding: keep nothing.
+        guard let png, keepsCaptures, self.store === store else { return nil }
         do {
             let id = try await store.addScreenshot(png: png, pixelWidth: width, pixelHeight: height)
             await reloadItems()

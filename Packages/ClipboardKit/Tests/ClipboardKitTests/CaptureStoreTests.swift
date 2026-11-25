@@ -37,6 +37,8 @@ struct CaptureStoreTests {
         let movie = recording(3)
         // History takes 50 of 100: only the newer screenshot fits; recordings take no space.
         #expect(CaptureRetention.toRemove([newer, older, movie], limits: limits, historyBytes: 50, now: referenceDate) == [older.id])
+        // History alone at the cap: the newest screenshot still stays, so it can be got back.
+        #expect(CaptureRetention.toRemove([newer, older], limits: limits, historyBytes: 100, now: referenceDate) == [older.id])
     }
 
     @Test("Clear keeps 5 or 10 of each kind, and none for pinned only or nothing")

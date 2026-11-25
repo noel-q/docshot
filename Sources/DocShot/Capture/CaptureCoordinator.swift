@@ -417,9 +417,8 @@ public final class CaptureCoordinator: ObservableObject {
     private func presentCapture(_ image: CGImage, capturedRect: CGRect) {
         self.state = .editing
         // Captures (C4): kept while history is on; the editor adds its marks when it closes.
-        currentCaptureID = nil
-        Task { @MainActor in
-            self.currentCaptureID = await ClipboardHistoryController.shared.recordScreenshot(image)
+        captureRecording = Task { @MainActor in
+            await ClipboardHistoryController.shared.recordScreenshot(image)
         }
         let centre = CGPoint(x: capturedRect.midX, y: capturedRect.midY)
         let screen = NSScreen.screens.first { $0.frame.contains(centre) } ?? NSScreen.main
@@ -431,14 +430,17 @@ public final class CaptureCoordinator: ObservableObject {
         self.hoveredWindow = nil
     }
 
-    /// The Captures entry of the screenshot being handled now, once it is stored (C4).
-    public private(set) var currentCaptureID: UUID?
+    /// Storing the screenshot being handled now in Captures (C4); its value is the entry's id,
+    /// nil when Captures keeps nothing. The editor waits for it when it closes, so its marks
+    /// always go to this capture.
+    public private(set) var captureRecording: Task<UUID?, Never>?
 
     /// A screenshot reopened from Captures: the editor owns the screen like a fresh capture,
-    /// so a new capture waits until it closes. False if a capture is already under way.
+    /// so a new capture waits until it closes. False while a capture or recording is under way.
     public func beginReopenedEditing() -> Bool {
-        guard state == .idle || state == .cancelled else { return false }
-        currentCaptureID = nil
+        guard state == .idle || state == .cancelled,
+              !RecordingCoordinator.shared.state.isActive else { return false }
+        captureRecording = nil
         state = .editing
         return true
     }

@@ -284,8 +284,7 @@ private struct CanvasOverlayView: View {
                         }
                     HStack(spacing: 8) {
                         Button("Add") { commitTextAnnotation() }
-                            .buttonStyle(.borderedProminent)
-                            .tint(Quiet.accent)
+                            .buttonStyle(.bordered)
                         Button("Cancel") { isEnteringText = false }
                             .buttonStyle(.bordered)
                     }
@@ -420,7 +419,7 @@ private struct CanvasOverlayView: View {
 
         if isSelected {
             let bounding = VideoEditorMath.sourceToViewRect(rect: item.boundingBox, viewSize: viewSize, sourcePixelSize: sourcePixelSize)
-            context.stroke(Path(bounding.insetBy(dx: -4, dy: -4)), with: .color(DesignTokens.primaryAccent), lineWidth: 2)
+            context.stroke(Path(bounding.insetBy(dx: -4, dy: -4)), with: .color(Quiet.ink), lineWidth: 2)
         }
     }
 

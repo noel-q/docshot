@@ -1,5 +1,6 @@
 import AppKit
 import ClipboardKit
+import Vision
 
 /// Runs clipboard history in the app (plan sections 4.3 and C2): watches the general pasteboard
 /// while history is on and not paused, saves copies through `ClipboardStore`, and copies items
@@ -310,7 +311,13 @@ final class ClipboardHistoryController: ObservableObject {
     func debugAdd(_ content: ClipContent, sourceApp: String?, at date: Date = Date()) {
         enqueue { store in
             try await store.add(content, sourceApp: sourceApp, now: date)
+            if case .image = content { self.recogniseWaitingImages() }
         }
+    }
+
+    /// Waits for the text reader to finish (debug hook).
+    func debugWaitForRecognition() async {
+        while let task = recognitionTask { await task.value }
     }
 #endif
 
@@ -349,6 +356,8 @@ final class ClipboardHistoryController: ObservableObject {
         enqueue { store in
             try await store.applyRetention()
         }
+        // Images kept before this version, or while DocShot was closed, are read now.
+        recogniseWaitingImages()
         retentionTimer = Timer.scheduledTimer(withTimeInterval: Self.retentionInterval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.enqueue { store in try await store.applyRetention() }
@@ -418,6 +427,9 @@ final class ClipboardHistoryController: ObservableObject {
                 PasteboardReader.normalized(content)
             }.value
             try await store.add(normalized, sourceApp: sourceApp)
+            if case .image = normalized {
+                self.recogniseWaitingImages()
+            }
         }
     }
 
@@ -454,6 +466,42 @@ final class ClipboardHistoryController: ObservableObject {
         }
         items = await store.items
         captures = await store.captures
+    }
+
+    // MARK: - Text in images (C4a)
+
+    private var recognitionTask: Task<Void, Never>?
+
+    /// Reads the text in stored images, one at a time, in the background at low priority, each
+    /// image once (plan section 7). Only while history is on; nothing runs when there is nothing
+    /// waiting, so idle costs nothing.
+    func recogniseWaitingImages() {
+        guard recognitionTask == nil, isEnabled, store != nil else { return }
+        recognitionTask = Task { @MainActor in
+            while self.isEnabled, let store = self.store,
+                  let id = try? await store.imagesAwaitingText().first {
+                let url = try? await store.imageFileURL(for: id)
+                let text = await Task.detached(priority: .background) {
+                    url.flatMap(TextRecognition.text(in:))
+                }.value
+                // Unreadable images are marked read too, so they are not tried again.
+                try? await store.setRecognisedText(id, text ?? "")
+            }
+            self.recognitionTask = nil
+            await self.reloadItems()
+        }
+    }
+
+    func recognisedText(for item: ClipItem) async -> String? {
+        guard let store else { return nil }
+        return try? await store.recognisedText(item.id)
+    }
+
+    /// Copy text: puts the text on the clipboard as DocShot's own write, so it is not
+    /// recorded as a new item.
+    func copyRecognisedText(_ text: String) {
+        let changeCount = PasteboardReader.write(.text(text), to: pasteboard)
+        ownWriteChangeCounts.insert(changeCount)
     }
 
     // MARK: - Captures (C4)
@@ -533,5 +581,23 @@ final class ClipboardHistoryController: ObservableObject {
         guard let destination = CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil) else { return nil }
         CGImageDestinationAddImage(destination, image, nil)
         return CGImageDestinationFinalize(destination) ? data as Data : nil
+    }
+}
+
+/// Text in an image, read on this Mac by Vision (C4a). Nothing leaves the Mac.
+enum TextRecognition {
+    static func text(in url: URL) -> String? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = true
+        request.automaticallyDetectsLanguage = true
+        do {
+            try VNImageRequestHandler(cgImage: image).perform([request])
+        } catch {
+            return nil
+        }
+        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
     }
 }

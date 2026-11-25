@@ -30,6 +30,11 @@ final class SQLiteConnection {
         handle.map { String(cString: sqlite3_errmsg($0)) } ?? "closed"
     }
 
+    /// Rows changed by the last INSERT, UPDATE or DELETE.
+    func changes() -> Int {
+        Int(sqlite3_changes(handle))
+    }
+
     func execute(_ sql: String) throws {
         var error: UnsafeMutablePointer<CChar>?
         guard sqlite3_exec(handle, sql, nil, nil, &error) == SQLITE_OK else {

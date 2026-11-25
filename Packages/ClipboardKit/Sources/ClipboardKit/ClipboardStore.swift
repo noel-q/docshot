@@ -14,8 +14,8 @@ public enum ClipboardStoreError: Error, Equatable, Sendable {
 /// as files beside it. Every change runs through `HistoryReducer`, and its effects are applied in
 /// one transaction, so the database and the in-memory list never disagree.
 public actor ClipboardStore {
-    /// 1: clipboard items (C1). 2: captures (C4).
-    public static let schemaVersion: Int32 = 2
+    /// 1: clipboard items (C1). 2: captures (C4). 3: text recognised in images (C4a).
+    public static let schemaVersion: Int32 = 3
     public static let databaseName = "history.sqlite"
     public static let imagesFolderName = "Images"
     public static let capturesFolderName = "Captures"
@@ -152,16 +152,62 @@ public actor ClipboardStore {
     private func loadSearchIndex() throws -> [UUID: String] {
         if let searchIndex { return searchIndex }
         var index: [UUID: String] = [:]
-        let statement = try db.prepare("SELECT id, payload_text FROM items")
+        let statement = try db.prepare("SELECT id, payload_text, ocr_text FROM items")
         while try statement.step() {
             guard let id = statement.text(0).flatMap(UUID.init(uuidString:)),
                   let item = state.item(id) else { continue }
-            index[id] = SearchText.fold(
-                SearchText.searchable(kind: item.kind, payloadText: statement.text(1), preview: item.preview)
-            )
+            // Images are found by the text recognised in them (C4a).
+            let searchable = item.kind == .image
+                ? (statement.text(2) ?? "")
+                : SearchText.searchable(kind: item.kind, payloadText: statement.text(1), preview: item.preview)
+            index[id] = SearchText.fold(searchable)
         }
         searchIndex = index
         return index
+    }
+
+    // MARK: - Recognised text (C4a)
+
+    /// Image items not read yet, most recently used first.
+    public func imagesAwaitingText() throws -> [UUID] {
+        let statement = try db.prepare("SELECT id FROM items WHERE kind = 'image' AND ocr_text IS NULL")
+        var waiting = Set<UUID>()
+        while try statement.step() {
+            if let id = statement.text(0).flatMap(UUID.init(uuidString:)) { waiting.insert(id) }
+        }
+        return state.items.filter { waiting.contains($0.id) }.map(\.id)
+    }
+
+    /// Keeps the text recognised in an image item ("" for none). The text counts towards the
+    /// storage cap and goes with its item. An item removed in the meantime is ignored.
+    public func setRecognisedText(_ id: UUID, _ text: String, now: Date = Date()) throws {
+        guard let item = state.item(id), item.kind == .image else { return }
+        let extra = text.utf8.count
+        let statement = try db.prepare("UPDATE items SET ocr_text = ?, byte_size = ? WHERE id = ? AND ocr_text IS NULL")
+        try statement.bind(1, text)
+        try statement.bind(2, item.byteSize + extra)
+        try statement.bind(3, id.uuidString)
+        try statement.run()
+        guard db.changes() > 0 else { return }
+        state.replace(ClipItem(
+            id: item.id, createdAt: item.createdAt, lastUsedAt: item.lastUsedAt, kind: item.kind,
+            contentHash: item.contentHash, sourceApp: item.sourceApp, pinned: item.pinned,
+            byteSize: item.byteSize + extra, preview: item.preview
+        ))
+        if searchIndex != nil {
+            searchIndex?[id] = SearchText.fold(text)
+        }
+        if extra > 0 {
+            try applyRetention(now: now)
+        }
+    }
+
+    /// The text recognised in an image item; nil until it has been read, "" when it has none.
+    public func recognisedText(_ id: UUID) throws -> String? {
+        let statement = try db.prepare("SELECT ocr_text FROM items WHERE id = ?")
+        try statement.bind(1, id.uuidString)
+        guard try statement.step() else { return nil }
+        return statement.text(0)
     }
 
     // MARK: - Changes
@@ -532,7 +578,11 @@ public actor ClipboardStore {
                     )
                     """)
             }
-            // Later migrations (OCR text in C4a) go here, one `if version < n` block each.
+            if version < 3 {
+                // NULL until the image has been read; "" when it holds no text.
+                try db.execute("ALTER TABLE items ADD COLUMN ocr_text TEXT")
+            }
+            // Later migrations go here, one `if version < n` block each.
             try db.execute("PRAGMA user_version = \(schemaVersion)")
             try db.execute("COMMIT")
         } catch {

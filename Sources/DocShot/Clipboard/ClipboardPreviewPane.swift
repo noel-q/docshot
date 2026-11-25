@@ -116,6 +116,8 @@ private struct ClipPreviewContent: View {
     @State private var prepared: PreparedPreview?
     @State private var sizeText: String?
     @State private var image: NSImage?
+    /// Text found in an image (C4a): nil until read.
+    @State private var recognised: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: Quiet.Space.s4) {
@@ -125,6 +127,9 @@ private struct ClipPreviewContent: View {
                     RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous).fill(Quiet.canvas)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous))
+            if item.kind == .image, let recognised, !recognised.isEmpty {
+                imageText(recognised)
+            }
             details
         }
         .padding(Quiet.Space.s4)
@@ -257,12 +262,42 @@ private struct ClipPreviewContent: View {
         }
     }
 
+    /// The text found in an image, a few lines of it, with Copy text and its key (C4a).
+    private func imageText(_ text: String) -> some View {
+        VStack(alignment: .leading, spacing: Quiet.Space.s2) {
+            HStack {
+                Text("Text in this image")
+                    .font(Quiet.Font.label)
+                    .foregroundStyle(Quiet.inkMuted)
+                Spacer(minLength: 0)
+                Button {
+                    controller.copyRecognisedText(text)
+                } label: {
+                    HStack(spacing: Quiet.Space.s1) {
+                        KeyHint(keys: "⇧⌘C")
+                        Text("Copy text").font(Quiet.Font.caption).foregroundStyle(Quiet.inkMuted)
+                    }
+                }
+                .buttonStyle(.plain)
+                .help("Copy the text in this image (⇧⌘C)")
+                .accessibilityLabel("Copy text")
+            }
+            Text(text)
+                .font(Quiet.Font.caption)
+                .foregroundStyle(Quiet.ink)
+                .lineLimit(4)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
     // MARK: Loading
 
     private func load() async {
         if item.kind == .image {
             // Images need only their file: the thumbnail and its pixel size.
             prepared = .image
+            recognised = await controller.recognisedText(for: item)
             let bytes = ByteCountFormatter.string(fromByteCount: Int64(item.byteSize), countStyle: .file)
             sizeText = bytes
             guard let url = await controller.imageFileURL(for: item) else { return }

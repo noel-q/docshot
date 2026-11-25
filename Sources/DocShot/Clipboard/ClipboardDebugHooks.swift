@@ -91,7 +91,7 @@ enum ClipboardDebugHooks {
             }
             // Commands that add or change history run only against the scratch store, never the
             // real one (`DOCSHOT_DEBUG_STORE`).
-            if ["pause", "resume", "enable", "disable", "seed", "previewtrace", "seed-captures"].contains(command)
+            if ["pause", "resume", "enable", "disable", "seed", "previewtrace", "seed-captures", "seed-text-image"].contains(command)
                 || command.hasPrefix("widthtrace:"),
                (ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty {
                 return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
@@ -106,6 +106,31 @@ enum ClipboardDebugHooks {
             }
             if command == "seed" {
                 seed()
+                return
+            }
+            if command == "seed-text-image" {
+                // An image with words drawn in it, so the text reader and search can be checked.
+                let size = NSSize(width: 900, height: 240)
+                let picture = NSImage(size: size, flipped: false) { rect in
+                    NSColor.white.setFill()
+                    rect.fill()
+                    let attributes: [NSAttributedString.Key: Any] = [
+                        .font: NSFont.systemFont(ofSize: 56, weight: .semibold), .foregroundColor: NSColor.black,
+                    ]
+                    ("Quarterly invoice 4417" as NSString).draw(at: NSPoint(x: 40, y: 130), withAttributes: attributes)
+                    ("Café Noir, Leeds" as NSString).draw(at: NSPoint(x: 40, y: 40), withAttributes: attributes)
+                    return true
+                }
+                guard let tiff = picture.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
+                      let png = rep.representation(using: .png, properties: [:]) else { return writeState("seed-text-image: failed") }
+                history.debugAdd(.image(data: png, typeIdentifier: "public.png"), sourceApp: "com.apple.Preview")
+                Task { @MainActor in
+                    await history.waitUntilIdle()
+                    await history.debugWaitForRecognition()
+                    let image = history.items.first { $0.kind == .image && $0.sourceApp == "com.apple.Preview" }
+                    let text = image == nil ? nil : await history.recognisedText(for: image!)
+                    writeState("seed-text-image: \(text.map { $0.replacingOccurrences(of: "\n", with: " | ") } ?? "none")")
+                }
                 return
             }
             if command == "seed-captures" {

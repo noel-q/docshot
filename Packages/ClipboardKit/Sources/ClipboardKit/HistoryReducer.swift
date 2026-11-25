@@ -22,6 +22,12 @@ public struct HistoryState: Sendable, Equatable {
         items.sort(by: RetentionPolicy.mostRecentFirst)
     }
 
+    /// Swaps in a changed item with the same id (its recognised text changed its size, C4a).
+    mutating func replace(_ item: ClipItem) {
+        guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
+        items[index] = item
+    }
+
     fileprivate mutating func remove(_ ids: Set<UUID>) {
         items.removeAll { ids.contains($0.id) }
     }

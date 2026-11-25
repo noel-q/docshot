@@ -488,3 +488,16 @@ struct CaptureEditorStateTests {
         #expect(CaptureEditorState.decoded(nil) == nil)
     }
 }
+
+@Suite("Copy text key")
+struct CopyTextKeyTests {
+    @Test("Shift+Cmd+C copies the text in an image; Cmd+C alone still copies the item")
+    func key() {
+        func action(_ flags: NSEvent.ModifierFlags, _ chars: String) -> ClipboardKeyAction {
+            ClipboardKeys.action(keyCode: 8, modifiers: flags, characters: chars, charactersIgnoringModifiers: chars,
+                                 hasMarkedText: false, hasTextSelection: false, queryIsEmpty: true)
+        }
+        #expect(action([.command, .shift], "C") == .copyText)
+        #expect(action([.command], "c") == .copy)
+    }
+}

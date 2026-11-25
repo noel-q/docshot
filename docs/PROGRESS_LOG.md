@@ -7,6 +7,16 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Unit 5, C4a text in images, on `feature/c4a-ocr`: schema 3 adds the recognised text to image
+  items; Vision reads each stored image once, in the background at low priority, only while
+  history is on (new images at once, older ones when history turns on); unreadable images are
+  marked read so they are not retried; the text counts towards the storage cap and goes with its
+  item; search finds images by their text; the preview pane shows "Text in this image" with
+  Copy text (Shift+Cmd+C), written as DocShot's own copy so it is not recorded again.
+  ClipboardKit 83 tests (2 new), swift test 379, xcodebuild test 379. Verified (agent, scratch
+  store): a drawn test image read as "Quarterly invoice 4417 | Café Noir, Leeds"; "cafe invoice"
+  and "4417" found it; the preview pane snapshot; the app's CPU at 0.0 to 0.5% once reading
+  finished. Not run: Copy text (it would change the real clipboard), a long idle soak.
 - Unit 4, C4 Captures, on `feature/c4-captures` (plan "C4 plan" in section 3): schema 2 adds a
   `captures` table and an owner-only `Captures` folder; screenshots are kept when taken (history
   on and not paused) and their marks and crop are saved whenever the editor closes; MP4, edited

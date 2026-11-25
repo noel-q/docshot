@@ -248,7 +248,7 @@ struct ClipboardHistoryView: View {
             emptyState(
                 title: "No matches",
                 detail: model.filter == .all
-                    ? "Text inside images is not searched yet."
+                    ? "Nothing in history matches. Images are searched by the text in them."
                     : "Nothing in \(model.filter.title.lowercased()) matches. Choose All to see everything."
             )
         } else {

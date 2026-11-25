@@ -12,6 +12,8 @@ enum ClipboardKeyAction: Equatable {
     case togglePreview
     /// Tab: between Clipboard and Captures (C4 plan, decision 4).
     case switchSection
+    /// Shift+Cmd+C: copy the text found in an image (C4a).
+    case copyText
     /// Not ours: the search field gets it.
     case passThrough
 }
@@ -39,6 +41,10 @@ enum ClipboardKeys {
         case (delete, [.command]): return .delete
         case (tab, []): return .switchSection
         default: break
+        }
+        if flags == [.command, .shift],
+           commandLetter(keyCode: keyCode, characters: characters, charactersIgnoringModifiers: charactersIgnoringModifiers) == "c" {
+            return .copyText
         }
         guard flags == [.command] else { return .passThrough }
         if let digit = commandDigit(keyCode: keyCode, characters: characters) {

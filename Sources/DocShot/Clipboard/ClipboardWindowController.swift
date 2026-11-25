@@ -362,6 +362,15 @@ final class ClipboardWindowController: NSObject, NSWindowDelegate {
             togglePreview()
         case .switchSection:
             model.switchSection()
+        case .copyText:
+            Task {
+                guard let item = await self.model.settledSelection(), item.kind == .image,
+                      let text = await history.recognisedText(for: item), !text.isEmpty else {
+                    NSSound.beep()
+                    return
+                }
+                history.copyRecognisedText(text)
+            }
         case .pick(let number):
             Task {
                 guard let item = await self.model.settledRow(number), self.isShowing else { return }

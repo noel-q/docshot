@@ -7,6 +7,8 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-25: Road to C5 units 1 to 6 (permission window, image editor, video editor, C4 Captures, C4a text in images, C4b Float), one Fable batch review, fixes in. ClipboardKit 83, swift test 381, xcodebuild test 381. Verified by agent in the app on scratch data; Noel's look pending.
+- 2026-11-25: Record shortcut now stops a live recording (it beeped before, despite the 17 Nov device-check entry). Fable: no defects; swift test 375, xcodebuild test 375. User-reported (Noel stopped a real recording).
 - 2026-11-25: Onboarding guide in Quiet: compact panel, five pages, Next as the one accent, Return and Escape. Fable review fixed (record-shortcut stop claim removed; the shortcut itself does not stop a recording, inherited). swift test 374, xcodebuild test 374. Verified (snapshots, hook-driven keys) and user-reported ("Feels right").
 - 2026-11-24: Compact Settings panel under the menu bar icon, growing in place to the four tabs. Fable review fixed; swift test 371, xcodebuild test 371. Verified (snapshots, traces) and user-reported ("Feels right").
 - 2026-11-24: Compact clipboard panel: borderless rounded 420 pt panel, preview on Cmd+Y to 780 pt, remembered place, smooth resizing (frame-traced). Fable review fixed; swift test 367, xcodebuild test 367. Verified (snapshots, traces) and user-reported ("Feels right").
@@ -37,7 +39,7 @@
 - None.
 
 ## Next action
-- Record-shortcut stop fix built on fix/record-shortcut-stop (from 6f358c3), uncommitted; waiting for Noel's one check (start a recording, press the record shortcut, it stops), then his yes to commit. Noel asked about packaging for two testers: options given (free development DMG with "Open Anyway", or paid Developer ID and notarisation); waiting for his choice. Then permission window and editors; then C4. Do not merge or push without Noel's say.
+- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Waiting for Noel: (1) yes to launch the new build, which migrates his real history database to schema 3 (older builds then refuse it and switch history off); (2) whether Clear should work while history is off, since kept screenshots stay on disk; (3) his look at all six. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

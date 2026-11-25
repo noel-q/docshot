@@ -19,7 +19,7 @@ public struct VideoPlayerPreviewView: View {
         GeometryReader { geometry in
             ZStack {
                 // Graphite background
-                DesignTokens.graphiteBase
+                Quiet.canvas
                     .edgesIgnoringSafeArea(.all)
 
                 // Native AVPlayer video layer view
@@ -285,13 +285,13 @@ private struct CanvasOverlayView: View {
                     HStack(spacing: 8) {
                         Button("Add") { commitTextAnnotation() }
                             .buttonStyle(.borderedProminent)
+                            .tint(Quiet.accent)
                         Button("Cancel") { isEnteringText = false }
                             .buttonStyle(.bordered)
                     }
                 }
-                .padding(10)
-                .background(DesignTokens.cardBackground)
-                .cornerRadius(8)
+                .padding(Quiet.Space.s3)
+                .background(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous).fill(Quiet.surface))
                 .shadow(radius: 4)
                 .position(textInputLocation)
             }

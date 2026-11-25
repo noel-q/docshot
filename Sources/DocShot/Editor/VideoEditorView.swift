@@ -17,125 +17,105 @@ public struct VideoEditorView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            // Top Window Action Bar
-            HStack(spacing: 16) {
-                // Back / Cancel Button
-                Button(action: {
+            // Top bar in Quiet: Back and what the recording is on the left; the result,
+            // Discard and the one accent button, Save, on the right, each with its key.
+            HStack(spacing: Quiet.Space.s3) {
+                Button {
                     if viewModel.hasUnsavedChanges {
                         showReturnAlert = true
                     } else {
                         onExit(.returnToOutputChoice)
                     }
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
+                } label: {
+                    HStack(spacing: Quiet.Space.s1) {
+                        KeyHint(keys: "esc")
+                        Text("Back").font(Quiet.Font.ui).foregroundStyle(Quiet.inkMuted)
                     }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(DesignTokens.secondaryText)
                 }
                 .buttonStyle(.plain)
                 .disabled(viewModel.isExporting)
                 .keyboardShortcut(.escape, modifiers: [])
+                .help("Back to the choices (esc)")
+                .accessibilityLabel("Back")
 
-                Divider()
-                    .frame(height: 18)
+                QuietRule(vertical: true)
 
-                // Recording Specs Readout
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("DocShot Video Editor")
-                        .font(.system(size: 13, weight: .bold))
-                    Text("\(formatDuration(viewModel.timelineDuration)) · \(Int(viewModel.project.sourcePixelSize.width)) × \(Int(viewModel.project.sourcePixelSize.height)) px · \(viewModel.project.hasSourceAudio ? "Audio On" : "No Audio")")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(DesignTokens.secondaryText)
+                    Text("Edit recording")
+                        .font(Quiet.Font.ui)
+                        .foregroundStyle(Quiet.ink)
+                    Text(verbatim: "\(formatDuration(viewModel.timelineDuration)) · \(Int(viewModel.project.sourcePixelSize.width)) × \(Int(viewModel.project.sourcePixelSize.height)) px · \(viewModel.project.hasSourceAudio ? "With sound" : "No sound")")
+                        .font(Quiet.Font.caption.monospacedDigit())
+                        .foregroundStyle(Quiet.inkMuted)
                 }
 
-                Spacer()
+                Spacer(minLength: Quiet.Space.s2)
 
-                // Status & Export Indicator
                 if viewModel.isExporting {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Quiet.Space.s2) {
                         ProgressView()
                             .controlSize(.small)
-                        Text(viewModel.statusMessage ?? "Exporting edited MP4...")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(DesignTokens.primaryAccent)
+                        Text(viewModel.statusMessage ?? "Saving the edited MP4…")
+                            .font(Quiet.Font.caption)
+                            .foregroundStyle(Quiet.inkMuted)
                     }
                 } else if let error = viewModel.exportError {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text(error)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.red)
-                    }
+                    Label(error, systemImage: "exclamationmark.triangle")
+                        .font(Quiet.Font.caption)
+                        .foregroundStyle(Quiet.danger)
+                        .lineLimit(2)
                 } else if let status = viewModel.statusMessage {
                     Text(status)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(DesignTokens.secondaryText)
+                        .font(Quiet.Font.caption)
+                        .foregroundStyle(Quiet.inkMuted)
                 }
 
-                // Discard Button
-                Button(action: {
+                Button("Discard…") {
                     showDiscardAlert = true
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "xmark.circle")
-                        Text("Discard")
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(DesignTokens.secondaryText)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
                 }
-                .buttonStyle(.plain)
+                .controlSize(.large)
                 .disabled(viewModel.isExporting)
+                .help("Discard the recording")
 
-                // Save Edited MP4 Button
-                Button(action: {
+                Button {
                     performSave()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.down.fill")
-                        Text("Save Edited MP4…")
-                    }
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(DesignTokens.onAccent)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 7)
-                    .background(viewModel.isExporting ? Color.gray : DesignTokens.primaryAccent)
-                    .cornerRadius(6)
+                } label: {
+                    AccentButtonLabel("Save MP4…  ⌘S")
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderedProminent)
+                .tint(Quiet.accent)
+                .controlSize(.large)
                 .disabled(viewModel.isExporting)
                 .keyboardShortcut("s", modifiers: [.command])
+                .help("Save the edited MP4 (⌘S)")
+                .accessibilityLabel("Save MP4")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(DesignTokens.windowBackground)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.vertical, Quiet.Space.s3)
+            .background(Quiet.surface)
 
-            Divider()
+            QuietRule()
 
-            // Annotation Toolbar
             VideoAnnotationToolbar(viewModel: viewModel)
 
-            Divider()
+            QuietRule()
 
             // AVPlayer Preview with Canvas Overlay
             VideoPlayerPreviewView(viewModel: viewModel)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            Divider()
+            QuietRule()
 
             // Timeline & Segment Inspector Panel
             VideoTimelineView(viewModel: viewModel)
         }
-        .frame(minWidth: 850, minHeight: 650)
-        .background(DesignTokens.windowBackground)
+        .frame(minWidth: 960, minHeight: 650)
+        // Behind the see-through rules, so they blend as `line` should.
+        .background(Quiet.surface)
         .alert(isPresented: $showDiscardAlert) {
             Alert(
-                title: Text("Discard Changes?"),
-                message: Text("Discarding deletes this recording because it has not been saved."),
+                title: Text("Discard the recording?"),
+                message: Text("It has not been saved, so discarding deletes it."),
                 primaryButton: .destructive(Text("Discard")) {
                     onExit(.discardRecording)
                 },
@@ -144,9 +124,9 @@ public struct VideoEditorView: View {
         }
         .alert(isPresented: $showReturnAlert) {
             Alert(
-                title: Text("Discard Edits?"),
-                message: Text("Your original recording will be kept. You can save it, export a GIF, or discard it from the output choices."),
-                primaryButton: .destructive(Text("Return to Output Choices")) {
+                title: Text("Discard your edits?"),
+                message: Text("The original recording is kept. You can save it, export a GIF or discard it from the choices."),
+                primaryButton: .destructive(Text("Discard edits")) {
                     onExit(.returnToOutputChoice)
                 },
                 secondaryButton: .cancel()

@@ -7,6 +7,16 @@ its original evidence label (verified, inherited, assumed, unknown).
 - Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
   committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
   may include Noel's two testers.
+- Unit 3, video editor in Quiet, on `feature/quiet-video-editor`: the tools, colours and
+  widths are one shared bar for both editors (`AnnotationStyleBar`), with shared icon buttons;
+  top bar with esc Back, the recording's details, Discard... and Save MP4... as the one accent
+  with its key; Split with its key; neutral transport, scrubber and clip cards ("Clip 1",
+  Start and End with "To playhead"); nothing under 12 pt; sentence-case alerts. The window
+  now follows macOS light or dark (it was always dark) and opens at 1000 pt, at least 960,
+  so the drawing bar fits in one row. A DEBUG hook `open-video:<path>` opens it on a test
+  clip. swift test 375, xcodebuild test 375. Verified (agent): snapshots in dark and light.
+  Not seen: the video picture (the player layer does not draw into snapshots), playing,
+  trimming, splitting, drawing on video, saving.
 - Unit 2, image editor in Quiet, on `feature/quiet-image-editor`: toolbar and action bar
   on `surface`, canvas on `canvas` with a margin, title bar blended; tool, width and colour
   selection neutral (`selection`, an `ink` ring), annotation colours untouched; Copy the one

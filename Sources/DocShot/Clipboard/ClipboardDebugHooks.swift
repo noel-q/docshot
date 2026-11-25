@@ -1,5 +1,6 @@
 #if DEBUG
 import AppKit
+import AVFoundation
 import ClipboardKit
 
 /// Debug builds only: lets the agent drive the clipboard window from the shell, because screen
@@ -207,6 +208,23 @@ enum ClipboardDebugHooks {
                     NSApp.postEvent(event, atStart: false)
                 }
                 return writeState(command)
+            }
+            if command.hasPrefix("open-video:") {
+                // open-video:<path to an mp4 in the scratch store's folder>. The editor's exit
+                // only closes it here; the file is the hook's own and is never deleted by it.
+                let path = String(command.dropFirst("open-video:".count))
+                let url = URL(fileURLWithPath: path)
+                let asset = AVURLAsset(url: url)
+                Task { @MainActor in
+                    let duration = (try? await asset.load(.duration)).map(CMTimeGetSeconds) ?? 0
+                    let track = try? await asset.loadTracks(withMediaType: .video).first
+                    let size = (try? await track?.load(.naturalSize)) ?? CGSize(width: 1280, height: 720)
+                    let recording = TemporaryRecording(url: url, duration: duration, pixelSize: size, hasAudio: false, createdAt: Date())
+                    // The editor closes itself before calling this; nothing else to do.
+                    VideoEditorWindowController.shared.showEditor(recording: recording) { _ in }
+                    writeState("open-video: \(Int(duration)) s")
+                }
+                return
             }
             if command == "permission-opened" {
                 PermissionWindowController.shared.debugMarkOpened()

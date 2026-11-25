@@ -19,12 +19,6 @@ public struct EditorView: View {
         self.onClose = onClose
     }
     
-    private let availableColors: [CodableColor] = [
-        .red, .green, .blue, .yellow, .orange, .white, .black
-    ]
-    
-    private let availableWidths: [CGFloat] = [2.0, 4.0, 6.0, 8.0]
-    
     public var body: some View {
         VStack(spacing: 0) {
             toolbar
@@ -56,87 +50,21 @@ public struct EditorView: View {
     /// behind, `ink` in front; the accent stays for Copy.
     private var toolbar: some View {
         HStack(spacing: Quiet.Space.s3) {
-            HStack(spacing: Quiet.Space.s1) {
-                ForEach(AnnotationTool.allCases) { tool in
-                    let isActive = viewModel.activeTool == tool
-                    Button {
-                        viewModel.activeTool = tool
-                    } label: {
-                        Image(systemName: tool.systemImage)
-                            .font(Quiet.Font.ui)
-                            .foregroundStyle(isActive ? Quiet.ink : Quiet.inkMuted)
-                            .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
-                            .background(
-                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
-                                    .fill(isActive ? Quiet.selection : Color.clear)
-                            )
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help(tool.tooltip)
-                    .accessibilityLabel(tool.tooltip)
-                    .accessibilityAddTraits(isActive ? .isSelected : [])
-                }
-            }
-
-            QuietRule(vertical: true)
-
-            // Annotation colours are the picture's colours, not the interface's.
-            HStack(spacing: Quiet.Space.s2) {
-                ForEach(availableColors.indices, id: \.self) { index in
-                    let color = availableColors[index]
-                    let isSelected = viewModel.selectedColor == color
-                    Button {
-                        viewModel.selectedColor = color
-                    } label: {
-                        Circle()
-                            .fill(color.swiftUIColor)
-                            .frame(width: Quiet.Space.s4, height: Quiet.Space.s4)
-                            .overlay(Circle().strokeBorder(Quiet.line, lineWidth: 1))
-                            .padding(Quiet.Space.s1)
-                            .overlay(Circle().strokeBorder(isSelected ? Quiet.ink : Color.clear, lineWidth: 2))
-                            .contentShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .help(Self.colourName(color))
-                    .accessibilityLabel(Self.colourName(color))
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                }
-            }
-
-            QuietRule(vertical: true)
-
-            HStack(spacing: Quiet.Space.s1) {
-                ForEach(availableWidths, id: \.self) { width in
-                    let isSelected = viewModel.selectedStrokeWidth == width
-                    Button {
-                        viewModel.selectedStrokeWidth = width
-                    } label: {
-                        Circle()
-                            .fill(Quiet.ink)
-                            .frame(width: width * 1.5 + 4, height: width * 1.5 + 4)
-                            .frame(width: Quiet.Space.s6, height: Quiet.Space.s6)
-                            .background(
-                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
-                                    .fill(isSelected ? Quiet.selection : Color.clear)
-                            )
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Line width \(Int(width))")
-                    .accessibilityLabel("Line width \(Int(width))")
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                }
-            }
+            AnnotationStyleBar(
+                activeTool: $viewModel.activeTool,
+                color: $viewModel.selectedColor,
+                width: $viewModel.selectedStrokeWidth,
+                showsToolKeys: true
+            )
 
             Spacer(minLength: 0)
 
             HStack(spacing: Quiet.Space.s1) {
-                iconButton("arrow.uturn.backward", help: "Undo (⌘Z)", disabled: !viewModel.canUndo) { viewModel.undo() }
+                EditorIconButton("arrow.uturn.backward", help: "Undo (⌘Z)", disabled: !viewModel.canUndo) { viewModel.undo() }
                     .keyboardShortcut("z", modifiers: [.command])
-                iconButton("arrow.uturn.forward", help: "Redo (⇧⌘Z)", disabled: !viewModel.canRedo) { viewModel.redo() }
+                EditorIconButton("arrow.uturn.forward", help: "Redo (⇧⌘Z)", disabled: !viewModel.canRedo) { viewModel.redo() }
                     .keyboardShortcut("z", modifiers: [.command, .shift])
-                iconButton("trash", help: "Delete the selected mark (⌫)", disabled: viewModel.selectedAnnotationID == nil) {
+                EditorIconButton("trash", help: "Delete the selected mark (⌫)", disabled: viewModel.selectedAnnotationID == nil) {
                     viewModel.deleteSelectedAnnotation()
                 }
                 .keyboardShortcut(.delete, modifiers: [])
@@ -145,33 +73,6 @@ public struct EditorView: View {
         .padding(.horizontal, Quiet.Space.s4)
         .padding(.vertical, Quiet.Space.s2)
         .background(Quiet.surface)
-    }
-
-    private func iconButton(_ symbol: String, help: String, disabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(Quiet.Font.ui)
-                .foregroundStyle(disabled ? Quiet.inkFaint : Quiet.inkMuted)
-                .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(disabled)
-        .help(help)
-        .accessibilityLabel(help)
-    }
-
-    static func colourName(_ color: CodableColor) -> String {
-        switch color {
-        case .red: return "Red"
-        case .green: return "Green"
-        case .blue: return "Blue"
-        case .yellow: return "Yellow"
-        case .orange: return "Orange"
-        case .white: return "White"
-        case .black: return "Black"
-        default: return "Colour"
-        }
     }
 
     // MARK: Action bar
@@ -353,6 +254,139 @@ public struct EditorView: View {
                 self.errorMessage = msg
                 self.showErrorAlert = true
             }
+        }
+    }
+}
+
+/// An icon button in an editor bar: `ink-muted`, `ink-faint` when it cannot act.
+struct EditorIconButton: View {
+    let symbol: String
+    let help: String
+    let disabled: Bool
+    let action: () -> Void
+
+    init(_ symbol: String, help: String, disabled: Bool = false, action: @escaping () -> Void) {
+        self.symbol = symbol
+        self.help = help
+        self.disabled = disabled
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(Quiet.Font.ui)
+                .foregroundStyle(disabled ? Quiet.inkFaint : Quiet.inkMuted)
+                .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
+        .help(help)
+        .accessibilityLabel(help)
+    }
+}
+
+/// The annotation tools, colours and line widths, shared by the image and video editors.
+/// Selection is neutral: `selection` behind, `ink` in front, an `ink` ring round the colour.
+/// The annotation colours are the picture's colours, not the interface's.
+struct AnnotationStyleBar: View {
+    @Binding var activeTool: AnnotationTool
+    @Binding var color: CodableColor
+    @Binding var width: CGFloat
+    /// The image editor has a key for each tool; the video editor does not.
+    var showsToolKeys: Bool
+
+    static let colours: [CodableColor] = [.red, .green, .blue, .yellow, .orange, .white, .black]
+    static let widths: [CGFloat] = [2.0, 4.0, 6.0, 8.0]
+
+    var body: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(AnnotationTool.allCases) { tool in
+                    let isActive = activeTool == tool
+                    let name = showsToolKeys ? tool.tooltip : tool.rawValue
+                    Button {
+                        activeTool = tool
+                    } label: {
+                        Image(systemName: tool.systemImage)
+                            .font(Quiet.Font.ui)
+                            .foregroundStyle(isActive ? Quiet.ink : Quiet.inkMuted)
+                            .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isActive ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(name)
+                    .accessibilityLabel(name)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            HStack(spacing: Quiet.Space.s2) {
+                ForEach(Self.colours.indices, id: \.self) { index in
+                    let colour = Self.colours[index]
+                    let isSelected = color == colour
+                    Button {
+                        color = colour
+                    } label: {
+                        Circle()
+                            .fill(colour.swiftUIColor)
+                            .frame(width: Quiet.Space.s4, height: Quiet.Space.s4)
+                            .overlay(Circle().strokeBorder(Quiet.line, lineWidth: 1))
+                            .padding(Quiet.Space.s1)
+                            .overlay(Circle().strokeBorder(isSelected ? Quiet.ink : Color.clear, lineWidth: 2))
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(Self.colourName(colour))
+                    .accessibilityLabel(Self.colourName(colour))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(Self.widths, id: \.self) { lineWidth in
+                    let isSelected = width == lineWidth
+                    Button {
+                        width = lineWidth
+                    } label: {
+                        Circle()
+                            .fill(Quiet.ink)
+                            .frame(width: lineWidth * 1.5 + 4, height: lineWidth * 1.5 + 4)
+                            .frame(width: Quiet.Space.s6, height: Quiet.Space.s6)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isSelected ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Line width \(Int(lineWidth))")
+                    .accessibilityLabel("Line width \(Int(lineWidth))")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+        }
+    }
+
+    static func colourName(_ colour: CodableColor) -> String {
+        switch colour {
+        case .red: return "Red"
+        case .green: return "Green"
+        case .blue: return "Blue"
+        case .yellow: return "Yellow"
+        case .orange: return "Orange"
+        case .white: return "White"
+        case .black: return "Black"
+        default: return "Colour"
         }
     }
 }

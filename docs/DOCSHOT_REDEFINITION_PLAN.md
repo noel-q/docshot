@@ -111,6 +111,10 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 4. Every setting it shows behaves exactly as in Settings and writes the same place. "Include cursor" stays in Settings > Capture only.
 5. Checks: snapshots of all five pages in dark and light through the DEBUG hook on scratch preferences, Fable review, Noel's look.
 
+**Road to C5 (agreed 25 November 2026).** Noel: "I want 1-6 done then one Fable review after that, not each time"; each unit may be committed on its own local branch as it passes Claude's checks (never pushed or merged). Order: (1) permission window in Quiet, (2) image editor in Quiet, (3) video editor in Quiet, (4) C4, (5) C4a, (6) C4b. Then one Fable review of the batch, Noel's look, and the freeze. C5 testing may be done by Noel's two testers as well as Noel.
+
+**Permission window in Quiet (agreed 25 November 2026, under the road to C5).** The guide's compact panel style; "Allow screen recording" with three numbered steps (Open System Settings, switch DocShot on, Restart DocShot); one accent button that moves from Open System Settings to Restart DocShot once Settings was opened; Return presses it, Escape cancels; it checks again when DocShot becomes active; restart refusal, the cancel and close callbacks and the Xcode-run message are kept.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary
@@ -275,7 +279,7 @@ Windows ports a frozen feature set, so every capture feature added now is one mo
 
 macOS is done, and Windows may start, when all of these hold:
 
-1. Fourteen consecutive days of Noel's daily use with no crash and no hang.
+1. Fourteen consecutive days of daily use by Noel or his two testers with no crash and no hang (testers added 25 November 2026: "C5 testings can also be done by the friends").
 2. No orphaned temporary recording and no stray history file after any of: quit, crash, cancel, Clear all.
 3. The clipboard watcher costs no measurable CPU at idle and memory stays flat across a full day.
 4. `swift test`, `xcodebuild test` and the parity audit are all green.

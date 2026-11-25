@@ -39,7 +39,7 @@ enum ClipboardDebugHooks {
 
     /// `open:<bundle id>` (only while that app is in front; it becomes the paste target),
     /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
-    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`, `onboarding-page:<0-4>`, `onboarding-key:<code>`, `onboarding-state`,
+    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`, `onboarding-page:<0-4>`, `onboarding-key:<code>`, `onboarding-state`, `permission-opened`,
     /// `open-onboarding`, `open-permission`, `open-thumbnail`, `open-editor`, `windows`,
     /// `theme:<ember|tide|slate|moss>`, `snapwin:<word>:<path prefix>`, `previewtrace`,
     /// `widthtrace:<points>[.1]`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
@@ -206,6 +206,10 @@ enum ClipboardDebugHooks {
                 ) {
                     NSApp.postEvent(event, atStart: false)
                 }
+                return writeState(command)
+            }
+            if command == "permission-opened" {
+                PermissionWindowController.shared.debugMarkOpened()
                 return writeState(command)
             }
             if command == "onboarding-state" {

@@ -4,6 +4,14 @@ Dated detail that does not fit on the one-page STATUS.md. Newest first. Each ent
 its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-25
+- Road to C5 agreed: units 1 to 6 back to back, one Fable review at the end, each unit
+  committed on its own local branch as it passes Claude's checks (Noel's choice). C5 testing
+  may include Noel's two testers.
+- Unit 1, permission window in Quiet, on `feature/quiet-permission-window`: compact panel,
+  three numbered steps, the accent moves from Open to Restart, Return and Escape, re-check on
+  coming back. swift test 375, xcodebuild test 375. Verified (agent): snapshots of both
+  states in dark and light through the DEBUG hook. Not seen: the real grant flow (DocShot's
+  permission was not removed). Fable review waits for the batch.
 - Compact Settings panel committed as d6bd354 with Noel's yes ("Feels right").
 - Onboarding guide committed as 6f358c3 with Noel's yes ("Feels right").
 - Record shortcut now stops a recording (Noel: "Yes, fix it"), on `fix/record-shortcut-stop`,

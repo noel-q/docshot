@@ -7,6 +7,7 @@
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-25: Onboarding guide in Quiet: compact panel, five pages, Next as the one accent, Return and Escape. Fable review fixed (record-shortcut stop claim removed; the shortcut itself does not stop a recording, inherited). swift test 374, xcodebuild test 374. Verified (snapshots, hook-driven keys) and user-reported ("Feels right").
 - 2026-11-24: Compact Settings panel under the menu bar icon, growing in place to the four tabs. Fable review fixed; swift test 371, xcodebuild test 371. Verified (snapshots, traces) and user-reported ("Feels right").
 - 2026-11-24: Compact clipboard panel: borderless rounded 420 pt panel, preview on Cmd+Y to 780 pt, remembered place, smooth resizing (frame-traced). Fable review fixed; swift test 367, xcodebuild test 367. Verified (snapshots, traces) and user-reported ("Feels right").
 - 2026-11-24: Preview thumbnail restyled in Quiet (pilot step 3): floating panel, accent Copy with its key, keys under icons, Cmd+E for Edit, rise-in. Fable review fixed; swift test 358, xcodebuild test 358. Verified (snapshots) and user-reported ("Looks right").
@@ -36,7 +37,7 @@
 - None.
 
 ## Next action
-- Compact Settings panel built and agent-verified on feature/quiet-compact-panels (on top of 4f5544c), uncommitted; waiting for Noel's look, then his yes to commit. Next: the onboarding update (five-page plan waiting for Noel's yes); then permission window and editors; then C4. Do not merge or push without Noel's say.
+- Onboarding guide built and agent-verified on feature/quiet-onboarding (from d6bd354), uncommitted; waiting for Noel's look, then his yes to commit. Open question for Noel: fix the record shortcut so it stops a recording (hotkey handler). Then permission window and editors; then C4. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

@@ -22,12 +22,15 @@
 		D4000008D4000000000000A1 /* ClipPreviewText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000007D4000000000000A1 /* ClipPreviewText.swift */; };
 		D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000007D4000000000000A1 /* ClipPreviewText.swift */; };
 		D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
+		D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
+		D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
 		D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
 		D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */; };
 		D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000012D4000000000000A1 /* QuietTokensTests.swift */; };
 		C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */; };
 		C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000007C3000000000000A1 /* PasteActionTests.swift */; };
 		C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000009C3000000000000A1 /* ClipboardListModelTests.swift */; };
+		D7000005D7000000000000A1 /* OnboardingPagesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000004D7000000000000A1 /* OnboardingPagesTests.swift */; };
 		C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
 		C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
 		C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010C2000000000000A1 /* ClipboardWindowController.swift */; };
@@ -331,11 +334,13 @@
 		D4000004D4000000000000A1 /* Quiet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Quiet.swift; path = Sources/DocShot/Design/Quiet.swift; sourceTree = "<group>"; };
 		D4000007D4000000000000A1 /* ClipPreviewText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipPreviewText.swift; path = Sources/DocShot/Clipboard/ClipPreviewText.swift; sourceTree = "<group>"; };
 		D6000001D6000000000000A1 /* SettingsPanelLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsPanelLayout.swift; path = Sources/DocShot/Settings/SettingsPanelLayout.swift; sourceTree = "<group>"; };
+		D7000001D7000000000000A1 /* OnboardingPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingPages.swift; path = Sources/DocShot/Onboarding/OnboardingPages.swift; sourceTree = "<group>"; };
 		D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardPreviewPane.swift; path = Sources/DocShot/Clipboard/ClipboardPreviewPane.swift; sourceTree = "<group>"; };
 		D4000012D4000000000000A1 /* QuietTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QuietTokensTests.swift; path = Tests/DocShotTests/QuietTokensTests.swift; sourceTree = "<group>"; };
 		C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardDebugHooks.swift; path = Sources/DocShot/Clipboard/ClipboardDebugHooks.swift; sourceTree = "<group>"; };
 		C3000007C3000000000000A1 /* PasteActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteActionTests.swift; path = Tests/DocShotTests/PasteActionTests.swift; sourceTree = "<group>"; };
 		C3000009C3000000000000A1 /* ClipboardListModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardListModelTests.swift; path = Tests/DocShotTests/ClipboardListModelTests.swift; sourceTree = "<group>"; };
+		D7000004D7000000000000A1 /* OnboardingPagesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingPagesTests.swift; path = Tests/DocShotTests/OnboardingPagesTests.swift; sourceTree = "<group>"; };
 		C2000007C2000000000000A1 /* ClipboardHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryController.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryController.swift; sourceTree = "<group>"; };
 		C2000010C2000000000000A1 /* ClipboardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardWindowController.swift; path = Sources/DocShot/Clipboard/ClipboardWindowController.swift; sourceTree = "<group>"; };
 		C2000012C2000000000000A1 /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryView.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryView.swift; sourceTree = "<group>"; };
@@ -449,6 +454,7 @@
 				B00000262C50000000000001 /* CustomShortcutRecorder.swift */,
 				B00000182C50000000000001 /* PermissionWindowController.swift */,
 				B000001B2C50000000000001 /* OnboardingView.swift */,
+				D7000001D7000000000000A1 /* OnboardingPages.swift */,
 				CA0000012C50000000000001 /* RecordingTarget.swift */,
 				CA0000022C50000000000001 /* RecordingOptions.swift */,
 				CA0000032C50000000000001 /* RecordingFailure.swift */,
@@ -494,6 +500,7 @@
 				C2000018C2000000000000A1 /* PasteboardReaderTests.swift */,
 				C3000007C3000000000000A1 /* PasteActionTests.swift */,
 				C3000009C3000000000000A1 /* ClipboardListModelTests.swift */,
+				D7000004D7000000000000A1 /* OnboardingPagesTests.swift */,
 				D4000012D4000000000000A1 /* QuietTokensTests.swift */,
 				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
@@ -649,6 +656,7 @@
 				D4000005D4000000000000A1 /* Quiet.swift in Sources */,
 				D4000008D4000000000000A1 /* ClipPreviewText.swift in Sources */,
 				D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
+				D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */,
 				D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */,
 				C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */,
 				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
@@ -772,9 +780,11 @@
 				D4000006D4000000000000A1 /* Quiet.swift in Sources */,
 				D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */,
 				D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
+				D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */,
 				D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */,
 				C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */,
 				C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */,
+				D7000005D7000000000000A1 /* OnboardingPagesTests.swift in Sources */,
 				C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
 				C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */,
 				C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */,

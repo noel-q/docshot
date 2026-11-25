@@ -61,7 +61,8 @@
     "Sources/DocShot/Design/QuietTokens.swift",
     "Sources/DocShot/Design/Quiet.swift",
     "Sources/DocShot/Clipboard/ClipPreviewText.swift",
-    "Sources/DocShot/Settings/SettingsPanelLayout.swift"
+    "Sources/DocShot/Settings/SettingsPanelLayout.swift",
+    "Sources/DocShot/Onboarding/OnboardingPages.swift"
   ],
 
   "appOnlyProductionSources": [

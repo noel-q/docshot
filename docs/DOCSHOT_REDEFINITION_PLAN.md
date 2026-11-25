@@ -104,6 +104,13 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 5. Paste is unchanged: the panel still brings the previous app back and pastes the tested way.
 6. Checks: app-rendered snapshots of each state in dark and light, frame traces of every expand and collapse, Fable review, Noel's look. The clipboard panel first, then Settings, each committed on its own.
 
+**Onboarding guide in Quiet (agreed 25 November 2026).** Noel: "the onboarding guide needs an update"; the five-page plan agreed ("Yes, build it").
+1. The compact panel style (no title bar, `radius-lg`, the system shadow), centred on the screen in use, draggable. Opens on first launch and from the menu's "Onboarding Guide...".
+2. Five pages: Welcome, with the three global shortcuts as they are now set; Screenshots, with the preview thumbnail's keys; Recording, checked against the recorder (pick a window or area, Return to start, the record shortcut or Stop to end, then save, edit, GIF or discard); Clipboard history, with its switch, off until switched on; Ready, with how saving works and open at login.
+3. Next is the one accent button; Return goes on, Escape skips, Back returns. Progress is neutral. Pages change with a short fade and slide; Reduce Motion fades only.
+4. Every setting it shows behaves exactly as in Settings and writes the same place. "Include cursor" stays in Settings > Capture only.
+5. Checks: snapshots of all five pages in dark and light through the DEBUG hook on scratch preferences, Fable review, Noel's look.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary

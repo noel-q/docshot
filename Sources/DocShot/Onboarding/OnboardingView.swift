@@ -1,343 +1,495 @@
 import SwiftUI
 import AppKit
 
+/// The guide in Quiet (onboarding plan, agreed 25 November 2026): a compact borderless panel
+/// with five short pages. Next is the one accent button; Return goes on, Escape skips. Every
+/// setting it shows is the same control Settings uses, writing the same place.
+@MainActor
+final class OnboardingModel: ObservableObject {
+    @Published var page: OnboardingPage = .welcome
+    /// Which way the last change went, so pages slide in from the side they come from.
+    @Published var forward = true
+}
+
 public struct OnboardingView: View {
-    /// Redraws this view when the colour theme changes (C0.7).
     @ObservedObject private var themeController = ThemeController.shared
-    @State private var currentStep: Int = 0
-    @State private var includeCursor: Bool = UserDefaults.standard.bool(forKey: "DocShotIncludeCursor")
-    @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
-    @State private var folderPathDisplay: String = OutputFolderService.shared.displayPath ?? "No folder selected"
-    @State private var folderErrorMessage: String? = nil
-    
-    public var onFinish: () -> Void
-    
-    public init(onFinish: @escaping () -> Void) {
-        self.onFinish = onFinish
-    }
-    
+    @ObservedObject var model: OnboardingModel
+    let onNext: () -> Void
+    let onBack: () -> Void
+    let onSkip: () -> Void
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     public var body: some View {
-        VStack(spacing: 0) {
-            // Header Progress / Steps Bar
-            HStack(spacing: 8) {
-                ForEach(0..<4) { index in
+        VStack(alignment: .leading, spacing: 0) {
+            progress
+                .padding(.horizontal, Quiet.Space.s6)
+                .padding(.top, Quiet.Space.s6)
+
+            // Scrolls only if a page outgrows the panel (a folder row and a message on Ready).
+            ScrollView {
+                ZStack(alignment: .topLeading) {
+                    pageContent(model.page)
+                        .id(model.page)
+                        .transition(pageTransition)
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(.horizontal, Quiet.Space.s6)
+                .padding(.vertical, Quiet.Space.s4)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .clipped()
+
+            footer
+                .padding(.horizontal, Quiet.Space.s6)
+                .padding(.bottom, Quiet.Space.s6)
+        }
+        .frame(width: OnboardingLayout.width, height: OnboardingLayout.height)
+        .background(Quiet.canvas)
+        .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.lg, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1))
+        .ignoresSafeArea()
+    }
+
+    /// Pages fade and move a short way from the side they come from; Reduce Motion: fade only.
+    private var pageTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        let shift = Quiet.Space.s6
+        return .asymmetric(
+            insertion: .opacity.combined(with: .offset(x: model.forward ? shift : -shift)),
+            removal: .opacity.combined(with: .offset(x: model.forward ? -shift : shift))
+        )
+    }
+
+    // MARK: Progress and footer
+
+    /// Neutral steps: the current one in `ink`, the rest in `ink-faint`.
+    private var progress: some View {
+        HStack(spacing: Quiet.Space.s2) {
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(OnboardingPage.allCases, id: \.self) { page in
                     Capsule()
-                        .fill(index == currentStep ? DesignTokens.primaryAccent : DesignTokens.controlEdge)
-                        .frame(height: 4)
+                        .fill(page == model.page ? Quiet.ink : Quiet.inkFaint)
+                        .frame(width: page == model.page ? Quiet.Space.s6 : Quiet.Space.s2, height: Quiet.Space.s1)
                 }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-            
-            Spacer()
-            
-            // Step Content
-            VStack(spacing: 16) {
-                switch currentStep {
-                case 0:
-                    stepView(
-                        showMarkTile: true,
-                        icon: "viewfinder",
-                        title: "Welcome to DocShot",
-                        subtitle: "Fast, local-first macOS screenshot capture & annotation utility.",
-                        details: "DocShot runs in your macOS menu bar and triggers instantly via the global hotkey (\(HotkeyService.shared.binding(for: .screenshot).shortcutDisplay), changeable in Settings). Output is strictly explicit: no auto-saves, cloud uploads, or accounts."
-                    )
-                case 1:
-                    stepView(
-                        showMarkTile: false,
-                        icon: "macwindow.on.rectangle",
-                        title: "Smart Selection & Custom Region",
-                        subtitle: "Hover application windows or drag a custom region.",
-                        details: "Hovering over any external application window highlights its exact boundaries for single-click capture. Click-dragging across screens selects a custom pixel-precise region."
-                    )
-                case 2:
-                    stepView(
-                        showMarkTile: false,
-                        icon: "pencil.and.outline",
-                        title: "Annotation & Redaction Editor",
-                        subtitle: "Annotate before committing any file or clipboard output.",
-                        details: "Use Arrow, Rectangle, Ellipse, Text, Highlighter, opaque Redaction, and Crop. Full Undo/Redo (⌘Z / ⇧⌘Z) lets you adjust annotations freely. Output only occurs when clicking Copy PNG or Save."
-                    )
-                case 3:
-                    VStack(spacing: 14) {
-                        HStack(spacing: 10) {
-                            MarkTileView(size: 32, cornerRadius: 8)
-                            Text("Output & Preferences Setup")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.primary)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            // Output Folder Setup
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Save Panel Default Folder:")
-                                    .font(.system(size: 12, weight: .semibold))
-                                
-                                HStack(spacing: 16) {
-                                    Button(action: {
-                                        outputFolderMode = .askWhereToSave
-                                        OutputFolderService.shared.setModeAskWhereToSave()
-                                    }) {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: outputFolderMode == .askWhereToSave ? "largecircle.fill.circle" : "circle")
-                                                .foregroundColor(outputFolderMode == .askWhereToSave ? DesignTokens.primaryAccent : DesignTokens.secondaryText)
-                                            Text("Ask where to save")
-                                                .font(.system(size: 12))
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                    
-                                    Button(action: {
-                                        let (url, _) = OutputFolderService.shared.resolveDefaultFolderURL()
-                                        if let url {
-                                            folderPathDisplay = url.path
-                                            outputFolderMode = .useDefaultFolder
-                                            OutputFolderService.shared.currentMode = .useDefaultFolder
-                                        } else {
-                                            Task {
-                                                let res = await OutputFolderService.shared.selectDefaultFolder()
-                                                if let selectedURL = res.url {
-                                                    folderPathDisplay = selectedURL.path
-                                                    outputFolderMode = .useDefaultFolder
-                                                    folderErrorMessage = nil
-                                                } else {
-                                                    outputFolderMode = .askWhereToSave
-                                                    OutputFolderService.shared.setModeAskWhereToSave()
-                                                    if let err = res.errorMessage {
-                                                        folderErrorMessage = err
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }) {
-                                        HStack(spacing: 6) {
-                                            Image(systemName: outputFolderMode == .useDefaultFolder ? "largecircle.fill.circle" : "circle")
-                                                .foregroundColor(outputFolderMode == .useDefaultFolder ? DesignTokens.primaryAccent : DesignTokens.secondaryText)
-                                            Text("Use a default folder")
-                                                .font(.system(size: 12))
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                                
-                                if outputFolderMode == .useDefaultFolder {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(folderPathDisplay)
-                                            .font(.system(size: 11, design: .monospaced))
-                                            .foregroundColor(DesignTokens.textOnDarkTile)
-                                            .lineLimit(1)
-                                            .truncationMode(.middle)
-                                            .padding(6)
-                                            .background(RoundedRectangle(cornerRadius: 6).fill(DesignTokens.graphiteBase))
-                                        
-                                        HStack(spacing: 8) {
-                                            Button("Choose Folder...") {
-                                                Task {
-                                                    let res = await OutputFolderService.shared.selectDefaultFolder()
-                                                    if let url = res.url {
-                                                        folderPathDisplay = url.path
-                                                        outputFolderMode = .useDefaultFolder
-                                                        folderErrorMessage = nil
-                                                    } else if let err = res.errorMessage {
-                                                        folderErrorMessage = err
-                                                    }
-                                                }
-                                            }
-                                            .buttonStyle(.bordered)
-                                            .controlSize(.small)
-                                            
-                                            Button("Create DocShot Folder...") {
-                                                Task {
-                                                    let res = await OutputFolderService.shared.createDocShotFolder()
-                                                    if let url = res.url {
-                                                        folderPathDisplay = url.path
-                                                        outputFolderMode = .useDefaultFolder
-                                                        folderErrorMessage = nil
-                                                    } else if let err = res.errorMessage {
-                                                        folderErrorMessage = err
-                                                    }
-                                                }
-                                            }
-                                            .buttonStyle(.bordered)
-                                            .controlSize(.small)
-                                        }
-                                    }
-                                    .padding(.top, 2)
-                                }
-                                
-                                if let err = folderErrorMessage {
-                                    Text(err)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.red)
-                                }
-                            }
-                            
-                            Divider()
-                            
-                            // Global Shortcut & Cursor
-                            HStack {
-                                Text("Global Shortcut:")
-                                    .font(.system(size: 12, weight: .semibold))
-                                Spacer()
-                                Text(HotkeyService.shared.binding(for: .screenshot).shortcutDisplay)
-                                    .font(.system(size: 12, design: .monospaced))
-                                Text("Change in Settings")
-                                    .font(.system(size: 11))
-                                    .foregroundColor(DesignTokens.secondaryText)
-                            }
-                            
-                            Toggle(isOn: $includeCursor) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Include cursor in screenshots")
-                                        .font(.system(size: 12, weight: .medium))
-                                    Text("When enabled, ScreenCaptureKit captures include the mouse pointer (default: off).")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(DesignTokens.secondaryText)
-                                }
-                            }
-                            .onChange(of: includeCursor) { _, newValue in
-                                UserDefaults.standard.set(newValue, forKey: "DocShotIncludeCursor")
-                            }
-                        }
-                        .padding(14)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(DesignTokens.cardBackground))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.borderAdaptive, lineWidth: 1))
-                    }
-                default:
-                    EmptyView()
-                }
+            .animation(reduceMotion ? nil : Quiet.Motion.base, value: model.page)
+            Spacer(minLength: 0)
+            Text(model.page.progressText)
+                .font(Quiet.Font.caption)
+                .foregroundStyle(Quiet.inkMuted)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Page \(model.page.progressText)")
+    }
+
+    private var footer: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            if model.page.previous != nil {
+                Button("Back", action: onBack)
+                    .help("Back (←)")
             }
-            .padding(.horizontal, 32)
-            
-            Spacer()
-            
-            // Bottom Action Controls
-            HStack {
-                if currentStep > 0 {
-                    Button("Back") {
-                        withAnimation { currentStep -= 1 }
+            Spacer(minLength: 0)
+            if !model.page.isLast {
+                Button(action: onSkip) {
+                    HStack(spacing: Quiet.Space.s1) {
+                        KeyHint(keys: "esc")
+                        Text("Skip").font(Quiet.Font.caption).foregroundStyle(Quiet.inkMuted)
                     }
-                    .buttonStyle(.borderless)
-                }
-                
-                Spacer()
-                
-                Button("Skip") {
-                    finishOnboarding()
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(DesignTokens.secondaryText)
-                .padding(.trailing, 12)
-                
-                if currentStep < 3 {
-                    Button {
-                        withAnimation { currentStep += 1 }
-                    } label: {
-                        AccentButtonLabel("Next")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.primaryAccent)
-                } else {
-                    Button {
-                        finishOnboarding()
-                    } label: {
-                        AccentButtonLabel("Get Started")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(DesignTokens.primaryAccent)
-                }
+                .help("Skip the guide (esc)")
+                .accessibilityLabel("Skip the guide")
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
-        }
-        .frame(width: 520, height: 420)
-        .background(DesignTokens.windowBackground)
-        .onAppear {
-            outputFolderMode = OutputFolderService.shared.currentMode
-            folderPathDisplay = OutputFolderService.shared.displayPath ?? "No folder selected"
+            Button(action: onNext) {
+                AccentButtonLabel("\(model.page.nextTitle)  ↵")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Quiet.accent)
+            .controlSize(.large)
+            .help("\(model.page.nextTitle) (Return)")
+            .accessibilityLabel(model.page.nextTitle)
         }
     }
-    
-    private func finishOnboarding() {
-        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
-        onFinish()
-    }
-    
+
+    // MARK: Pages
+
     @ViewBuilder
-    private func stepView(showMarkTile: Bool, icon: String, title: String, subtitle: String, details: String) -> some View {
-        VStack(spacing: 12) {
-            if showMarkTile {
-                MarkTileView(size: 64, cornerRadius: 14)
-            } else {
-                Image(systemName: icon)
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundColor(DesignTokens.primaryAccent)
+    private func pageContent(_ page: OnboardingPage) -> some View {
+        VStack(alignment: .leading, spacing: Quiet.Space.s4) {
+            switch page {
+            case .welcome: WelcomePage()
+            case .screenshots: ScreenshotsPage()
+            case .recording: RecordingPage()
+            case .clipboard: ClipboardPage()
+            case .ready: ReadyPage()
             }
-            
-            Text(title)
-                .font(.system(size: 20, weight: .bold))
-            
-            Text(subtitle)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.primary)
-            
-            Text(details)
-                .font(.system(size: 12))
-                .foregroundColor(DesignTokens.secondaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+}
+
+/// A page's title and one or two lines under it.
+private struct PageHeading: View {
+    let page: OnboardingPage
+    let text: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Quiet.Space.s2) {
+            Text(page.title)
+                .font(Quiet.Font.title3)
+                .foregroundStyle(Quiet.ink)
+                .accessibilityAddTraits(.isHeader)
+            Text(text)
+                .font(Quiet.Font.nativeBody)
+                .foregroundStyle(Quiet.inkMuted)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
+}
+
+/// A row naming an action, with its key on the right.
+private struct KeyRow: View {
+    let title: String
+    var detail: String?
+    let keys: String
+
+    var body: some View {
+        SettingsRow(title: title, detail: detail) {
+            KeyHint(keys: keys)
+        }
+    }
+}
+
+private struct WelcomePage: View {
+    @ObservedObject private var hotkeys = HotkeyService.shared
+
+    var body: some View {
+        HStack(alignment: .center, spacing: Quiet.Space.s4) {
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .frame(width: QuietTokens.space16, height: QuietTokens.space16)
+                .accessibilityHidden(true)
+            PageHeading(
+                page: .welcome,
+                text: "DocShot waits in the menu bar. Nothing is saved or sent anywhere until you choose."
+            )
+        }
+        SettingsGroup(title: "Your shortcuts", note: "They work from any app. Change them in Settings, under Shortcuts.") {
+            KeyRow(title: "Take a screenshot", keys: hotkeys.binding(for: .screenshot).shortcutDisplay)
+            SettingsDivider()
+            KeyRow(title: "Record the screen", keys: hotkeys.binding(for: .record).shortcutDisplay)
+            SettingsDivider()
+            KeyRow(title: "Open clipboard history", keys: hotkeys.binding(for: .openWindow).shortcutDisplay)
+        }
+    }
+}
+
+private struct ScreenshotsPage: View {
+    @ObservedObject private var hotkeys = HotkeyService.shared
+
+    var body: some View {
+        PageHeading(
+            page: .screenshots,
+            text: "Press \(hotkeys.binding(for: .screenshot).shortcutDisplay), then click a window or drag over an area. Escape cancels."
+        )
+        SettingsGroup(
+            title: "Then a preview shows in the corner",
+            note: "Edit adds arrows, boxes, text and highlights, hides private details, and crops."
+        ) {
+            ForEach(Array(PreviewThumbnailAction.displayOrder.enumerated()), id: \.offset) { index, action in
+                if index > 0 { SettingsDivider() }
+                KeyRow(title: action.title, keys: action.keyHint)
+            }
+        }
+    }
+}
+
+private struct RecordingPage: View {
+    @ObservedObject private var hotkeys = HotkeyService.shared
+
+    var body: some View {
+        let record = hotkeys.binding(for: .record).shortcutDisplay
+        PageHeading(
+            page: .recording,
+            text: "Press \(record), click a window or drag over an area on one display, then press Return to start."
+        )
+        SettingsGroup(title: "While it records", note: "Nothing is kept until you choose.") {
+            SettingsRow(title: "Stop", detail: "The Stop button in the small panel that shows while recording, or Stop Recording in the menu bar menu.") {
+                EmptyView()
+            }
+            SettingsDivider()
+            SettingsRow(title: "Sound", detail: "Change it in Settings, under Capture.") {
+                Text(RecordingCoordinator.shared.selectedAudioDescription)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+            }
+            SettingsDivider()
+            SettingsRow(
+                title: "When it ends",
+                detail: "Save as MP4, edit it, export a GIF (up to 15 seconds) or discard it."
+            ) {
+                EmptyView()
+            }
+        }
+    }
+}
+
+private struct ClipboardPage: View {
+    @ObservedObject private var history = ClipboardHistoryController.shared
+    @ObservedObject private var hotkeys = HotkeyService.shared
+
+    var body: some View {
+        PageHeading(
+            page: .clipboard,
+            text: "DocShot can remember what you copy, so you can paste it again later. It stays on this Mac, and it is off until you switch it on."
+        )
+        SettingsGroup(
+            title: "Clipboard history",
+            note: "Copies that apps mark as passwords are never kept. Limits and apps to leave out are in Settings, under Clipboard."
+        ) {
+            SettingsToggleRow(
+                title: "Keep clipboard history",
+                isOn: Binding(get: { history.isEnabled }, set: { history.setEnabled($0) })
+            )
+            SettingsDivider()
+            KeyRow(title: "Open history", keys: hotkeys.binding(for: .openWindow).shortcutDisplay)
+        }
+    }
+}
+
+private struct ReadyPage: View {
+    @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
+
+    var body: some View {
+        PageHeading(page: .ready, text: "You can change all of this later in Settings.")
+        SavingSettingsGroup()
+        SettingsGroup(title: "Startup") {
+            SettingsToggleRow(
+                title: "Open at login",
+                detail: launchAtLoginService.errorMessage,
+                detailIsError: launchAtLoginService.errorMessage != nil,
+                isOn: Binding(get: { launchAtLoginService.isEnabled }, set: { launchAtLoginService.setEnabled($0) })
+            )
+        }
+        .onAppear { launchAtLoginService.refresh() }
+    }
+}
+
+// MARK: - Window
+
+/// A borderless panel that still takes the keyboard.
+final class OnboardingPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }
 
 @MainActor
 public final class OnboardingWindowController: NSObject {
     public static let shared = OnboardingWindowController()
-    
-    private var window: NSWindow?
-    
+
+    static let identifier = NSUserInterfaceItemIdentifier("DocShotOnboarding")
+    static let completedKey = "hasCompletedOnboarding"
+
+    let model = OnboardingModel()
+    private var panel: OnboardingPanel?
+    private var keyMonitor: Any?
+    /// Counts shows, so a fade-out that a new show interrupted does not hide the panel.
+    private var showCount = 0
+    /// Fading out: it no longer counts as showing.
+    private var isClosing = false
+    /// Where the guide is going: the page last asked for, which `model.page` reaches on the
+    /// next turn of the run loop. Next and Back count from here, so quick presses add up.
+    private var target: OnboardingPage = .welcome
+
+    /// Where "finished the guide" is kept: the real preferences, or in a debug run on a scratch
+    /// store (`DOCSHOT_DEBUG_STORE`), scratch preferences.
+    static var preferences: UserDefaults {
+#if DEBUG
+        if let folder = ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"], !folder.isEmpty,
+           let scratch = UserDefaults(suiteName: "DocShotDebugStore") {
+            return scratch
+        }
+#endif
+        return .standard
+    }
+
+    var isShowing: Bool { panel?.isVisible == true && !isClosing }
+
     private override init() {
         super.init()
     }
-    
+
     public func showOnboardingIfNeeded() {
-        let completed = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
-        if !completed {
+        if !Self.preferences.bool(forKey: Self.completedKey) {
             showOnboarding()
         }
     }
-    
+
     public func showOnboarding() {
-        closeOnboarding()
-        
-        let onboardingView = OnboardingView(onFinish: { [weak self] in
-            self?.closeOnboarding()
+        if let panel, panel.isVisible, !isClosing {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+            return
+        }
+        showCount += 1
+        isClosing = false
+        model.forward = true
+        model.page = .welcome
+        target = .welcome
+
+        let panel = self.panel ?? makePanel()
+        self.panel = panel
+        let visible = Self.screenUnderPointer?.visibleFrame ?? NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        let frame = OnboardingLayout.frame(within: visible)
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        // Rises 8 points and fades in (Reduce Motion: fade only).
+        panel.setFrame(reduceMotion ? frame : frame.offsetBy(dx: 0, dy: -Quiet.Space.s2), display: false)
+        panel.alphaValue = 0
+        panel.ignoresMouseEvents = false
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+        installKeyMonitor()
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = QuietTokens.durBase
+            context.timingFunction = Quiet.Motion.easeOutCurve
+            panel.animator().alphaValue = 1
+            if !reduceMotion { panel.animator().setFrame(frame, display: true) }
+        }
+    }
+
+    public func closeOnboarding() {
+        removeKeyMonitor()
+        guard let panel, panel.isVisible, !isClosing else { return }
+        isClosing = true
+        let shown = showCount
+        // It stops taking clicks and keys at once; the fade is only the look.
+        panel.ignoresMouseEvents = true
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = QuietTokens.durFast
+            context.timingFunction = Quiet.Motion.easeOutCurve
+            panel.animator().alphaValue = 0
+        }, completionHandler: { [weak self] in
+            MainActor.assumeIsolated {
+                // Shown again while fading out: leave it.
+                guard let self, self.showCount == shown else { return }
+                self.isClosing = false
+                panel.orderOut(nil)
+            }
         })
-        
-        let hostingView = NSHostingView(rootView: onboardingView)
-        let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 420),
-            styleMask: [.titled, .closable],
+    }
+
+    /// Next, or on the last page, finish.
+    func next() {
+        guard let next = target.next else { return finish() }
+        go(to: next)
+    }
+
+    func back() {
+        guard let previous = target.previous else { return }
+        go(to: previous)
+    }
+
+    /// Skip or finish: the guide is done and does not open again on its own.
+    func finish() {
+        Self.preferences.set(true, forKey: Self.completedKey)
+        closeOnboarding()
+    }
+
+#if DEBUG
+    /// The debug hook's page selection.
+    func select(_ page: OnboardingPage) {
+        if !isShowing { showOnboarding() }
+        go(to: page)
+    }
+#endif
+
+    /// The direction first, then the page on the next turn of the run loop, so the page
+    /// leaving slides the right way too.
+    private func go(to page: OnboardingPage) {
+        guard page != target else { return }
+        model.forward = page.rawValue > target.rawValue
+        target = page
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+                withAnimation(reduceMotion ? Quiet.Motion.fade : Quiet.Motion.base) {
+                    self.model.page = page
+                }
+            }
+        }
+    }
+
+    private func makePanel() -> OnboardingPanel {
+        let panel = OnboardingPanel(
+            contentRect: NSRect(x: 0, y: 0, width: OnboardingLayout.width, height: OnboardingLayout.height),
+            styleMask: [.borderless],
             backing: .buffered,
             defer: false
         )
-        
-        newWindow.title = "Welcome to DocShot"
-        newWindow.center()
-        newWindow.contentView = hostingView
-        newWindow.isReleasedWhenClosed = false
-        
-        NSApp.activate(ignoringOtherApps: true)
-        newWindow.makeKeyAndOrderFront(nil)
-        
-        self.window = newWindow
+        panel.identifier = Self.identifier
+        panel.title = "Welcome to DocShot"
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.isReleasedWhenClosed = false
+        panel.hidesOnDeactivate = false
+        panel.isFloatingPanel = false
+        panel.isMovableByWindowBackground = true
+        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+        let host = NSHostingView(rootView: OnboardingView(
+            model: model,
+            onNext: { [weak self] in self?.next() },
+            onBack: { [weak self] in self?.back() },
+            onSkip: { [weak self] in self?.finish() }
+        ))
+        // The panel keeps its own size; the content never resizes it.
+        host.sizingOptions = []
+        panel.contentView = host
+        return panel
     }
-    
-    public func closeOnboarding() {
-        if let win = window {
-            win.orderOut(nil)
-            win.close()
-            window = nil
+
+    private static var screenUnderPointer: NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) }
+    }
+
+    // MARK: Keys
+
+    private func installKeyMonitor() {
+        guard keyMonitor == nil else { return }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, let panel = self.panel, event.window === panel, panel.attachedSheet == nil, !self.isClosing else { return event }
+            let modifiers = event.modifierFlags.intersection([.command, .option, .control])
+            if modifiers == .command, event.charactersIgnoringModifiers?.lowercased() == "w" {
+                // Like the old close button: closes without marking the guide done.
+                self.closeOnboarding()
+                return nil
+            }
+            guard let key = OnboardingKey.action(keyCode: event.keyCode, hasCommandOptionOrControl: !modifiers.isEmpty) else {
+                return event
+            }
+            // A held key does not run through the pages or skip the guide.
+            if event.isARepeat { return nil }
+            // With keyboard navigation on, the arrows belong to a focused control (the
+            // segmented "When you save" choice).
+            if key == .back || event.keyCode == OnboardingKey.rightArrowKeyCode,
+               panel.firstResponder is NSControl || panel.firstResponder is NSText {
+                return event
+            }
+            switch key {
+            case .next: self.next()
+            case .back: self.back()
+            case .skip: self.finish()
+            }
+            return nil
         }
+    }
+
+    private func removeKeyMonitor() {
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        keyMonitor = nil
     }
 }

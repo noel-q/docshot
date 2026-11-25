@@ -347,6 +347,17 @@ struct KeyHint: View {
                         .stroke(Quiet.controlRing, lineWidth: 1))
                     .shadow(color: Quiet.controlDrop, radius: 1, y: 1)
             )
+            .accessibilityLabel(Self.spoken(keys))
+    }
+
+    /// Symbols VoiceOver does not read well, as words.
+    static func spoken(_ keys: String) -> String {
+        switch keys {
+        case "↵": return "Return"
+        case "esc": return "Escape"
+        case "↑ ↓": return "Up and down arrows"
+        default: return keys
+        }
     }
 }
 

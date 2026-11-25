@@ -39,7 +39,7 @@ enum ClipboardDebugHooks {
 
     /// `open:<bundle id>` (only while that app is in front; it becomes the paste target),
     /// `show`, `enable`, `disable`, `seed`, `filter:<all|text|images|files|colours>`,
-    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`,
+    /// `select:<n>`, `snapshot:<path prefix>`, `menubar:<path prefix>`, `open-settings`, `onboarding-page:<0-4>`, `onboarding-key:<code>`, `onboarding-state`,
     /// `open-onboarding`, `open-permission`, `open-thumbnail`, `open-editor`, `windows`,
     /// `theme:<ember|tide|slate|moss>`, `snapwin:<word>:<path prefix>`, `previewtrace`,
     /// `widthtrace:<points>[.1]`, `close`, `query:<text>`, `up`, `down`, `choose`, `copy`, `pin`, `delete`,
@@ -188,6 +188,29 @@ enum ClipboardDebugHooks {
             if command == "collapse-settings" {
                 SettingsWindowController.shared.collapse()
                 return writeState(command)
+            }
+            if command.hasPrefix("onboarding-page:"), let index = Int(command.dropFirst("onboarding-page:".count)),
+               let page = OnboardingPage(rawValue: index) {
+                OnboardingWindowController.shared.select(page)
+                return writeState(command)
+            }
+            if command.hasPrefix("onboarding-key:"), let code = UInt16(command.dropFirst("onboarding-key:".count)),
+               let window = NSApp.windows.first(where: { $0.identifier == OnboardingWindowController.identifier && $0.isVisible }) {
+                // A key press queued for the guide's panel, so it goes through the real key
+                // monitor (debug check of Return, Escape and the arrows).
+                let characters = code == 36 ? "\r" : code == 53 ? "\u{1b}" : ""
+                if let event = NSEvent.keyEvent(
+                    with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                    windowNumber: window.windowNumber, context: nil, characters: characters,
+                    charactersIgnoringModifiers: characters, isARepeat: false, keyCode: code
+                ) {
+                    NSApp.postEvent(event, atStart: false)
+                }
+                return writeState(command)
+            }
+            if command == "onboarding-state" {
+                let controller = OnboardingWindowController.shared
+                return writeState("onboarding: showing \(controller.isShowing) page \(controller.model.page.rawValue) completed \(OnboardingWindowController.preferences.bool(forKey: OnboardingWindowController.completedKey))")
             }
             if command.hasPrefix("settings-tab:"), let index = Int(command.dropFirst("settings-tab:".count)) {
                 SettingsWindowFactory.controller.select(index)

@@ -511,10 +511,6 @@ struct GeneralSettingsView: View {
     @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
     @State private var hasPermission: Bool = PermissionService.shared.hasScreenCaptureAccess()
-    @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
-    @State private var folderPathDisplay: String = OutputFolderService.shared.displayPath ?? "No folder selected"
-    @State private var folderMessage: String?
-    @State private var isMessageError = false
 
     var body: some View {
         SettingsPage {
@@ -545,41 +541,7 @@ struct GeneralSettingsView: View {
                 )
             }
 
-            SettingsGroup(title: "Saving") {
-                SettingsRow(title: "When you save", detail: saveDetail) {
-                    Picker("When you save", selection: Binding(
-                        get: { outputFolderMode },
-                        set: { choose($0) }
-                    )) {
-                        Text("Ask each time").tag(OutputFolderMode.askWhereToSave)
-                        Text("Use a folder").tag(OutputFolderMode.useDefaultFolder)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .fixedSize()
-                    // Quiet SegmentedControl: a neutral thumb, never the system blue or the accent.
-                    .tint(Quiet.inkMuted)
-                }
-                if outputFolderMode == .useDefaultFolder {
-                    SettingsDivider()
-                    SettingsRow(title: "Folder", detail: folderPathDisplay, detailIsPath: true) {
-                        Menu("Change") {
-                            Button("Choose folder…") { chooseFolder() }
-                            Button("Create a DocShot folder…") { createFolder() }
-                        }
-                        .fixedSize()
-                        Button("Show in Finder") { revealFolder() }
-                    }
-                }
-                if let folderMessage {
-                    SettingsDivider()
-                    Text(folderMessage)
-                        .font(Quiet.Font.caption)
-                        .foregroundStyle(isMessageError ? Quiet.danger : Quiet.inkMuted)
-                        .padding(.horizontal, Quiet.Space.s4)
-                        .padding(.vertical, Quiet.Space.s3)
-                }
-            }
+            SavingSettingsGroup()
 
             SettingsGroup(title: "Permissions") {
                 SettingsRow(
@@ -610,12 +572,64 @@ struct GeneralSettingsView: View {
         .onAppear {
             launchAtLoginService.refresh()
             hasPermission = PermissionService.shared.hasScreenCaptureAccess()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            hasPermission = PermissionService.shared.hasScreenCaptureAccess()
+        }
+    }
+
+}
+
+/// How saving works: ask each time or use a folder, with the folder's controls. Shared by the
+/// General tab and the guide's last page, so both behave the same and write the same place.
+struct SavingSettingsGroup: View {
+    @State private var outputFolderMode: OutputFolderMode = OutputFolderService.shared.currentMode
+    @State private var folderPathDisplay: String = OutputFolderService.shared.displayPath ?? "No folder selected"
+    @State private var folderMessage: String?
+    @State private var isMessageError = false
+
+    var body: some View {
+        SettingsGroup(title: "Saving") {
+            SettingsRow(title: "When you save", detail: saveDetail) {
+                Picker("When you save", selection: Binding(
+                    get: { outputFolderMode },
+                    set: { choose($0) }
+                )) {
+                    Text("Ask each time").tag(OutputFolderMode.askWhereToSave)
+                    Text("Use a folder").tag(OutputFolderMode.useDefaultFolder)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                // Quiet SegmentedControl: a neutral thumb, never the system blue or the accent.
+                .tint(Quiet.inkMuted)
+            }
+            if outputFolderMode == .useDefaultFolder {
+                SettingsDivider()
+                SettingsRow(title: "Folder", detail: folderPathDisplay, detailIsPath: true) {
+                    Menu("Change") {
+                        Button("Choose folder…") { chooseFolder() }
+                        Button("Create a DocShot folder…") { createFolder() }
+                    }
+                    .fixedSize()
+                    Button("Show in Finder") { revealFolder() }
+                }
+            }
+            if let folderMessage {
+                SettingsDivider()
+                Text(folderMessage)
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(isMessageError ? Quiet.danger : Quiet.inkMuted)
+                    .padding(.horizontal, Quiet.Space.s4)
+                    .padding(.vertical, Quiet.Space.s3)
+            }
+        }
+        .onAppear {
             outputFolderMode = OutputFolderService.shared.currentMode
             folderPathDisplay = OutputFolderService.shared.displayPath ?? "No folder selected"
             validateFolder()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-            hasPermission = PermissionService.shared.hasScreenCaptureAccess()
             validateFolder()
         }
     }
@@ -704,6 +718,9 @@ struct GeneralSettingsView: View {
     }
 
     private func validateFolder() {
+        // The guide and the General tab can both be open: start from what is saved.
+        outputFolderMode = OutputFolderService.shared.currentMode
+        folderPathDisplay = OutputFolderService.shared.displayPath ?? "No folder selected"
         if outputFolderMode == .useDefaultFolder {
             let (url, staleReason) = OutputFolderService.shared.resolveDefaultFolderURL()
             if let url {

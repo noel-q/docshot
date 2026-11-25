@@ -3,6 +3,29 @@
 Dated detail that does not fit on the one-page STATUS.md. Newest first. Each entry keeps
 its original evidence label (verified, inherited, assumed, unknown).
 
+## 2026-11-25
+- Compact Settings panel committed as d6bd354 with Noel's yes ("Feels right").
+- Onboarding guide in Quiet (plan agreed 25 November: "Yes, build it") built on
+  `feature/quiet-onboarding`, uncommitted. A 460x480 borderless panel, centred a little above
+  the middle of the screen in use, draggable; five pages (Welcome with the live shortcuts,
+  Screenshots with the thumbnail keys, Recording, Clipboard history with its switch, Ready
+  with saving and open at login). Next is the one accent button; Return and the right arrow
+  go on, the left arrow goes back, Escape skips, Cmd+W closes without marking it done; held
+  keys are ignored. The General tab's Saving group became `SavingSettingsGroup`, shared with
+  the guide, and it now re-reads the saved choice when it checks the folder. Fable review:
+  one defect, kept out of the guide rather than fixed: the record shortcut does not stop a
+  recording (DocShotApp.swift beeps unless idle; inherited since 8354868), although
+  DEVICE_VERIFICATION records it as a user-reported pass on 17 November. The guide now names
+  the Stop button and the menu instead. The other points fixed: reopening during the
+  fade-out, quick presses adding up, arrows left to a focused control, a page that outgrows
+  the panel scrolls, the hook-only `select` inside `#if DEBUG`, spoken names for the key
+  hints. swift test 374, xcodebuild test 374, parity OK, no debug symbols in Release.
+  Verified (agent, DEBUG hooks and scratch store): first launch shows it; Return, the arrows
+  and Escape through the real key monitor, two quick Returns land on page 3, reopening during
+  the fade-out keeps it; snapshots of all five pages in dark and light. Not seen: the slide
+  between pages, the Ready page with a folder chosen (would change real preferences), arrows
+  with keyboard navigation on.
+
 ## 2026-11-24
 - Compact clipboard panel committed as 4f5544c with Noel's yes ("Feels right").
 - Compact Settings panel (compact panels, point 4) built on `feature/quiet-compact-panels`,

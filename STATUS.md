@@ -37,7 +37,7 @@
 - None.
 
 ## Next action
-- Onboarding guide built and agent-verified on feature/quiet-onboarding (from d6bd354), uncommitted; waiting for Noel's look, then his yes to commit. Open question for Noel: fix the record shortcut so it stops a recording (hotkey handler). Then permission window and editors; then C4. Do not merge or push without Noel's say.
+- Record-shortcut stop fix built on fix/record-shortcut-stop (from 6f358c3), uncommitted; waiting for Noel's one check (start a recording, press the record shortcut, it stops), then his yes to commit. Noel asked about packaging for two testers: options given (free development DMG with "Open Anyway", or paid Developer ID and notarisation); waiting for his choice. Then permission window and editors; then C4. Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail

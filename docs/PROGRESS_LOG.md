@@ -5,6 +5,14 @@ its original evidence label (verified, inherited, assumed, unknown).
 
 ## 2026-11-25
 - Compact Settings panel committed as d6bd354 with Noel's yes ("Feels right").
+- Onboarding guide committed as 6f358c3 with Noel's yes ("Feels right").
+- Record shortcut now stops a recording (Noel: "Yes, fix it"), on `fix/record-shortcut-stop`,
+  uncommitted. `CaptureActivityPolicy.recordShortcutAction`: stop in `.starting` and
+  `.recording` (the same call and condition as the menu's Stop Recording and the Stop
+  button), start when idle, otherwise beep. The guide says "Press again to stop" again.
+  Fable review: no defects; its test-coverage nit and wording nit applied. swift test 375,
+  xcodebuild test 375. Device: Noel started a recording and stopped it with the shortcut
+  ("It stopped"). User-reported.
 - Onboarding guide in Quiet (plan agreed 25 November: "Yes, build it") built on
   `feature/quiet-onboarding`, uncommitted. A 460x480 borderless panel, centred a little above
   the middle of the screen in use, draggable; five pages (Welcome with the live shortcuts,

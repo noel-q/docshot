@@ -20,6 +20,16 @@ public struct CaptureActivityPolicy: Equatable, Sendable {
         self.allowsStopRecording = allowsStopRecording
     }
 
+    /// What the record shortcut does (its name in Settings is "Record (start or stop)"): stop a
+    /// live recording, start one when nothing is running, otherwise refuse with a beep.
+    public enum RecordShortcutAction: Equatable, Sendable { case start, stop, refuse }
+
+    public var recordShortcutAction: RecordShortcutAction {
+        if allowsStopRecording { return .stop }
+        if allowsRecordingCapture { return .start }
+        return .refuse
+    }
+
     public static func evaluate(
         captureState: CaptureState,
         recordingState: RecordingState

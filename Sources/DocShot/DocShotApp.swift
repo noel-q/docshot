@@ -94,8 +94,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         HotkeyService.shared.register(.record) {
             let policy = CaptureActivityPolicy.evaluate(captureState: CaptureCoordinator.shared.state, recordingState: RecordingCoordinator.shared.state)
-            guard policy.allowsRecordingCapture else { NSSound.beep(); return }
-            RecordingCoordinator.shared.startRecording()
+            switch policy.recordShortcutAction {
+            case .start: RecordingCoordinator.shared.startRecording()
+            case .stop: RecordingCoordinator.shared.stopRecording()
+            case .refuse: NSSound.beep()
+            }
         }
         HotkeyService.shared.register(.openWindow) {
             ClipboardWindowController.shared.toggle()

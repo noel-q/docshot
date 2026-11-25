@@ -179,7 +179,7 @@ private struct WelcomePage: View {
         SettingsGroup(title: "Your shortcuts", note: "They work from any app. Change them in Settings, under Shortcuts.") {
             KeyRow(title: "Take a screenshot", keys: hotkeys.binding(for: .screenshot).shortcutDisplay)
             SettingsDivider()
-            KeyRow(title: "Record the screen", keys: hotkeys.binding(for: .record).shortcutDisplay)
+            KeyRow(title: "Record the screen", detail: "Press again to stop.", keys: hotkeys.binding(for: .record).shortcutDisplay)
             SettingsDivider()
             KeyRow(title: "Open clipboard history", keys: hotkeys.binding(for: .openWindow).shortcutDisplay)
         }
@@ -216,9 +216,7 @@ private struct RecordingPage: View {
             text: "Press \(record), click a window or drag over an area on one display, then press Return to start."
         )
         SettingsGroup(title: "While it records", note: "Nothing is kept until you choose.") {
-            SettingsRow(title: "Stop", detail: "The Stop button in the small panel that shows while recording, or Stop Recording in the menu bar menu.") {
-                EmptyView()
-            }
+            KeyRow(title: "Stop", detail: "Or the Stop button in the small panel that shows while recording, or Stop Recording in the menu.", keys: record)
             SettingsDivider()
             SettingsRow(title: "Sound", detail: "Change it in Settings, under Capture.") {
                 Text(RecordingCoordinator.shared.selectedAudioDescription)

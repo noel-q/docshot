@@ -3,6 +3,11 @@
 Dated detail that does not fit on the one-page STATUS.md. Newest first. Each entry keeps
 its original evidence label (verified, inherited, assumed, unknown).
 
+## 2026-11-26
+- Noel: units 1 to 6 "all look fine"; run the review and freeze. He asked for two features first and chose to build them before the freeze: Copy GIF (a button, not an automatic setting) and update notices from GitHub Releases (with the DMG on the release).
+- Copy GIF (c0eacea) and update notices (9e15451), then one Fable review of those and Clear while off: no serious defect; fixed the guide reopening after a manual check, the automatic guide taking the keyboard, a found update lost on relaunch, an unreadable answer read as up to date, no sign when the GIF was ready, a copy failure leaving a stray file and the wrong title, and older copied GIFs in history pasting the newest one (e8f4d1c). 392 tests in both runs.
+- Feature freeze written into the plan. C5 starts with the next test build.
+
 ## 2026-11-25
 - Clear while history is off (07ed1ac, feature/clear-while-off): with history off, DocShot
   counts what is still stored at launch and on switching off, and offers Clear in Settings and

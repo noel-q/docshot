@@ -3,10 +3,11 @@
 - ID: P05
 - Tier: C
 - Status: Active
-- Last updated: 2026-11-25
+- Last updated: 2026-11-26
 - Definition of done: Local-only macOS menu bar tool for Noel: screenshots with annotation, recording with editing, bounded clipboard history in one on-demand window. Meets the six-point stability bar (plan §8). Windows parity only after that.
 
 ## Done so far
+- 2026-11-26: Feature freeze written into the plan; C5 starts. Before it, on Noel's say: Copy GIF (c0eacea, feature/copy-gif) and update notices from GitHub Releases (9e15451, feature/update-notices; version 1.1.0 build 2). One Fable batch review of Clear while off, Copy GIF and update notices: no serious defect, seven smaller ones fixed (e8f4d1c). swift test 392, xcodebuild test 392, ClipboardKit 83, parity OK. Verified in the app on scratch data: Copy GIF's export and copy onto a private pasteboard (60-frame GIF, file and GIF data), the copy notes, the update guide from a local releases file (both themes, not taking focus, once per build, kept across relaunch, unreadable answer is an error, Escape closes), the Settings Updates group. Not seen: the Copy GIF button after a real recording and pasting it, the menu items, a real GitHub release. Noel: units 1 to 6 "all look fine" (user-reported); Clear while off works in the 25b test build (user-reported).
 - 2026-11-25: Clear works while history is off (07ed1ac on feature/clear-while-off): stored items and captures counted at launch and on switching off; Clear offered in Settings and the menu; the store opens only if history was ever kept. swift test 384, xcodebuild test 384, parity OK. Verified in the app on scratch data (Settings both themes, relaunch count, Clear removed 13, kept the pinned one, screenshot files gone); the menu bar item not seen.
 - 2026-11-25: Road to C5 units 1 to 6 (permission window, image editor, video editor, C4 Captures, C4a text in images, C4b Float), one Fable batch review, fixes in. ClipboardKit 83, swift test 381, xcodebuild test 381. Verified by agent in the app on scratch data; Noel's look pending.
 - 2026-11-25: Record shortcut now stops a live recording (it beeped before, despite the 17 Nov device-check entry). Fable: no defects; swift test 375, xcodebuild test 375. User-reported (Noel stopped a real recording).
@@ -40,10 +41,10 @@
 - None.
 
 ## Next action
-- Road to C5 units 1 to 6 built and committed, each on its own local branch, stacked: 66f854c permission window, 500161f image editor, a3018c8 video editor, cda3fda C4 Captures, 09efb97 C4a text in images, 7f71f8f C4b Float, then 71c3cec batch-review fixes (branch feature/c4b-float). Nothing pushed or merged. Noel said yes to the launch: his real history database is now schema 3 (13 items kept, captures table empty, Captures folder owner-only; verified 25 Nov). Clear while history is off built as 07ed1ac on feature/clear-while-off (stacked on feature/c4b-float). Current test build made from bb2307e, so it includes Clear while off (universal, macOS 14+, Apple Development-signed, not notarised, no debug hooks; DMG in dist/test-2026-11-25b, install steps in docs/INSTALL_TEST_BUILD.md) and sent to Noel; the earlier dist/test-2026-11-25 build lacks it. Waiting for Noel's look at all six and at Clear while off; it gets its Fable review with the next batch. Then the feature freeze (stability bar point 6), which starts C5; then the tester build. Do not merge or push without Noel's say.
+- Frozen on 26 November 2026; C5 (14-day soak, plan section 8) starts with the next test build. All work is local, stacked branches ending at feature/update-notices (e8f4d1c); nothing pushed or merged. Next: build the C5 test build (1.1.0 build 2) from the current commit and send it to Noel for his Mac, work laptop and two testers; it is the first build that can see updates. Then, with Noel's yes, publish later fixes as GitHub releases per docs/RELEASING_TEST_BUILDS.md (public DMG; the signature shows his Apple ID email). Noel to check: Copy GIF after a real recording, pasted into Messages or Slack; the menu's Check for Updates. Only fixes from now; ideas go to BACKLOG.md. Launch plan parked in docs/launch/ (uncommitted, from another session). Do not merge or push without Noel's say.
 - Due: none
 
 ## Human-only tail
-- Approve any commit, push, deploy, publish or spend.
+- Approve any commit, push, deploy, publish or spend, including each GitHub release.
 - Confirm whether the LinkedIn post is dropped.
 - Delete STATUS.md.bak-2026-11-14 (the one-page STATUS.md was accepted on 2026-11-16).

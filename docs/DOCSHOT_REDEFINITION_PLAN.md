@@ -128,6 +128,12 @@ Also: Cmd+V is sent with the V key of the current keyboard layout, so layouts su
 
 **Clear while history is off (decided 25 November 2026; Noel: "You decide best").** Clear works while history is off too, so kept history and screenshots never sit on disk with no way to remove them from DocShot. Built 25 November 2026: the count is read at launch and on switching off; Clear is offered in Settings and the menu while anything is stored; the store opens only if history was ever kept.
 
+**Copy GIF and update notices (added by Noel, 26 November 2026, before the freeze).** Noel: build both, then one review, then freeze.
+- Copy GIF: Recording Finished offers Copy GIF beside Export GIF for recordings within the GIF limits (15 seconds). The GIF goes on the clipboard as a file and as GIF data, each copy under its own name in `~/Library/Caches/DocShot/Copied GIF` (newest ten kept). A small note says "Making the GIF…" then "GIF copied". Nothing is copied unless chosen.
+- Update notices: DocShot asks GitHub once a day for releases of noel-q/docshot tagged `macos-v<version>-build.<n>` with a DMG (Noel chose GitHub Releases, knowing the DMG is public and the signature shows his Apple ID email). A newer build opens a guide once, without taking the keyboard: download, quit, replace, open, Open Anyway. "Don't tell me about updates" stops the guide; the DocShot menu still shows "Update Available", and Check for Updates is always there. The app never downloads or installs anything itself. Version 1.1.0, build 2. Releasing: `docs/RELEASING_TEST_BUILDS.md`; every release needs Noel's yes.
+
+**Feature freeze (26 November 2026; Noel: "They all look fine, run the review and freeze").** The feature set is frozen in writing (stability bar point 6): capture, annotation and the editors; recording with editing, MP4 and GIF export and Copy GIF; clipboard history with search, pins, limits, excluded apps, paste and Clear (also while off); Captures; text in images; Float; onboarding; the permission window; colour themes; Settings; update notices. From here only fixes go in. New ideas go to `BACKLOG.md` for after C5 and Windows; the launch plan waits in `docs/launch/LAUNCH_PLAN.md`. C5 starts.
+
 ## 4. Architecture
 
 ### 4.1 Module boundary
@@ -335,7 +341,7 @@ macOS is done, and Windows may start, when all of these hold:
 | macOS tightens pasteboard access | C0 spike on the current OS before any build work; polling reads only on change. |
 | A secret lands in history | Concealed markers, app exclusions, pause, and tests for each. |
 | Accessibility permission is refused or reset | Paste degrades to copy-only; never blocks the rest of the app. |
-| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. Two exceptions so far, both added by Noel on 17 November 2026: the preview thumbnail (C0.6) and colour themes (C0.7). |
+| Scope creep delays Windows again | Section 7 is the whole list; anything new waits until after the freeze. Exceptions, all added by Noel: the preview thumbnail (C0.6) and colour themes (C0.7) on 17 November 2026; Copy GIF and update notices on 26 November 2026, just before the freeze. Frozen on 26 November 2026. |
 
 ## 13. Shortcuts
 

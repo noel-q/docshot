@@ -332,6 +332,39 @@ enum ClipboardDebugHooks {
                 }
                 return
             }
+            if command.hasPrefix("copy-gif-sample:") {
+                // copy-gif-sample:<mp4 path>. Copy GIF's export and copy, onto a private
+                // pasteboard and a folder beside the clip: never the real clipboard.
+                guard !(ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty else {
+                    return writeState("refused: copy-gif-sample needs DOCSHOT_DEBUG_STORE")
+                }
+                let url = URL(fileURLWithPath: String(command.dropFirst("copy-gif-sample:".count)))
+                let asset = AVURLAsset(url: url)
+                Task { @MainActor in
+                    let duration = (try? await asset.load(.duration)).map(CMTimeGetSeconds) ?? 0
+                    let track = try? await asset.loadTracks(withMediaType: .video).first
+                    let size = (try? await track?.load(.naturalSize)) ?? CGSize(width: 1280, height: 720)
+                    let recording = TemporaryRecording(url: url, duration: duration, pixelSize: size, hasAudio: false, createdAt: Date())
+                    guard GIFProfile.docShotR4.supports(recording) else {
+                        return writeState("copy-gif-sample: too long for a GIF (\(Int(duration)) s)")
+                    }
+                    let folder = url.deletingLastPathComponent().appendingPathComponent("Copied GIF")
+                    let temporary = url.deletingLastPathComponent().appendingPathComponent("export-\(UUID().uuidString).gif")
+                    let pasteboard = NSPasteboard(name: NSPasteboard.Name("DocShotDebug.\(UUID().uuidString)"))
+                    defer { pasteboard.releaseGlobally() }
+                    do {
+                        let gif = try await GIFExportService().export(source: recording, destination: temporary, profile: .docShotR4)
+                        let copied = try GIFClipboard.copy(gifAt: gif, into: folder, pasteboard: pasteboard)
+                        let frames = CGImageSourceCreateWithURL(copied as CFURL, nil).map(CGImageSourceGetCount) ?? 0
+                        let types = pasteboard.types?.map(\.rawValue).joined(separator: ",") ?? ""
+                        let bytes = (try? copied.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                        writeState("copy-gif-sample: \(frames) frames \(bytes) bytes types \(types) at \(copied.lastPathComponent)")
+                    } catch {
+                        writeState("copy-gif-sample: failed \(error.localizedDescription)")
+                    }
+                }
+                return
+            }
             if command == "permission-opened" {
                 PermissionWindowController.shared.debugMarkOpened()
                 return writeState(command)

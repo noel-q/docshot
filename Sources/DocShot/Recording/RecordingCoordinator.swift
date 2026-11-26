@@ -497,11 +497,17 @@ public final class RecordingCoordinator: ObservableObject {
             """
         alert.addButton(withTitle: "Save MP4…")
         alert.addButton(withTitle: "Edit Recording…")
+        // Short recordings (the GIF profile's limits) can also be saved or copied as a GIF.
         let canExportGIF = GIFProfile.docShotR4.supports(recording)
-        if canExportGIF { alert.addButton(withTitle: "Export GIF…") }
+        if canExportGIF {
+            alert.addButton(withTitle: "Export GIF…")
+            alert.addButton(withTitle: "Copy GIF")
+        }
         alert.addButton(withTitle: "Discard")
 
         let response = alert.runModal()
+        let exportGIFResponse = NSApplication.ModalResponse(rawValue: NSApplication.ModalResponse.alertThirdButtonReturn.rawValue)
+        let copyGIFResponse = NSApplication.ModalResponse(rawValue: exportGIFResponse.rawValue + 1)
         if response == .alertFirstButtonReturn {
             send(.saveRequested)
         } else if response == .alertSecondButtonReturn {
@@ -514,8 +520,10 @@ public final class RecordingCoordinator: ObservableObject {
                     self.send(.discardRequested)
                 }
             }
-        } else if canExportGIF && response == .alertThirdButtonReturn {
+        } else if canExportGIF && response == exportGIFResponse {
             exportGIF(from: recording)
+        } else if canExportGIF && response == copyGIFResponse {
+            copyGIF(from: recording)
         } else {
             send(.discardRequested)
         }
@@ -528,6 +536,28 @@ public final class RecordingCoordinator: ObservableObject {
                 let temporaryGIF = try self.store.makeGIFURL()
                 let gifURL = try await self.gifExporter.export(source: recording, destination: temporaryGIF, profile: .docShotR4)
                 self.presentGIFSavePanel(gifURL: gifURL, sourceMP4: recording)
+            } catch {
+                self.presentGIFFailure(error.localizedDescription, recording: recording)
+            }
+        }
+    }
+
+    /// Copy GIF: makes the GIF, puts it on the clipboard, and is done with the recording, as
+    /// Export GIF is after saving. Nothing is written to the clipboard until the user chooses it.
+    private func copyGIF(from recording: TemporaryRecording) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let temporaryGIF = try self.store.makeGIFURL()
+                let gifURL = try await self.gifExporter.export(source: recording, destination: temporaryGIF, profile: .docShotR4)
+                do {
+                    try GIFClipboard.copy(gifAt: gifURL, into: GIFClipboard.defaultFolder())
+                } catch {
+                    self.store.removeIfPresent(gifURL)
+                    throw error
+                }
+                self.store.removeIfPresent(recording.url)
+                self.send(.discardRequested)
             } catch {
                 self.presentGIFFailure(error.localizedDescription, recording: recording)
             }

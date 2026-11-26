@@ -134,3 +134,51 @@ public final class OutputService: @unchecked Sendable {
         return .cancelled
     }
 }
+
+/// Copy GIF (26 November 2026): puts a short recording on the clipboard as an animated GIF.
+/// The GIF goes on the clipboard twice over: as a file, which Messages, Slack, Mail and Finder
+/// paste with its animation, and as GIF data for apps that read images directly. The file lives
+/// in DocShot's caches and only the last copied GIF is kept.
+public enum GIFClipboard {
+    public static let fileName = "DocShot Recording.gif"
+    public static let gifType = NSPasteboard.PasteboardType("com.compuserve.gif")
+
+    /// `~/Library/Caches/DocShot/Copied GIF`.
+    public static func defaultFolder() throws -> URL {
+        let caches = try FileManager.default.url(
+            for: .cachesDirectory, in: .userDomainMask, appropriateFor: nil, create: true
+        )
+        return caches.appendingPathComponent("DocShot/Copied GIF", isDirectory: true)
+    }
+
+    /// Moves `gifURL` into `folder`, replacing the last copied GIF, and writes it to
+    /// `pasteboard`. Returns where the GIF now is.
+    @discardableResult
+    public static func copy(gifAt gifURL: URL, into folder: URL, pasteboard: NSPasteboard = .general) throws -> URL {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(at: folder, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+        let destination = folder.appendingPathComponent(fileName)
+        let data = try Data(contentsOf: gifURL)
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.removeItem(at: destination)
+        }
+        try fileManager.moveItem(at: gifURL, to: destination)
+
+        let item = NSPasteboardItem()
+        item.setString(destination.absoluteString, forType: .fileURL)
+        item.setData(data, forType: gifType)
+        pasteboard.clearContents()
+        guard pasteboard.writeObjects([item]) else {
+            throw GIFClipboardError.refused
+        }
+        return destination
+    }
+}
+
+public enum GIFClipboardError: LocalizedError {
+    case refused
+
+    public var errorDescription: String? {
+        "The clipboard did not take the GIF."
+    }
+}

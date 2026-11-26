@@ -31,13 +31,14 @@ DocShot also adds itself to Open at login. You can switch that off in its Settin
 | --- | --- |
 | Screenshot | ⌃⌥⌘S, click a window or drag an area, then ↵ to copy |
 | Record | ⌃⌥⌘R, pick an area, ↵ to start, ⌃⌥⌘R again to stop |
+| Copy GIF | Record something up to 15 seconds, stop, then choose Copy GIF and paste into Messages, Slack or Mail |
 | Clipboard history | Switch it on in Settings, copy a few things, then ⌃⌥⌘V |
 | Captures | In the clipboard panel press Tab: recent screenshots and recordings |
 | Float | ⌘F on a screenshot or image; Escape removes it |
 
 ## Removing it
 
-Quit DocShot from its menu, drag it from Applications to the Bin, and delete `~/Library/Application Support/DocShot` to remove its history and captures.
+Quit DocShot from its menu, drag it from Applications to the Bin, and delete `~/Library/Application Support/DocShot` to remove its history and captures, and `~/Library/Caches/DocShot` for the last copied GIF.
 
 ## Reporting a problem
 

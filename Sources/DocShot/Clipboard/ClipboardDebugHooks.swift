@@ -362,7 +362,7 @@ enum ClipboardDebugHooks {
             }
             if command == "update-state" {
                 let updates = UpdateController.shared
-                return writeState("update: current \(updates.currentDisplayVersion) available \(updates.available?.displayVersion ?? "none") notices \(updates.noticesOn) guide \(updates.isShowingGuide) notified \(OnboardingWindowController.preferences.integer(forKey: UpdateController.lastNotifiedBuildKey))")
+                return writeState("update: current \(updates.currentDisplayVersion) available \(updates.available?.displayVersion ?? "none") notices \(updates.noticesOn) guide \(updates.isShowingGuide) key \(NSApp.windows.first { $0.identifier == UpdateController.identifier }?.isKeyWindow == true) active \(NSApp.isActive) error \(updates.lastError ?? "none") notified \(OnboardingWindowController.preferences.integer(forKey: UpdateController.lastNotifiedBuildKey))")
             }
             if command == "update-guide" {
                 UpdateController.shared.showGuide()
@@ -389,8 +389,10 @@ enum ClipboardDebugHooks {
                     let pasteboard = NSPasteboard(name: NSPasteboard.Name("DocShotDebug.\(UUID().uuidString)"))
                     defer { pasteboard.releaseGlobally() }
                     do {
+                        CopyNotice.shared.show("Making the GIF…")
                         let gif = try await GIFExportService().export(source: recording, destination: temporary, profile: .docShotR4)
                         let copied = try GIFClipboard.copy(gifAt: gif, into: folder, pasteboard: pasteboard)
+                        CopyNotice.shared.show("GIF copied. Paste it anywhere.", closeAfter: 6)
                         let frames = CGImageSourceCreateWithURL(copied as CFURL, nil).map(CGImageSourceGetCount) ?? 0
                         let types = pasteboard.types?.map(\.rawValue).joined(separator: ",") ?? ""
                         let bytes = (try? copied.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0

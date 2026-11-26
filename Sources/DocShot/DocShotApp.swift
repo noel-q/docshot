@@ -119,7 +119,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ClipboardWindowController.shared.toggle()
         }
 
-        // Clipboard history does nothing unless the user switched it on (plan section 2.3).
+        // Clipboard history records nothing unless the user switched it on (plan section 2.3);
+        // with it off, the store opens once to count what Clear can still remove.
         MainActor.assumeIsolated {
             ClipboardHistoryController.shared.start()
             UpdateController.shared.start()

@@ -41,7 +41,7 @@ struct UpdateReleaseTests {
             Self.release(tag: "macos-v1.1.0-build.2"),
             Self.release(tag: "macos-v1.0.0"),
         ])
-        let update = try #require(UpdateRelease.newest(fromJSON: data, newerThan: 2))
+        let update = try #require(try UpdateRelease.newest(fromJSON: data, newerThan: 2))
         #expect(update.build == 3)
         #expect(update.version == "1.1.0")
         #expect(update.title == "Test build 3")
@@ -49,24 +49,26 @@ struct UpdateReleaseTests {
         #expect(update.downloadURL.lastPathComponent == "DocShot-macos-development.dmg")
         #expect(update.displayVersion == "1.1.0 (build 3)")
 
-        #expect(UpdateRelease.newest(fromJSON: data, newerThan: 3) == nil)
-        #expect(UpdateRelease.newest(fromJSON: Data("not json".utf8), newerThan: 1) == nil)
+        #expect(try UpdateRelease.newest(fromJSON: data, newerThan: 3) == nil)
+        // A proxy or sign-in page is an error, never "up to date".
+        #expect(throws: (any Error).self) { try UpdateRelease.newest(fromJSON: Data("<html>".utf8), newerThan: 1) }
+        #expect(throws: (any Error).self) { try UpdateRelease.newest(fromJSON: Data("{\"message\":\"rate limited\"}".utf8), newerThan: 1) }
     }
 
     @Test("Links that are not GitHub https links are refused")
-    func testLinks() {
+    func testLinks() throws {
         let elsewhere = Self.json([Self.release(tag: "macos-v1.1.0-build.3", dmg: "https://example.com/DocShot.dmg")])
-        #expect(UpdateRelease.newest(fromJSON: elsewhere, newerThan: 1) == nil)
+        #expect(try UpdateRelease.newest(fromJSON: elsewhere, newerThan: 1) == nil)
         let plain = Self.json([Self.release(tag: "macos-v1.1.0-build.3", page: "http://github.com/noel-q/docshot")])
-        #expect(UpdateRelease.newest(fromJSON: plain, newerThan: 1) == nil)
+        #expect(try UpdateRelease.newest(fromJSON: plain, newerThan: 1) == nil)
         let lookalike = Self.json([Self.release(tag: "macos-v1.1.0-build.3", dmg: "https://github.com.evil.example/x.dmg")])
-        #expect(UpdateRelease.newest(fromJSON: lookalike, newerThan: 1) == nil)
+        #expect(try UpdateRelease.newest(fromJSON: lookalike, newerThan: 1) == nil)
     }
 
     @Test("Long notes are cut at a word with an ellipsis")
     func testLongNotes() throws {
         let body = String(repeating: "word ", count: 200)
-        let update = try #require(UpdateRelease.newest(fromJSON: Self.json([Self.release(tag: "macos-v1.1.0-build.3", body: body)]), newerThan: 1))
+        let update = try #require(try UpdateRelease.newest(fromJSON: Self.json([Self.release(tag: "macos-v1.1.0-build.3", body: body)]), newerThan: 1))
         #expect(update.notes.count <= UpdateRelease.maxNotesLength + 1)
         #expect(update.notes.hasSuffix("word…"))
     }
@@ -82,7 +84,7 @@ struct UpdateReleaseTests {
 
     @Test("The notice shows once per build, and never with notices off")
     func testNotify() throws {
-        let update = try #require(UpdateRelease.newest(fromJSON: Self.json([Self.release(tag: "macos-v1.1.0-build.3")]), newerThan: 2))
+        let update = try #require(try UpdateRelease.newest(fromJSON: Self.json([Self.release(tag: "macos-v1.1.0-build.3")]), newerThan: 2))
         #expect(UpdateRelease.shouldNotify(update, noticesOn: true, lastNotifiedBuild: 0))
         #expect(!UpdateRelease.shouldNotify(update, noticesOn: true, lastNotifiedBuild: 3))
         #expect(!UpdateRelease.shouldNotify(update, noticesOn: false, lastNotifiedBuild: 0))

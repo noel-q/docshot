@@ -1,7 +1,7 @@
 import Foundation
 
 /// A newer DocShot build published on GitHub.
-public struct AvailableUpdate: Equatable, Sendable {
+public struct AvailableUpdate: Equatable, Sendable, Codable {
     public let build: Int
     /// The marketing version from the tag, such as "1.1.0".
     public let version: String
@@ -40,9 +40,10 @@ public enum UpdateRelease {
 
     /// The newest release built after `currentBuild` that carries a DMG, from GitHub's releases
     /// JSON. Drafts are skipped; test builds may be pre-releases. Links must be GitHub https
-    /// links, so a changed release can never send the user anywhere else.
-    public static func newest(fromJSON data: Data, newerThan currentBuild: Int) -> AvailableUpdate? {
-        guard let releases = try? JSONDecoder().decode([Release].self, from: data) else { return nil }
+    /// links, so a changed release can never send the user anywhere else. Throws when the answer
+    /// is not a releases list (a proxy or sign-in page), so that never reads as "up to date".
+    public static func newest(fromJSON data: Data, newerThan currentBuild: Int) throws -> AvailableUpdate? {
+        let releases = try JSONDecoder().decode([Release].self, from: data)
         var best: AvailableUpdate?
         for release in releases where release.draft != true {
             guard let tag = parseTag(release.tag_name), tag.build > currentBuild,

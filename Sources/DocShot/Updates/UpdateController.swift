@@ -11,6 +11,8 @@ final class UpdateController: NSObject, ObservableObject {
     static let noticesKey = "DocShotUpdateNotices"
     static let lastCheckKey = "DocShotUpdateLastCheck"
     static let lastNotifiedBuildKey = "DocShotUpdateLastNotifiedBuild"
+    /// The update last found, so a relaunch still shows it until the next check.
+    static let availableKey = "DocShotUpdateAvailable"
     static let identifier = NSUserInterfaceItemIdentifier("DocShotUpdate")
 
     /// Who asked for a check: the daily timer says nothing unless there is an update; the menu
@@ -40,6 +42,10 @@ final class UpdateController: NSObject, ObservableObject {
         currentBuild = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "") ?? 0
         currentVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         super.init()
+        if let saved = defaults.data(forKey: Self.availableKey),
+           let update = try? JSONDecoder().decode(AvailableUpdate.self, from: saved), update.build > currentBuild {
+            available = update
+        }
     }
 
     var currentDisplayVersion: String { "\(currentVersion) (build \(currentBuild))" }
@@ -90,9 +96,23 @@ final class UpdateController: NSObject, ObservableObject {
 
     /// What a check found. The debug hooks call this with a local file instead of GitHub.
     func receive(_ data: Data, origin: CheckOrigin, now: Date = Date()) {
+        let found: AvailableUpdate?
+        do {
+            found = try UpdateRelease.newest(fromJSON: data, newerThan: currentBuild)
+        } catch {
+            // Not a releases list: keep what was known and try again at the next hourly look.
+            lastError = "GitHub gave an answer DocShot could not read. Try again later."
+            if origin == .menu { showAlert("DocShot could not check for updates", lastError ?? "") }
+            return
+        }
         lastChecked = now
         preferences.set(now, forKey: Self.lastCheckKey)
-        available = UpdateRelease.newest(fromJSON: data, newerThan: currentBuild)
+        available = found
+        if let found, let encoded = try? JSONEncoder().encode(found) {
+            preferences.set(encoded, forKey: Self.availableKey)
+        } else {
+            preferences.removeObject(forKey: Self.availableKey)
+        }
         switch origin {
         case .automatic:
             notifyIfDue()
@@ -111,8 +131,9 @@ final class UpdateController: NSObject, ObservableObject {
         guard let available,
               UpdateRelease.shouldNotify(available, noticesOn: noticesOn, lastNotifiedBuild: preferences.integer(forKey: Self.lastNotifiedBuildKey)),
               !isCapturing else { return }
-        preferences.set(available.build, forKey: Self.lastNotifiedBuildKey)
-        showGuide()
+        // Shown without taking the keyboard from the app in front: Return and Escape there
+        // stay theirs until the user clicks the guide.
+        showGuide(takeFocus: false)
     }
 
     private var isCapturing: Bool {
@@ -147,8 +168,10 @@ final class UpdateController: NSObject, ObservableObject {
 
     var isShowingGuide: Bool { panel?.isVisible == true }
 
-    func showGuide() {
+    /// Opens the guide. Any showing, asked for or not, counts as the notice for that build.
+    func showGuide(takeFocus: Bool = true) {
         guard let update = available else { return }
+        preferences.set(max(update.build, preferences.integer(forKey: Self.lastNotifiedBuildKey)), forKey: Self.lastNotifiedBuildKey)
         closeGuide()
         let view = UpdateGuideView(
             update: update,
@@ -184,8 +207,12 @@ final class UpdateController: NSObject, ObservableObject {
         let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         panel.setFrame(reduceMotion ? frame : frame.offsetBy(dx: 0, dy: -Quiet.Space.s2), display: false)
         panel.alphaValue = 0
-        NSApp.activate(ignoringOtherApps: true)
-        panel.makeKeyAndOrderFront(nil)
+        if takeFocus {
+            NSApp.activate(ignoringOtherApps: true)
+            panel.makeKeyAndOrderFront(nil)
+        } else {
+            panel.orderFrontRegardless()
+        }
         self.panel = panel
         installKeyMonitor()
         NSAnimationContext.runAnimationGroup { context in

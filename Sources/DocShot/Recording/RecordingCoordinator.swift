@@ -545,6 +545,8 @@ public final class RecordingCoordinator: ObservableObject {
     /// Copy GIF: makes the GIF, puts it on the clipboard, and is done with the recording, as
     /// Export GIF is after saving. Nothing is written to the clipboard until the user chooses it.
     private func copyGIF(from recording: TemporaryRecording) {
+        // Says when the clipboard is ready, so a quick paste does not get the old contents.
+        CopyNotice.shared.show("Making the GIF…")
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
@@ -557,9 +559,11 @@ public final class RecordingCoordinator: ObservableObject {
                     throw error
                 }
                 self.store.removeIfPresent(recording.url)
+                CopyNotice.shared.show("GIF copied. Paste it anywhere.", closeAfter: 2)
                 self.send(.discardRequested)
             } catch {
-                self.presentGIFFailure(error.localizedDescription, recording: recording)
+                CopyNotice.shared.close()
+                self.presentGIFFailure(error.localizedDescription, recording: recording, title: "Couldn't copy the GIF")
             }
         }
     }
@@ -586,10 +590,10 @@ public final class RecordingCoordinator: ObservableObject {
         }
     }
 
-    private func presentGIFFailure(_ message: String, recording: TemporaryRecording) {
+    private func presentGIFFailure(_ message: String, recording: TemporaryRecording, title: String = "GIF Export Unavailable") {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "GIF Export Unavailable"
+        alert.messageText = title
         alert.informativeText = message
         alert.addButton(withTitle: "Save MP4…")
         alert.addButton(withTitle: "Back")
@@ -613,5 +617,89 @@ public final class RecordingCoordinator: ObservableObject {
     static func durationText(_ duration: TimeInterval) -> String {
         let total = Int(duration.rounded())
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+}
+
+/// A small note under the menu bar for Copy GIF: what is happening, then that the GIF is on the
+/// clipboard. Never takes the keyboard or the app forward (Quiet: surface, hairline, radius-md).
+@MainActor
+final class CopyNotice {
+    static let shared = CopyNotice()
+    private var panel: NSPanel?
+    private var closeTask: Task<Void, Never>?
+
+    private(set) var text: String?
+
+    func show(_ text: String, closeAfter seconds: Double? = nil) {
+        self.text = text
+        closeTask?.cancel()
+        // The panel never takes focus, so VoiceOver hears it as an announcement.
+        NSAccessibility.post(element: NSApp as Any, notification: .announcementRequested, userInfo: [
+            .announcement: text, .priority: NSAccessibilityPriorityLevel.high.rawValue,
+        ])
+        let host = NSHostingView(rootView: CopyNoticeView(text: text))
+        host.sizingOptions = []
+        let size = host.fittingSize
+        let panel = self.panel ?? {
+            let made = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+            made.isOpaque = false
+            made.backgroundColor = .clear
+            made.hasShadow = true
+            made.level = .statusBar
+            made.ignoresMouseEvents = true
+            made.hidesOnDeactivate = false
+            made.isReleasedWhenClosed = false
+            made.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+            made.title = "DocShot copy notice"
+            return made
+        }()
+        panel.contentView = host
+        let mouse = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        panel.setFrame(CGRect(
+            x: (visible.midX - size.width / 2).rounded(), y: (visible.maxY - size.height - Quiet.Space.s4).rounded(),
+            width: size.width, height: size.height
+        ), display: true)
+        if self.panel == nil {
+            panel.alphaValue = 0
+            panel.orderFrontRegardless()
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = QuietTokens.durBase
+                panel.animator().alphaValue = 1
+            }
+        }
+        self.panel = panel
+        if let seconds {
+            closeTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(seconds))
+                guard !Task.isCancelled else { return }
+                self?.close()
+            }
+        }
+    }
+
+    func close() {
+        closeTask?.cancel()
+        closeTask = nil
+        text = nil
+        panel?.orderOut(nil)
+        panel = nil
+    }
+}
+
+private struct CopyNoticeView: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(Quiet.Font.nativeBody)
+            .foregroundStyle(Quiet.ink)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.vertical, Quiet.Space.s2)
+            .background(Quiet.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1))
+            .fixedSize()
+            .accessibilityAddTraits(.updatesFrequently)
     }
 }

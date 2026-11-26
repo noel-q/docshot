@@ -10,6 +10,7 @@ struct DocShotApp: App {
     @ObservedObject private var captureCoordinator = CaptureCoordinator.shared
     @ObservedObject private var recordingCoordinator = RecordingCoordinator.shared
     @ObservedObject private var clipboardHistory = ClipboardHistoryController.shared
+    @ObservedObject private var updates = UpdateController.shared
 
     /// Only one DocShot capture activity may run at a time. The policy is evaluated here rather
     /// than inside either coordinator, so screenshot capture keeps its existing behaviour.
@@ -61,6 +62,17 @@ struct DocShotApp: App {
 
             Divider()
 
+            // Shown whether or not update notices are on (decided 26 November 2026).
+            if let update = updates.available {
+                Button("Update Available: \(update.displayVersion)...") {
+                    updates.showGuide()
+                }
+            }
+            Button("Check for Updates...") {
+                updates.check(.menu)
+            }
+            .disabled(updates.checking)
+
             Button("Settings...") {
                 appDelegate.openSettingsWindow()
             }
@@ -110,6 +122,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Clipboard history does nothing unless the user switched it on (plan section 2.3).
         MainActor.assumeIsolated {
             ClipboardHistoryController.shared.start()
+            UpdateController.shared.start()
 #if DEBUG
             ClipboardDebugHooks.install()
 #endif

@@ -63,11 +63,13 @@
     "Sources/DocShot/Clipboard/ClipPreviewText.swift",
     "Sources/DocShot/Settings/SettingsPanelLayout.swift",
     "Sources/DocShot/Onboarding/OnboardingPages.swift",
-    "Sources/DocShot/Capture/FloatLayout.swift"
+    "Sources/DocShot/Capture/FloatLayout.swift",
+    "Sources/DocShot/Updates/UpdateRelease.swift"
   ],
 
   "appOnlyProductionSources": [
     "Sources/DocShot/Capture/FloatController.swift",
+    "Sources/DocShot/Updates/UpdateController.swift",
     "Sources/DocShot/Capture/CaptureCoordinator.swift",
     "Sources/DocShot/Capture/PreviewThumbnailController.swift",
     "Sources/DocShot/Capture/MagnifierView.swift",

@@ -27,6 +27,10 @@
 		D8000003D8000000000000A1 /* FloatLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000001D8000000000000A1 /* FloatLayout.swift */; };
 		D8000005D8000000000000A1 /* FloatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000004D8000000000000A1 /* FloatController.swift */; };
 		D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000006D8000000000000A1 /* FloatLayoutTests.swift */; };
+		D9000002D9000000000000A1 /* UpdateRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000001D9000000000000A1 /* UpdateRelease.swift */; };
+		D9000003D9000000000000A1 /* UpdateRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000001D9000000000000A1 /* UpdateRelease.swift */; };
+		D9000005D9000000000000A1 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000004D9000000000000A1 /* UpdateController.swift */; };
+		D9000007D9000000000000A1 /* UpdateReleaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000006D9000000000000A1 /* UpdateReleaseTests.swift */; };
 		D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
 		D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
 		D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */; };
@@ -342,6 +346,9 @@
 		D8000001D8000000000000A1 /* FloatLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayout.swift; path = Sources/DocShot/Capture/FloatLayout.swift; sourceTree = "<group>"; };
 		D8000004D8000000000000A1 /* FloatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatController.swift; path = Sources/DocShot/Capture/FloatController.swift; sourceTree = "<group>"; };
 		D8000006D8000000000000A1 /* FloatLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayoutTests.swift; path = Tests/DocShotTests/FloatLayoutTests.swift; sourceTree = "<group>"; };
+		D9000001D9000000000000A1 /* UpdateRelease.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateRelease.swift; path = Sources/DocShot/Updates/UpdateRelease.swift; sourceTree = "<group>"; };
+		D9000004D9000000000000A1 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateController.swift; path = Sources/DocShot/Updates/UpdateController.swift; sourceTree = "<group>"; };
+		D9000006D9000000000000A1 /* UpdateReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateReleaseTests.swift; path = Tests/DocShotTests/UpdateReleaseTests.swift; sourceTree = "<group>"; };
 		D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardPreviewPane.swift; path = Sources/DocShot/Clipboard/ClipboardPreviewPane.swift; sourceTree = "<group>"; };
 		D4000012D4000000000000A1 /* QuietTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QuietTokensTests.swift; path = Tests/DocShotTests/QuietTokensTests.swift; sourceTree = "<group>"; };
 		C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardDebugHooks.swift; path = Sources/DocShot/Clipboard/ClipboardDebugHooks.swift; sourceTree = "<group>"; };
@@ -464,6 +471,8 @@
 				D7000001D7000000000000A1 /* OnboardingPages.swift */,
 				D8000001D8000000000000A1 /* FloatLayout.swift */,
 				D8000004D8000000000000A1 /* FloatController.swift */,
+				D9000001D9000000000000A1 /* UpdateRelease.swift */,
+				D9000004D9000000000000A1 /* UpdateController.swift */,
 				CA0000012C50000000000001 /* RecordingTarget.swift */,
 				CA0000022C50000000000001 /* RecordingOptions.swift */,
 				CA0000032C50000000000001 /* RecordingFailure.swift */,
@@ -511,6 +520,7 @@
 				C3000009C3000000000000A1 /* ClipboardListModelTests.swift */,
 				D7000004D7000000000000A1 /* OnboardingPagesTests.swift */,
 				D8000006D8000000000000A1 /* FloatLayoutTests.swift */,
+				D9000006D9000000000000A1 /* UpdateReleaseTests.swift */,
 				D4000012D4000000000000A1 /* QuietTokensTests.swift */,
 				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
@@ -669,6 +679,8 @@
 				D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */,
 				D8000002D8000000000000A1 /* FloatLayout.swift in Sources */,
 				D8000005D8000000000000A1 /* FloatController.swift in Sources */,
+				D9000002D9000000000000A1 /* UpdateRelease.swift in Sources */,
+				D9000005D9000000000000A1 /* UpdateController.swift in Sources */,
 				D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */,
 				C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */,
 				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
@@ -795,6 +807,8 @@
 				D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */,
 				D8000003D8000000000000A1 /* FloatLayout.swift in Sources */,
 				D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */,
+				D9000003D9000000000000A1 /* UpdateRelease.swift in Sources */,
+				D9000007D9000000000000A1 /* UpdateReleaseTests.swift in Sources */,
 				D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */,
 				C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */,
 				C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */,
@@ -865,7 +879,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				MARKETING_VERSION = 1.1.0;
 				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -885,7 +900,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				MARKETING_VERSION = 1.1.0;
 				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;

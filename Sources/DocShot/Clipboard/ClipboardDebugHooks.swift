@@ -301,6 +301,20 @@ enum ClipboardDebugHooks {
                 OnboardingWindowController.shared.select(page)
                 return writeState(command)
             }
+            if command.hasPrefix("update-key:"), let code = UInt16(command.dropFirst("update-key:".count)), code != 36, code != 76,
+               let window = NSApp.windows.first(where: { $0.identifier == UpdateController.identifier && $0.isVisible }) {
+                // Escape through the guide's real key monitor. Return is refused: it would open
+                // the download link in the browser.
+                let characters = code == 53 ? "\u{1b}" : ""
+                if let event = NSEvent.keyEvent(
+                    with: .keyDown, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                    windowNumber: window.windowNumber, context: nil, characters: characters,
+                    charactersIgnoringModifiers: characters, isARepeat: false, keyCode: code
+                ) {
+                    NSApp.postEvent(event, atStart: false)
+                }
+                return writeState(command)
+            }
             if command.hasPrefix("onboarding-key:"), let code = UInt16(command.dropFirst("onboarding-key:".count)),
                let window = NSApp.windows.first(where: { $0.identifier == OnboardingWindowController.identifier && $0.isVisible }) {
                 // A key press queued for the guide's panel, so it goes through the real key
@@ -331,6 +345,28 @@ enum ClipboardDebugHooks {
                     writeState("open-video: \(Int(duration)) s")
                 }
                 return
+            }
+            if command.hasPrefix("update-json:") || command == "update-reset" {
+                // Update notices from a local releases file, never GitHub; scratch preferences only.
+                guard !(ProcessInfo.processInfo.environment["DOCSHOT_DEBUG_STORE"] ?? "").isEmpty else {
+                    return writeState("refused: \(command) needs DOCSHOT_DEBUG_STORE")
+                }
+                if command == "update-reset" {
+                    OnboardingWindowController.preferences.removeObject(forKey: UpdateController.lastNotifiedBuildKey)
+                    return writeState(command)
+                }
+                let url = URL(fileURLWithPath: String(command.dropFirst("update-json:".count)))
+                guard let data = try? Data(contentsOf: url) else { return writeState("update-json: unreadable") }
+                UpdateController.shared.receive(data, origin: .automatic)
+                return writeState("update-json: received")
+            }
+            if command == "update-state" {
+                let updates = UpdateController.shared
+                return writeState("update: current \(updates.currentDisplayVersion) available \(updates.available?.displayVersion ?? "none") notices \(updates.noticesOn) guide \(updates.isShowingGuide) notified \(OnboardingWindowController.preferences.integer(forKey: UpdateController.lastNotifiedBuildKey))")
+            }
+            if command == "update-guide" {
+                UpdateController.shared.showGuide()
+                return writeState(command)
             }
             if command.hasPrefix("copy-gif-sample:") {
                 // copy-gif-sample:<mp4 path>. Copy GIF's export and copy, onto a private

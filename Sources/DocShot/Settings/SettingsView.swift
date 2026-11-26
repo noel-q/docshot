@@ -510,6 +510,7 @@ final class SettingsHostingView: NSHostingView<AnyView> {
 struct GeneralSettingsView: View {
     @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject private var launchAtLoginService = LaunchAtLoginService.shared
+    @ObservedObject private var updates = UpdateController.shared
     @State private var hasPermission: Bool = PermissionService.shared.hasScreenCaptureAccess()
 
     var body: some View {
@@ -558,9 +559,32 @@ struct GeneralSettingsView: View {
                 }
             }
 
+            SettingsGroup(title: "Updates") {
+                SettingsToggleRow(
+                    title: "Tell me when an update is ready",
+                    detail: "Updates always show in the DocShot menu too.",
+                    isOn: Binding(get: { updates.noticesOn }, set: { updates.setNoticesOn($0) })
+                )
+                SettingsDivider()
+                if let update = updates.available {
+                    SettingsRow(title: "DocShot \(update.displayVersion) is ready", detail: "You have \(updates.currentDisplayVersion).") {
+                        Button("How to update…") { updates.showGuide() }
+                    }
+                } else {
+                    SettingsRow(
+                        title: "DocShot \(updates.currentDisplayVersion)",
+                        detail: updates.lastError ?? updateStatus,
+                        detailIsError: updates.lastError != nil
+                    ) {
+                        Button("Check now") { updates.check(.settings) }
+                            .disabled(updates.checking)
+                    }
+                }
+            }
+
             SettingsGroup(
                 title: "Help",
-                note: "DocShot works only on this Mac. It never saves on its own, keeps no analytics and talks to no server; nothing leaves your Mac unless you copy or save it."
+                note: "DocShot works on this Mac. It never saves on its own and keeps no analytics. It only asks GitHub once a day whether a new version is out; nothing you capture or copy leaves your Mac unless you copy or save it."
             ) {
                 SettingsRow(title: "Guide", detail: "The short tour from the first launch.") {
                     Button("Open guide") {
@@ -578,6 +602,11 @@ struct GeneralSettingsView: View {
         }
     }
 
+    private var updateStatus: String {
+        if updates.checking { return "Checking…" }
+        guard let checked = updates.lastChecked else { return "Not checked yet. DocShot checks once a day." }
+        return "Up to date. Checked \(checked.formatted(.relative(presentation: .named)))."
+    }
 }
 
 /// How saving works: ask each time or use a folder, with the folder's controls. Shared by the

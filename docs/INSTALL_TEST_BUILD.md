@@ -36,6 +36,13 @@ DocShot also adds itself to Open at login. You can switch that off in its Settin
 | Captures | In the clipboard panel press Tab: recent screenshots and recordings |
 | Float | ⌘F on a screenshot or image; Escape removes it |
 
+## Updates
+
+DocShot asks GitHub once a day whether a newer test build is out. That is the only time it goes online, and nothing you capture or copy is sent. When there is one, a short guide opens: download it, quit DocShot, open the downloaded file, drag DocShot to Applications and choose Replace, then open it (Open Anyway again if macOS asks). Your history and settings stay.
+
+- Don't want the guide popping up? Choose "Don't tell me about updates" in it, or switch it off in Settings, General, Updates. New builds still show in the DocShot menu as "Update Available".
+- Check yourself any time: DocShot menu, Check for Updates.
+
 ## Removing it
 
 Quit DocShot from its menu, drag it from Applications to the Bin, and delete `~/Library/Application Support/DocShot` to remove its history and captures, and `~/Library/Caches/DocShot` for the last copied GIF.

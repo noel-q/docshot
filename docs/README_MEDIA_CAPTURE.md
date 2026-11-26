@@ -5,15 +5,17 @@ Recording permission. Keep personal notifications and other people's data out of
 
 ## Assets
 
-Save approved assets below `docs/media/` using these names. The three still images below are now
-captured; the walkthrough video remains optional:
+Approved assets live in `docs/media/`, each in light and dark so the README follows the reader's
+GitHub theme. Captured 26 November 2026 from a Debug build of version 1.1 on a scratch store, with
+made-up content only (a drawn "Release checklist" image and neutral clipboard items):
 
-| File | Content | Target |
+| File | Content | How it was made |
 | --- | --- | --- |
-| `menu-and-settings.png` | Menu-bar menu and Recording settings: `⌘⇧8`, audio toggle, cursor toggle, 30 fps. | Captured |
-| `screenshot-editor.png` | Screenshot editor with a deliberately non-sensitive example and annotations. | Captured |
-| `video-editor.png` | Completed recording in the post-stop editor with timeline and an annotation visible. | Captured |
-| `docshot-demo.mp4` | 20–30 second silent walkthrough: launch → select → annotate → save/discard → record → edit. | 1440p or lower |
+| `docshot-icon.png` | The app icon. | Copied from the app's icon set. |
+| `clipboard-light.png`, `clipboard-dark.png` | Clipboard history with an image selected and its text in the preview. | The app's own rendering of its window. |
+| `editor-light.png`, `editor-dark.png` | The screenshot editor with a box, an arrow and a note. | The app's own rendering of its window. |
+| `video-editor-light.png`, `video-editor-dark.png` | The video editor with a made-up eight-second clip. | The app's own rendering of its window, with the clip's first frame drawn into the player area afterwards, because window rendering cannot capture the video layer. |
+| `docshot-demo.mp4` | Optional 20–30 second silent walkthrough. | Not made yet. |
 
 ## Capture checklist
 

@@ -20,6 +20,18 @@
   </picture>
 </p>
 
+## Install
+
+1. Download the latest `.dmg` from [Releases](https://github.com/noel-q/docshot/releases).
+2. Open it and drag **DocShot** into **Applications**.
+3. Open DocShot from Applications. It lives in the menu bar, not the Dock.
+4. Allow **Screen Recording** when macOS asks; DocShot needs it to take screenshots. If you use
+   clipboard history, it also asks for **Accessibility** so it can paste into the app you were using.
+
+From build 4, builds are signed with Developer ID and notarised by Apple, so they open without a
+security warning. Needs macOS 14 or later. DocShot checks for a newer build once a day and tells you when
+there is one; to update, download it and replace the copy in Applications.
+
 ## What it does
 
 DocShot lives in the menu bar and keeps every capture explicit: pick exactly what to capture, mark
@@ -86,8 +98,8 @@ switch it on. No account, no cloud, no analytics.
 - Xcode 16 or later / Swift 6
 
 Open `DocShot.xcodeproj`, choose the **DocShot** scheme, run on **My Mac**, and grant Screen
-Recording permission when macOS asks. The app is Apple Development-signed for local development;
-it is not notarised or distributed as a public installer.
+Recording permission when macOS asks. Builds from Xcode are Apple Development-signed for local
+development; release builds from build 4 on are signed with Developer ID and notarised.
 
 ### Create a local test package
 
@@ -119,8 +131,7 @@ creating it. Use a fresh `dist/` directory or pass a custom output directory:
 These are **development testing packages**, not public releases. They are signed with an Apple
 Development identity and are not notarised. A recipient may need to use Finder's **Open** action to
 accept macOS's warning. A DMG improves installation, but does not remove that warning. Avoid
-redistributing either package as a production installer; warning-free public distribution requires
-Developer ID signing, notarisation, and a release process that has not yet been added.
+redistributing either package as a production installer.
 
 ## Verify
 
@@ -147,4 +158,4 @@ DocShot is a native macOS app in active development. The code on `main` is versi
 Captures, text in images, Float, Copy GIF and the new look shown above, is in a two-week test with a
 few people and comes to `main` after it. Windows support follows once macOS is stable.
 
-Test builds are Apple Development-signed and not notarised, so macOS asks once before opening them.
+Test builds are signed with Developer ID and notarised by Apple from build 4.

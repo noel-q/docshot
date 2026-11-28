@@ -13,13 +13,13 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         super.init()
     }
     
-    public func presentEditor(with baseImage: CGImage) {
+    public func presentEditor(with baseImage: CGImage, captureID: UUID? = nil, state: CaptureEditorState? = nil) {
         // If an editor window is already open, close it cleanly first
         if currentWindow != nil {
             closeEditor()
         }
         
-        let vm = EditorViewModel(baseImage: baseImage)
+        let vm = EditorViewModel(baseImage: baseImage, captureID: captureID, state: state)
         self.viewModel = vm
         
         let editorView = EditorView(viewModel: vm) { [weak self] in
@@ -47,6 +47,9 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         )
         
         window.title = "DocShot Editor"
+        // The title bar takes the toolbar's `surface`, so the two read as one bar.
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(Quiet.surface)
         window.center()
         window.contentView = hostingView
         window.isReleasedWhenClosed = false
@@ -65,7 +68,22 @@ public final class EditorWindowController: NSObject, NSWindowDelegate {
         window.delegate = nil
         window.orderOut(nil)
         window.close()
-        
+
+        // Captures keeps the marks, whichever way the editor closed (plan 4.5: Discard keeps
+        // the capture in the cache while history is on).
+        if let viewModel {
+            let state = viewModel.captureState
+            if let id = viewModel.captureID {
+                ClipboardHistoryController.shared.updateCaptureState(id, state)
+            } else if let recording = CaptureCoordinator.shared.captureRecording {
+                Task { @MainActor in
+                    if let id = await recording.value {
+                        ClipboardHistoryController.shared.updateCaptureState(id, state)
+                    }
+                }
+            }
+        }
+
         self.currentWindow = nil
         self.viewModel = nil
         self.isClosing = false

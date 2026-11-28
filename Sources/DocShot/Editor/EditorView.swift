@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct EditorView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: EditorViewModel
     public var onClose: () -> Void
     
@@ -10,229 +12,137 @@ public struct EditorView: View {
     @State private var isExporting: Bool = false
     @State private var outputStatus: String?
     @State private var exportIssue: String?
+    @State private var keyMonitor: Any?
     
     public init(viewModel: EditorViewModel, onClose: @escaping () -> Void) {
         self.viewModel = viewModel
         self.onClose = onClose
     }
     
-    private let availableColors: [CodableColor] = [
-        .red, .green, .blue, .yellow, .orange, .white, .black
-    ]
-    
-    private let availableWidths: [CGFloat] = [2.0, 4.0, 6.0, 8.0]
-    
     public var body: some View {
         VStack(spacing: 0) {
-            // Top Toolbar
-            HStack(spacing: 12) {
-                // Annotation Tools
-                HStack(spacing: 4) {
-                    ForEach(AnnotationTool.allCases) { tool in
-                        Button(action: {
-                            viewModel.activeTool = tool
-                        }) {
-                            Image(systemName: tool.systemImage)
-                                .font(.system(size: 13, weight: .semibold))
-                                .frame(width: 28, height: 26)
-                                .foregroundColor(viewModel.activeTool == tool ? DesignTokens.primaryAccent : .primary)
-                        }
-                        .buttonStyle(.plain)
-                        .background(viewModel.activeTool == tool ? DesignTokens.primaryAccent.opacity(0.15) : Color.clear)
-                        .cornerRadius(6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(viewModel.activeTool == tool ? DesignTokens.primaryAccent : Color.clear, lineWidth: 1)
-                        )
-                        .help(tool.rawValue)
-                    }
-                }
-                .padding(4)
-                .background(RoundedRectangle(cornerRadius: 8).fill(DesignTokens.cardBackground))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.borderAdaptive, lineWidth: 1))
-                
-                Divider()
-                    .frame(height: 20)
-                
-                // Color Picker Presets
-                HStack(spacing: 6) {
-                    ForEach(availableColors.indices, id: \.self) { index in
-                        let color = availableColors[index]
-                        Circle()
-                            .fill(color.swiftUIColor)
-                            .frame(width: 18, height: 18)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white, lineWidth: viewModel.selectedColor == color ? 2 : 0)
-                            )
-                            .overlay(
-                                Circle()
-                                    .stroke(DesignTokens.borderSubtle, lineWidth: 1)
-                            )
-                            .onTapGesture {
-                                viewModel.selectedColor = color
-                            }
-                    }
-                }
-                
-                Divider()
-                    .frame(height: 20)
-                
-                // Line Widths
-                HStack(spacing: 6) {
-                    ForEach(availableWidths, id: \.self) { w in
-                        Button(action: {
-                            viewModel.selectedStrokeWidth = w
-                        }) {
-                            Circle()
-                                .fill(Color.primary)
-                                .frame(width: w * 1.5 + 4, height: w * 1.5 + 4)
-                        }
-                        .buttonStyle(.plain)
-                        .frame(width: 22, height: 22)
-                        .background(viewModel.selectedStrokeWidth == w ? DesignTokens.primaryAccent.opacity(0.15) : Color.clear)
-                        .cornerRadius(4)
-                    }
-                }
-                
-                Spacer()
-                
-                // Undo / Redo / Delete
-                HStack(spacing: 6) {
-                    Button(action: { viewModel.undo() }) {
-                        Image(systemName: "arrow.uturn.backward")
-                    }
-                    .disabled(!viewModel.canUndo)
-                    .keyboardShortcut("z", modifiers: [.command])
-                    .help("Undo (⌘Z)")
-                    
-                    Button(action: { viewModel.redo() }) {
-                        Image(systemName: "arrow.uturn.forward")
-                    }
-                    .disabled(!viewModel.canRedo)
-                    .keyboardShortcut("z", modifiers: [.command, .shift])
-                    .help("Redo (⇧⌘Z)")
-                    
-                    Button(action: { viewModel.deleteSelectedAnnotation() }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                    .disabled(viewModel.selectedAnnotationID == nil)
-                    .keyboardShortcut(.delete, modifiers: [])
-                    .help("Delete Selection (Backspace/Delete)")
-                }
-                .buttonStyle(.borderless)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(DesignTokens.windowBackground)
-            
-            Divider()
-            
-            // Center Canvas View
+            toolbar
+            QuietRule()
+            // The image sits on the canvas, the bars on surface (image editor in Quiet).
             CanvasView(viewModel: viewModel)
-            
-            Divider()
-            
-            // Bottom Action Bar: Copy, Save, Discard
-            HStack(spacing: 16) {
-                // Discard Button (Explicit Exit Path)
-                Button(action: {
-                    onClose()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "xmark.circle")
-                        Text("Discard")
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(DesignTokens.secondaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                }
-                .buttonStyle(.plain)
-                .disabled(isExporting)
-                .keyboardShortcut(.escape, modifiers: [])
-                .help("Discard screenshot (Esc)")
-                
-                ExportSizeControl(viewModel: viewModel)
-
-                Spacer()
-
-                if isExporting {
-                    ProgressView()
-                        .controlSize(.small)
-                        .padding(.trailing, 8)
-                } else if let issue = exportIssue ?? viewModel.exportSizeErrorMessage {
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text(issue)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.red)
-                    }
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-                } else if let outputStatus {
-                    HStack(spacing: 6) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(DesignTokens.primaryAccent)
-                        Text(outputStatus)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(DesignTokens.secondaryText)
-                    }
-                    .lineLimit(1)
-                }
-                
-                // Save Button
-                Button(action: {
-                    performSave()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "square.and.arrow.down")
-                        Text("Save...")
-                    }
-                    .font(.system(size: 13, weight: .semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 7)
-                }
-                .disabled(isExporting)
-                .keyboardShortcut("s", modifiers: [.command])
-                .help("Save PNG to file (⌘S)")
-                
-                // Copy Button (Default Action)
-                Button(action: {
-                    performCopy()
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "doc.on.doc")
-                        Text("Copy PNG")
-                    }
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 7)
-                    .background(isExporting ? Color.gray : DesignTokens.primaryAccent)
-                    .cornerRadius(6)
-                }
-                .buttonStyle(.plain)
-                .disabled(isExporting)
-                .keyboardShortcut("c", modifiers: [.command])
-                .help("Copy flattened PNG to clipboard (⌘C)")
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(DesignTokens.windowBackground)
+                .padding(Quiet.Space.s6)
+                .background(Quiet.canvas)
+            QuietRule()
+            actionBar
         }
         .frame(minWidth: 700, minHeight: 500)
+        // Behind the see-through rules, so they blend as `line` should.
+        .background(Quiet.surface)
+        .onAppear { installKeyMonitor() }
+        .onDisappear { removeKeyMonitor() }
         .alert(isPresented: $showErrorAlert) {
             Alert(
-                title: Text("Export Failure"),
-                message: Text(errorMessage ?? "An error occurred while exporting image."),
+                title: Text("Could not export"),
+                message: Text(errorMessage ?? "Something went wrong while exporting the image."),
                 dismissButton: .default(Text("OK"))
             )
         }
     }
-    
+
+    // MARK: Toolbar
+
+    /// Tools, colours, widths, then undo, redo and delete. Selection is neutral: `selection`
+    /// behind, `ink` in front; the accent stays for Copy.
+    private var toolbar: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            AnnotationStyleBar(
+                activeTool: $viewModel.activeTool,
+                color: $viewModel.selectedColor,
+                width: $viewModel.selectedStrokeWidth,
+                showsToolKeys: true
+            )
+
+            Spacer(minLength: 0)
+
+            HStack(spacing: Quiet.Space.s1) {
+                EditorIconButton("pip.enter", help: "Float on screen (⌘F)", disabled: isExporting) { performFloat() }
+                    .keyboardShortcut("f", modifiers: [.command])
+                QuietRule(vertical: true)
+                EditorIconButton("arrow.uturn.backward", help: "Undo (⌘Z)", disabled: !viewModel.canUndo) { viewModel.undo() }
+                    .keyboardShortcut("z", modifiers: [.command])
+                EditorIconButton("arrow.uturn.forward", help: "Redo (⇧⌘Z)", disabled: !viewModel.canRedo) { viewModel.redo() }
+                    .keyboardShortcut("z", modifiers: [.command, .shift])
+                EditorIconButton("trash", help: "Delete the selected mark (⌫)", disabled: viewModel.selectedAnnotationID == nil) {
+                    viewModel.deleteSelectedAnnotation()
+                }
+                .keyboardShortcut(.delete, modifiers: [])
+            }
+        }
+        .padding(.horizontal, Quiet.Space.s4)
+        .padding(.vertical, Quiet.Space.s2)
+        .background(Quiet.surface)
+    }
+
+    // MARK: Action bar
+
+    /// Discard and the size on the left; the result, Save and the one accent button, Copy, on
+    /// the right, each with its key.
+    private var actionBar: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            Button(action: onClose) {
+                HStack(spacing: Quiet.Space.s1) {
+                    KeyHint(keys: "esc")
+                    Text("Discard").font(Quiet.Font.ui).foregroundStyle(Quiet.inkMuted)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(isExporting)
+            .keyboardShortcut(.escape, modifiers: [])
+            .help("Discard the screenshot (esc)")
+            .accessibilityLabel("Discard")
+
+            ExportSizeControl(viewModel: viewModel)
+
+            Spacer(minLength: Quiet.Space.s2)
+
+            if isExporting {
+                ProgressView()
+                    .controlSize(.small)
+            } else if let issue = exportIssue ?? viewModel.exportSizeErrorMessage {
+                Label(issue, systemImage: "exclamationmark.triangle")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.danger)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if let outputStatus {
+                Label(outputStatus, systemImage: "checkmark")
+                    .font(Quiet.Font.caption)
+                    .foregroundStyle(Quiet.inkMuted)
+                    .lineLimit(1)
+            }
+
+            Button(action: performSave) {
+                Text("Save…  ⌘S")
+            }
+            .controlSize(.large)
+            .disabled(isExporting)
+            .keyboardShortcut("s", modifiers: [.command])
+            .help("Save a PNG (⌘S)")
+            .accessibilityLabel("Save")
+
+            Button {
+                performCopy()
+            } label: {
+                AccentButtonLabel("Copy  ↵")
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Quiet.accent)
+            .controlSize(.large)
+            .disabled(isExporting)
+            .keyboardShortcut("c", modifiers: [.command])
+            .help("Copy the PNG (⌘C). Return copies and closes.")
+            .accessibilityLabel("Copy")
+        }
+        .padding(.horizontal, Quiet.Space.s4)
+        .padding(.vertical, Quiet.Space.s3)
+        .background(Quiet.surface)
+    }
+
     /// Renders the export, or reports why it could not be produced. An invalid export size is
     /// reported inline next to the size control; only a genuine render failure raises an alert.
     private func renderExport() async -> Data? {
@@ -256,7 +166,46 @@ public struct EditorView: View {
         }
     }
 
-    private func performCopy() {
+    /// Tool keys and Return act only while the canvas has focus: the editor window is key,
+    /// nothing is presented over it, and no text field is being edited.
+    private func installKeyMonitor() {
+        removeKeyMonitor()
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            guard let window = EditorWindowController.shared.currentWindow,
+                  event.window === window,
+                  window.attachedSheet == nil,
+                  !isExporting else {
+                return event
+            }
+
+            let command = EditorKeyCommand.resolve(
+                characters: event.charactersIgnoringModifiers,
+                keyCode: event.keyCode,
+                hasCommandModifiers: !event.modifierFlags.intersection([.command, .option, .control]).isEmpty,
+                isEditingText: window.firstResponder is NSText
+            )
+
+            switch command {
+            case .selectTool(let tool):
+                viewModel.activeTool = tool
+                return nil
+            case .copyAndClose:
+                performCopy(closeOnSuccess: true)
+                return nil
+            case nil:
+                return event
+            }
+        }
+    }
+
+    private func removeKeyMonitor() {
+        if let keyMonitor {
+            NSEvent.removeMonitor(keyMonitor)
+        }
+        keyMonitor = nil
+    }
+
+    private func performCopy(closeOnSuccess: Bool = false) {
         guard !isExporting else { return }
         isExporting = true
         outputStatus = nil
@@ -269,12 +218,34 @@ public struct EditorView: View {
             guard let data = pngData else { return }
 
             if OutputService.shared.copyToClipboard(pngData: data) {
-                // Show success status and retain editor window open (Discard is explicit exit path)
+                if closeOnSuccess {
+                    // Return is the one-key exit: the copy has landed, so close.
+                    self.onClose()
+                    return
+                }
+                // Cmd+C and the button keep the editor open (Discard is the explicit exit path)
                 self.outputStatus = "Copied to clipboard"
             } else {
                 self.errorMessage = "Failed to copy screenshot to the clipboard."
                 self.showErrorAlert = true
             }
+        }
+    }
+
+    /// Float (C4b): the image with its marks, in its own window above the others. The editor
+    /// stays open; nothing is written to disk.
+    private func performFloat() {
+        guard !isExporting else { return }
+        Task {
+            let result = await ExportService.shared.exportPNGResult(
+                baseImage: viewModel.baseImage, annotations: viewModel.annotations,
+                cropRect: viewModel.cropRect, exportSize: .native
+            )
+            guard case .success(let png) = result, let image = FloatController.image(fromPNG: png) else {
+                NSSound.beep()
+                return
+            }
+            FloatController.shared.float(image)
         }
     }
 
@@ -303,6 +274,139 @@ public struct EditorView: View {
                 self.errorMessage = msg
                 self.showErrorAlert = true
             }
+        }
+    }
+}
+
+/// An icon button in an editor bar: `ink-muted`, `ink-faint` when it cannot act.
+struct EditorIconButton: View {
+    let symbol: String
+    let help: String
+    let disabled: Bool
+    let action: () -> Void
+
+    init(_ symbol: String, help: String, disabled: Bool = false, action: @escaping () -> Void) {
+        self.symbol = symbol
+        self.help = help
+        self.disabled = disabled
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(Quiet.Font.ui)
+                .foregroundStyle(disabled ? Quiet.inkFaint : Quiet.inkMuted)
+                .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
+        .help(help)
+        .accessibilityLabel(help)
+    }
+}
+
+/// The annotation tools, colours and line widths, shared by the image and video editors.
+/// Selection is neutral: `selection` behind, `ink` in front, an `ink` ring round the colour.
+/// The annotation colours are the picture's colours, not the interface's.
+struct AnnotationStyleBar: View {
+    @Binding var activeTool: AnnotationTool
+    @Binding var color: CodableColor
+    @Binding var width: CGFloat
+    /// The image editor has a key for each tool; the video editor does not.
+    var showsToolKeys: Bool
+
+    static let colours: [CodableColor] = [.red, .green, .blue, .yellow, .orange, .white, .black]
+    static let widths: [CGFloat] = [2.0, 4.0, 6.0, 8.0]
+
+    var body: some View {
+        HStack(spacing: Quiet.Space.s3) {
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(AnnotationTool.allCases) { tool in
+                    let isActive = activeTool == tool
+                    let name = showsToolKeys ? tool.tooltip : tool.rawValue
+                    Button {
+                        activeTool = tool
+                    } label: {
+                        Image(systemName: tool.systemImage)
+                            .font(Quiet.Font.ui)
+                            .foregroundStyle(isActive ? Quiet.ink : Quiet.inkMuted)
+                            .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isActive ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(name)
+                    .accessibilityLabel(name)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            HStack(spacing: Quiet.Space.s2) {
+                ForEach(Self.colours.indices, id: \.self) { index in
+                    let colour = Self.colours[index]
+                    let isSelected = color == colour
+                    Button {
+                        color = colour
+                    } label: {
+                        Circle()
+                            .fill(colour.swiftUIColor)
+                            .frame(width: Quiet.Space.s4, height: Quiet.Space.s4)
+                            .overlay(Circle().strokeBorder(Quiet.line, lineWidth: 1))
+                            .padding(Quiet.Space.s1)
+                            .overlay(Circle().strokeBorder(isSelected ? Quiet.ink : Color.clear, lineWidth: 2))
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(Self.colourName(colour))
+                    .accessibilityLabel(Self.colourName(colour))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+
+            QuietRule(vertical: true)
+
+            HStack(spacing: Quiet.Space.s1) {
+                ForEach(Self.widths, id: \.self) { lineWidth in
+                    let isSelected = width == lineWidth
+                    Button {
+                        width = lineWidth
+                    } label: {
+                        Circle()
+                            .fill(Quiet.ink)
+                            .frame(width: lineWidth * 1.5 + 4, height: lineWidth * 1.5 + 4)
+                            .frame(width: Quiet.Space.s6, height: Quiet.Space.s6)
+                            .background(
+                                RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                                    .fill(isSelected ? Quiet.selection : Color.clear)
+                            )
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("Line width \(Int(lineWidth))")
+                    .accessibilityLabel("Line width \(Int(lineWidth))")
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+        }
+    }
+
+    static func colourName(_ colour: CodableColor) -> String {
+        switch colour {
+        case .red: return "Red"
+        case .green: return "Green"
+        case .blue: return "Blue"
+        case .yellow: return "Yellow"
+        case .orange: return "Orange"
+        case .white: return "White"
+        case .black: return "Black"
+        default: return "Colour"
         }
     }
 }

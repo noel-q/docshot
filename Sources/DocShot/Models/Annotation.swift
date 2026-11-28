@@ -53,7 +53,7 @@ public enum AnnotationType: Codable, Equatable, Sendable {
     case redaction(rect: CGRect)
 }
 
-public struct AnnotationItem: Identifiable, Equatable, Sendable {
+public struct AnnotationItem: Identifiable, Equatable, Sendable, Codable {
     public let id: UUID
     public var type: AnnotationType
     public var color: CodableColor
@@ -123,5 +123,23 @@ public struct AnnotationItem: Identifiable, Equatable, Sendable {
                 rect: CGRect(x: rect.origin.x + delta.width, y: rect.origin.y + delta.height, width: rect.width, height: rect.height)
             )
         }
+    }
+}
+
+/// What Captures keeps of a screenshot's editing (C4 plan, decision 1): its marks and crop.
+/// The output size is not kept: every capture starts at its native size.
+public struct CaptureEditorState: Codable, Equatable, Sendable {
+    public var annotations: [AnnotationItem]
+    public var cropRect: CGRect?
+
+    public init(annotations: [AnnotationItem] = [], cropRect: CGRect? = nil) {
+        self.annotations = annotations
+        self.cropRect = cropRect
+    }
+
+    public func encoded() -> Data? { try? JSONEncoder().encode(self) }
+
+    public static func decoded(_ data: Data?) -> CaptureEditorState? {
+        data.flatMap { try? JSONDecoder().decode(CaptureEditorState.self, from: $0) }
     }
 }

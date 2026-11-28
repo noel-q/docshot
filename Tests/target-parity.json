@@ -11,6 +11,7 @@
     "Sources/DocShot/Capture/DisplaySnapshotService.swift",
     "Sources/DocShot/Capture/PendingEscapeSession.swift",
     "Sources/DocShot/Design/DesignTokens.swift",
+    "Sources/DocShot/Design/ThemeController.swift",
     "Sources/DocShot/Design/MarkView.swift",
     "Sources/DocShot/Editor/EditorViewModel.swift",
     "Sources/DocShot/Editor/ImageRenderer.swift",
@@ -23,6 +24,10 @@
     "Sources/DocShot/Models/DisplayGeometry.swift",
     "Sources/DocShot/Models/DisplaySnapshot.swift",
     "Sources/DocShot/Models/ExportSize.swift",
+    "Sources/DocShot/Models/GlobalShortcut.swift",
+    "Sources/DocShot/Models/PreviewThumbnail.swift",
+    "Sources/DocShot/Models/ColorTheme.swift",
+    "Sources/DocShot/Models/EasterEggs.swift",
     "Sources/DocShot/Models/MagnifierGrid.swift",
     "Sources/DocShot/Models/PixelSampler.swift",
     "Sources/DocShot/Models/RecordingFailure.swift",
@@ -48,11 +53,26 @@
     "Sources/DocShot/Services/RecordingVideoWriter.swift",
     "Sources/DocShot/Services/TemporaryRecordingStore.swift",
     "Sources/DocShot/Services/VideoAnnotationOverlayRenderer.swift",
-    "Sources/DocShot/Services/VideoProjectExportService.swift"
+    "Sources/DocShot/Services/VideoProjectExportService.swift",
+    "Sources/DocShot/Clipboard/ClipboardSettings.swift",
+    "Sources/DocShot/Clipboard/PasteboardReader.swift",
+    "Sources/DocShot/Clipboard/ClipboardHistoryController.swift",
+    "Sources/DocShot/Clipboard/PasteAction.swift",
+    "Sources/DocShot/Clipboard/ClipboardListModel.swift",
+    "Sources/DocShot/Design/QuietTokens.swift",
+    "Sources/DocShot/Design/Quiet.swift",
+    "Sources/DocShot/Clipboard/ClipPreviewText.swift",
+    "Sources/DocShot/Settings/SettingsPanelLayout.swift",
+    "Sources/DocShot/Onboarding/OnboardingPages.swift",
+    "Sources/DocShot/Capture/FloatLayout.swift",
+    "Sources/DocShot/Updates/UpdateRelease.swift"
   ],
 
   "appOnlyProductionSources": [
+    "Sources/DocShot/Capture/FloatController.swift",
+    "Sources/DocShot/Updates/UpdateController.swift",
     "Sources/DocShot/Capture/CaptureCoordinator.swift",
+    "Sources/DocShot/Capture/PreviewThumbnailController.swift",
     "Sources/DocShot/Capture/MagnifierView.swift",
     "Sources/DocShot/Capture/SelectionOverlayView.swift",
     "Sources/DocShot/Capture/SelectionOverlayWindow.swift",
@@ -80,10 +100,22 @@
     "Sources/DocShot/Services/ScreenCaptureService.swift",
     "Sources/DocShot/Services/WindowDiscoveryService.swift",
     "Sources/DocShot/Settings/CustomShortcutRecorder.swift",
-    "Sources/DocShot/Settings/SettingsView.swift"
+    "Sources/DocShot/Settings/SettingsView.swift",
+    "Sources/DocShot/Settings/SettingsComponents.swift",
+    "Sources/DocShot/Clipboard/ClipboardWindowController.swift",
+    "Sources/DocShot/Clipboard/ClipboardHistoryView.swift",
+    "Sources/DocShot/Clipboard/ClipboardSettingsSection.swift",
+    "Sources/DocShot/Clipboard/ClipboardDebugHooks.swift",
+    "Sources/DocShot/Clipboard/ClipboardPreviewPane.swift"
   ],
 
   "swiftPackageOnlySuites": [
+    {
+      "suite": "Settings Layout Tests",
+      "file": "Tests/DocShotTests/SettingsLayoutTests.swift",
+      "testCount": 2,
+      "reason": "The Settings tab views are app-only: the hostless Xcode test bundle links no app binary, so the views have nothing to link against there."
+    },
     {
       "suite": "CaptureCoordinator Escape Lifecycle Tests",
       "file": "Tests/DocShotTests/TemporaryEscapeHotkeyTests.swift",

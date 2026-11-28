@@ -19,7 +19,7 @@ public struct VideoPlayerPreviewView: View {
         GeometryReader { geometry in
             ZStack {
                 // Graphite background
-                DesignTokens.graphiteBase
+                Quiet.canvas
                     .edgesIgnoringSafeArea(.all)
 
                 // Native AVPlayer video layer view
@@ -201,6 +201,8 @@ private final class AVPlayerContainerView: NSView {
 // MARK: - Canvas Overlay View
 
 private struct CanvasOverlayView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject var themeController = ThemeController.shared
     @ObservedObject var viewModel: VideoEditorViewModel
     let viewSize: CGSize
 
@@ -282,14 +284,13 @@ private struct CanvasOverlayView: View {
                         }
                     HStack(spacing: 8) {
                         Button("Add") { commitTextAnnotation() }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.bordered)
                         Button("Cancel") { isEnteringText = false }
                             .buttonStyle(.bordered)
                     }
                 }
-                .padding(10)
-                .background(DesignTokens.cardBackground)
-                .cornerRadius(8)
+                .padding(Quiet.Space.s3)
+                .background(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous).fill(Quiet.surface))
                 .shadow(radius: 4)
                 .position(textInputLocation)
             }
@@ -418,7 +419,7 @@ private struct CanvasOverlayView: View {
 
         if isSelected {
             let bounding = VideoEditorMath.sourceToViewRect(rect: item.boundingBox, viewSize: viewSize, sourcePixelSize: sourcePixelSize)
-            context.stroke(Path(bounding.insetBy(dx: -4, dy: -4)), with: .color(DesignTokens.primaryAccent), lineWidth: 2)
+            context.stroke(Path(bounding.insetBy(dx: -4, dy: -4)), with: .color(Quiet.ink), lineWidth: 2)
         }
     }
 

@@ -23,6 +23,17 @@ public final class CaptureCoordinator: ObservableObject {
     /// cannot reopen or update a selection the user already dismissed.
     private var selectionGeneration = 0
     private var isRefreshingSnapshots = false
+    /// A Space change arrived while a refresh was running: refresh once more when it ends.
+    private var needsRefreshAgain = false
+    private let spaceObserver = SpaceChangeObserver()
+
+    /// The app that was frontmost when the capture was requested. The preview thumbnail hands
+    /// focus back to it after anything that brings DocShot forward.
+    private var focusReturnApp: NSRunningApplication?
+
+    /// The "Discard current …?" prompt is up. A second capture request while it is modal
+    /// must not stack another prompt on top.
+    private var isConfirmingDiscard = false
 
     /// Owns the temporary global Escape registration used while a snapshot is pending.
     /// Injectable so the lifecycle can be tested without registering a real system hotkey.
@@ -56,8 +67,15 @@ public final class CaptureCoordinator: ObservableObject {
     public func startCapture() {
         switch state {
         case .idle, .cancelled:
+            recordFocusReturnApp()
             beginCaptureRequest()
         case .editing:
+            // A press that only beeps must not touch the recorded app either.
+            guard !isConfirmingDiscard, !PreviewThumbnailController.shared.isBusy else {
+                NSSound.beep()
+                return
+            }
+            recordFocusReturnApp()
             confirmDiscardAndStartNewCapture()
         case .permissionRequired, .selecting, .capturing:
             return
@@ -92,20 +110,50 @@ public final class CaptureCoordinator: ObservableObject {
         }
     }
 
+    /// Nil when DocShot itself is in front (Settings or the editor open, say): then there is
+    /// no other app to hand focus back to, and an older one must not be reused.
+    private func recordFocusReturnApp() {
+        let frontmost = NSWorkspace.shared.frontmostApplication
+        focusReturnApp = frontmost?.processIdentifier == ProcessInfo.processInfo.processIdentifier
+            ? nil
+            : frontmost
+    }
+
     /// A new capture replaces the current editor session, so require an explicit confirmation
     /// before closing it. Cancelling this alert intentionally leaves the editor untouched.
     private func confirmDiscardAndStartNewCapture() {
+        isConfirmingDiscard = true
+        defer { isConfirmingDiscard = false }
+
         NSApp.activate(ignoringOtherApps: true)
+
+        let thumbnailShowing = PreviewThumbnailController.shared.isShowing
 
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Discard Current Edits?"
-        alert.informativeText = "Starting a new capture will discard the screenshot and annotations currently open in DocShot."
+        if thumbnailShowing {
+            alert.messageText = "Discard Current Screenshot?"
+            alert.informativeText = "Starting a new capture will discard the screenshot waiting in the DocShot preview."
+        } else {
+            alert.messageText = "Discard Current Edits?"
+            alert.informativeText = "Starting a new capture will discard the screenshot and annotations currently open in DocShot."
+        }
         alert.addButton(withTitle: "Cancel")
         alert.addButton(withTitle: "Start New Capture")
 
-        guard alert.runModal() == .alertSecondButtonReturn else { return }
+        guard alert.runModal() == .alertSecondButtonReturn else {
+            // Cancel leaves the capture where it was. With the thumbnail up, focus goes back to
+            // the user's app and the thumbnail gets its keys again; the editor stays as before.
+            if thumbnailShowing {
+                PreviewThumbnailController.shared.resumeAfterInterruption()
+            }
+            return
+        }
 
+        if thumbnailShowing {
+            PreviewThumbnailController.shared.dismiss()
+            finishEditing()
+        }
         EditorWindowController.shared.closeEditor()
         beginCaptureRequest()
     }
@@ -155,15 +203,32 @@ public final class CaptureCoordinator: ObservableObject {
             return
         }
 
-        // 5. Only now do overlays exist.
+        // 5. The user switched Space while the picture was taken: take it again on the new one.
+        while needsRefreshAgain {
+            needsRefreshAgain = false
+            await DisplaySnapshotService.shared.captureSnapshots(
+                for: DisplaySnapshotService.descriptorsForConnectedScreens()
+            )
+            guard generation == selectionGeneration, state == .selecting else {
+                DisplaySnapshotService.shared.cancelPending()
+                return
+            }
+            eligibleWindows = WindowDiscoveryService.shared.getEligibleWindows()
+        }
+
+        // 6. Only now do overlays exist.
         presentOverlays(mainScreenHeight: mainScreenHeight)
     }
 
-    private func presentOverlays(mainScreenHeight: CGFloat) {
+    /// `markReady` false leaves the snapshot service told that no overlay is up, so a picture
+    /// for the colour readout can still be taken after the selector appears. DocShot's windows
+    /// are excluded from that picture, so the selector's dimming is never in it.
+    private func presentOverlays(mainScreenHeight: CGFloat, fadeIn: Bool = false, markReady: Bool = true) {
         var newOverlays: [SelectionOverlayWindow] = []
+        let fades = fadeIn && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
 
         for screen in NSScreen.screens {
-            let overlay = SelectionOverlayWindow(contentRect: screen.frame, screen: screen)
+            let overlay = SelectionOverlayWindow(contentRect: screen.frame, screen: screen, staysOnItsSpace: true)
 
             let hostView = NSHostingView(
                 rootView: SelectionOverlayView(
@@ -184,12 +249,23 @@ public final class CaptureCoordinator: ObservableObject {
             )
 
             overlay.contentView = hostView
+            if fades { overlay.alphaValue = 0 }
             overlay.makeKeyAndOrderFront(nil)
             newOverlays.append(overlay)
         }
 
         self.overlayWindows = newOverlays
-        DisplaySnapshotService.shared.setSelectionOverlayVisible(true)
+        if markReady {
+            DisplaySnapshotService.shared.setSelectionOverlayVisible(true)
+        }
+
+        if fades {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = QuietTokens.durFast
+                context.timingFunction = Quiet.Motion.easeOutCurve
+                for overlay in newOverlays { overlay.animator().alphaValue = 1 }
+            }
+        }
     }
 
     /// Re-captures every display without ending the selection session, for when the screen has
@@ -226,7 +302,20 @@ public final class CaptureCoordinator: ObservableObject {
             self.isRefreshingSnapshots = false
 
             guard generation == self.selectionGeneration, self.state == .selecting else {
+                self.needsRefreshAgain = false
                 DisplaySnapshotService.shared.cancelPending()
+                return
+            }
+
+            // The windows may have changed too (another Space is in front), so the highlight
+            // and the window capture must use the new list, not the one from the first press.
+            self.eligibleWindows = WindowDiscoveryService.shared.getEligibleWindows()
+            self.updateHoveredWindow(mainScreenHeight: mainScreenHeight)
+
+            if self.needsRefreshAgain {
+                // The Space changed while this picture was taken: move to the new Space.
+                self.needsRefreshAgain = false
+                self.handleSpaceChange(mainScreenHeight: mainScreenHeight)
                 return
             }
 
@@ -234,6 +323,64 @@ public final class CaptureCoordinator: ObservableObject {
                 overlay.makeKeyAndOrderFront(nil)
             }
             DisplaySnapshotService.shared.setSelectionOverlayVisible(true)
+        }
+    }
+
+    /// The user moved to another Space while the selector was open. The old selector stays on
+    /// the Space it opened on (it slid away with it), so nothing is hidden or reshown on screen:
+    /// read the new Space's windows, fade a new selector in, then take its picture.
+    private func handleSpaceChange(mainScreenHeight: CGFloat) {
+        guard state == .selecting else { return }
+        if isRefreshingSnapshots || overlayWindows.isEmpty {
+            // Still taking a picture (the first one, or a refresh): take another after it.
+            needsRefreshAgain = true
+            return
+        }
+        isRefreshingSnapshots = true
+        let generation = selectionGeneration
+
+        for overlay in overlayWindows {
+            overlay.orderOut(nil)
+            overlay.close()
+        }
+        overlayWindows.removeAll()
+        hoveredWindow = nil
+        DisplaySnapshotService.shared.setSelectionOverlayVisible(false)
+        colorReadout.clear()
+
+        // The selector shows the live screen; the picture only feeds the colour readout. So the
+        // new selector appears at once with the new Space's windows, and the picture follows.
+        eligibleWindows = WindowDiscoveryService.shared.getEligibleWindows()
+        presentOverlays(mainScreenHeight: mainScreenHeight, fadeIn: true, markReady: false)
+        updateHoveredWindow(mainScreenHeight: mainScreenHeight)
+
+        Task { [weak self] in
+            guard let self else { return }
+            await DisplaySnapshotService.shared.captureSnapshots(
+                for: DisplaySnapshotService.descriptorsForConnectedScreens()
+            )
+            self.isRefreshingSnapshots = false
+
+            guard generation == self.selectionGeneration, self.state == .selecting else {
+                self.needsRefreshAgain = false
+                DisplaySnapshotService.shared.cancelPending()
+                return
+            }
+            DisplaySnapshotService.shared.setSelectionOverlayVisible(true)
+
+            if self.needsRefreshAgain {
+                // The Space changed again while this picture was taken.
+                self.needsRefreshAgain = false
+                self.handleSpaceChange(mainScreenHeight: mainScreenHeight)
+            }
+        }
+    }
+
+    private func updateHoveredWindow(mainScreenHeight: CGFloat) {
+        let location = DisplayGeometry.cocoaToCGPoint(NSEvent.mouseLocation, mainScreenHeight: mainScreenHeight)
+        let hovered = eligibleWindows.first { $0.boundsInCG.contains(location) }
+        if hoveredWindow != hovered {
+            hoveredWindow = hovered
         }
     }
 
@@ -280,6 +427,10 @@ public final class CaptureCoordinator: ObservableObject {
             return event
         }
 
+        spaceObserver.start { [weak self] in
+            self?.handleSpaceChange(mainScreenHeight: mainScreenHeight)
+        }
+
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] event in
             guard let self = self, self.state == .selecting else { return event }
             let mouseLocationInCocoa = NSEvent.mouseLocation
@@ -307,6 +458,8 @@ public final class CaptureCoordinator: ObservableObject {
     }
     
     private func removeMonitors() {
+        spaceObserver.stop()
+        needsRefreshAgain = false
         if let monitor = mouseMonitor {
             NSEvent.removeMonitor(monitor)
             mouseMonitor = nil
@@ -327,7 +480,9 @@ public final class CaptureCoordinator: ObservableObject {
             
             do {
                 let cgImage = try await ScreenCaptureService.shared.captureWindow(windowID: window.id, boundsInCG: window.boundsInCG)
-                openEditor(with: cgImage)
+                let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
+                let cocoaRect = DisplayGeometry.cgToCocoaRect(window.boundsInCG, mainScreenHeight: primaryHeight)
+                presentCapture(cgImage, capturedRect: cocoaRect)
             } catch {
                 self.handleCaptureError("Failed to capture window: \(error.localizedDescription)")
             }
@@ -346,7 +501,7 @@ public final class CaptureCoordinator: ObservableObject {
             
             do {
                 let cgImage = try await ScreenCaptureService.shared.captureRegion(cgRect)
-                openEditor(with: cgImage)
+                presentCapture(cgImage, capturedRect: cocoaRect)
             } catch {
                 self.handleCaptureError("Failed to capture region: \(error.localizedDescription)")
             }
@@ -365,13 +520,36 @@ public final class CaptureCoordinator: ObservableObject {
         alert.runModal()
     }
     
-    private func openEditor(with image: CGImage) {
+    /// A finished screenshot goes to the preview thumbnail first (C0.6). The state is
+    /// `.editing` until the thumbnail or the editor it opens is done with the capture.
+    private func presentCapture(_ image: CGImage, capturedRect: CGRect) {
         self.state = .editing
-        EditorWindowController.shared.presentEditor(with: image)
+        // Captures (C4): kept while history is on; the editor adds its marks when it closes.
+        captureRecording = Task { @MainActor in
+            await ClipboardHistoryController.shared.recordScreenshot(image)
+        }
+        let centre = CGPoint(x: capturedRect.midX, y: capturedRect.midY)
+        let screen = NSScreen.screens.first { $0.frame.contains(centre) } ?? NSScreen.main
+        PreviewThumbnailController.shared.present(image: image, on: screen, focusReturnApp: focusReturnApp)
     }
     
     public func finishEditing() {
         self.state = .idle
         self.hoveredWindow = nil
+    }
+
+    /// Storing the screenshot being handled now in Captures (C4); its value is the entry's id,
+    /// nil when Captures keeps nothing. The editor waits for it when it closes, so its marks
+    /// always go to this capture.
+    public private(set) var captureRecording: Task<UUID?, Never>?
+
+    /// A screenshot reopened from Captures: the editor owns the screen like a fresh capture,
+    /// so a new capture waits until it closes. False while a capture or recording is under way.
+    public func beginReopenedEditing() -> Bool {
+        guard state == .idle || state == .cancelled,
+              !RecordingCoordinator.shared.state.isActive else { return false }
+        captureRecording = nil
+        state = .editing
+        return true
     }
 }

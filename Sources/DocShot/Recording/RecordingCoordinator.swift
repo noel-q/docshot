@@ -34,6 +34,7 @@ public final class RecordingCoordinator: ObservableObject {
     private var eligibleWindows: [WindowInfo] = []
     private var mouseMonitor: Any?
     private var keyMonitor: Any?
+    private let spaceObserver = SpaceChangeObserver()
     private var mainScreenHeight: CGFloat = 0
     private var noticeGeneration = 0
     private let statusPanel = RecordingStatusPanelController()
@@ -248,6 +249,9 @@ public final class RecordingCoordinator: ObservableObject {
             Task { @MainActor [weak self] in
                 guard let self else { return }
                 let result = await self.movieSaver.save(recording, parent: nil)
+                if case .saved(let url) = result {
+                    ClipboardHistoryController.shared.recordSavedRecording(url, pixelSize: recording.pixelSize)
+                }
                 self.send(.saveCompleted(result))
             }
 
@@ -354,22 +358,34 @@ public final class RecordingCoordinator: ObservableObject {
             return event
         }
 
+        // After a swipe to another Space (a desktop or full-screen app), the windows under the
+        // live overlay are that Space's, so the list read when the selector opened is stale.
+        spaceObserver.start { [weak self] in
+            guard let self, self.state == .selecting else { return }
+            self.eligibleWindows = RecordingSelectionAdapter.eligibleWindows()
+            self.updateHoveredWindow()
+        }
+
         mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] event in
             guard let self, self.state == .selecting else { return event }
-
-            let locationInCG = DisplayGeometry.cocoaToCGPoint(
-                NSEvent.mouseLocation,
-                mainScreenHeight: self.mainScreenHeight
-            )
-            let hovered = self.eligibleWindows.first { $0.boundsInCG.contains(locationInCG) }
-            if self.hoveredWindow != hovered {
-                self.hoveredWindow = hovered
-            }
+            self.updateHoveredWindow()
             return event
         }
     }
 
+    private func updateHoveredWindow() {
+        let locationInCG = DisplayGeometry.cocoaToCGPoint(
+            NSEvent.mouseLocation,
+            mainScreenHeight: mainScreenHeight
+        )
+        let hovered = eligibleWindows.first { $0.boundsInCG.contains(locationInCG) }
+        if hoveredWindow != hovered {
+            hoveredWindow = hovered
+        }
+    }
+
     private func removeMonitors() {
+        spaceObserver.stop()
         if let mouseMonitor {
             NSEvent.removeMonitor(mouseMonitor)
             self.mouseMonitor = nil
@@ -494,11 +510,17 @@ public final class RecordingCoordinator: ObservableObject {
             """
         alert.addButton(withTitle: "Save MP4…")
         alert.addButton(withTitle: "Edit Recording…")
+        // Short recordings (the GIF profile's limits) can also be saved or copied as a GIF.
         let canExportGIF = GIFProfile.docShotR4.supports(recording)
-        if canExportGIF { alert.addButton(withTitle: "Export GIF…") }
+        if canExportGIF {
+            alert.addButton(withTitle: "Export GIF…")
+            alert.addButton(withTitle: "Copy GIF")
+        }
         alert.addButton(withTitle: "Discard")
 
         let response = alert.runModal()
+        let exportGIFResponse = NSApplication.ModalResponse(rawValue: NSApplication.ModalResponse.alertThirdButtonReturn.rawValue)
+        let copyGIFResponse = NSApplication.ModalResponse(rawValue: exportGIFResponse.rawValue + 1)
         if response == .alertFirstButtonReturn {
             send(.saveRequested)
         } else if response == .alertSecondButtonReturn {
@@ -511,8 +533,10 @@ public final class RecordingCoordinator: ObservableObject {
                     self.send(.discardRequested)
                 }
             }
-        } else if canExportGIF && response == .alertThirdButtonReturn {
+        } else if canExportGIF && response == exportGIFResponse {
             exportGIF(from: recording)
+        } else if canExportGIF && response == copyGIFResponse {
+            copyGIF(from: recording)
         } else {
             send(.discardRequested)
         }
@@ -531,6 +555,32 @@ public final class RecordingCoordinator: ObservableObject {
         }
     }
 
+    /// Copy GIF: makes the GIF, puts it on the clipboard, and is done with the recording, as
+    /// Export GIF is after saving. Nothing is written to the clipboard until the user chooses it.
+    private func copyGIF(from recording: TemporaryRecording) {
+        // Says when the clipboard is ready, so a quick paste does not get the old contents.
+        CopyNotice.shared.show("Making the GIF…")
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let temporaryGIF = try self.store.makeGIFURL()
+                let gifURL = try await self.gifExporter.export(source: recording, destination: temporaryGIF, profile: .docShotR4)
+                do {
+                    try GIFClipboard.copy(gifAt: gifURL, into: GIFClipboard.defaultFolder())
+                } catch {
+                    self.store.removeIfPresent(gifURL)
+                    throw error
+                }
+                self.store.removeIfPresent(recording.url)
+                CopyNotice.shared.show("GIF copied. Paste it anywhere.", closeAfter: 2)
+                self.send(.discardRequested)
+            } catch {
+                CopyNotice.shared.close()
+                self.presentGIFFailure(error.localizedDescription, recording: recording, title: "Couldn't copy the GIF")
+            }
+        }
+    }
+
     private func presentGIFSavePanel(gifURL: URL, sourceMP4: TemporaryRecording) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.gif]
@@ -544,6 +594,7 @@ public final class RecordingCoordinator: ObservableObject {
         }
         do {
             try store.move(gifURL, to: destination)
+            ClipboardHistoryController.shared.recordSavedRecording(destination, pixelSize: sourceMP4.pixelSize)
             store.removeIfPresent(sourceMP4.url)
             send(.discardRequested)
         } catch {
@@ -552,10 +603,10 @@ public final class RecordingCoordinator: ObservableObject {
         }
     }
 
-    private func presentGIFFailure(_ message: String, recording: TemporaryRecording) {
+    private func presentGIFFailure(_ message: String, recording: TemporaryRecording, title: String = "GIF Export Unavailable") {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "GIF Export Unavailable"
+        alert.messageText = title
         alert.informativeText = message
         alert.addButton(withTitle: "Save MP4…")
         alert.addButton(withTitle: "Back")
@@ -579,5 +630,89 @@ public final class RecordingCoordinator: ObservableObject {
     static func durationText(_ duration: TimeInterval) -> String {
         let total = Int(duration.rounded())
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+}
+
+/// A small note under the menu bar for Copy GIF: what is happening, then that the GIF is on the
+/// clipboard. Never takes the keyboard or the app forward (Quiet: surface, hairline, radius-md).
+@MainActor
+final class CopyNotice {
+    static let shared = CopyNotice()
+    private var panel: NSPanel?
+    private var closeTask: Task<Void, Never>?
+
+    private(set) var text: String?
+
+    func show(_ text: String, closeAfter seconds: Double? = nil) {
+        self.text = text
+        closeTask?.cancel()
+        // The panel never takes focus, so VoiceOver hears it as an announcement.
+        NSAccessibility.post(element: NSApp as Any, notification: .announcementRequested, userInfo: [
+            .announcement: text, .priority: NSAccessibilityPriorityLevel.high.rawValue,
+        ])
+        let host = NSHostingView(rootView: CopyNoticeView(text: text))
+        host.sizingOptions = []
+        let size = host.fittingSize
+        let panel = self.panel ?? {
+            let made = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+            made.isOpaque = false
+            made.backgroundColor = .clear
+            made.hasShadow = true
+            made.level = .statusBar
+            made.ignoresMouseEvents = true
+            made.hidesOnDeactivate = false
+            made.isReleasedWhenClosed = false
+            made.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+            made.title = "DocShot copy notice"
+            return made
+        }()
+        panel.contentView = host
+        let mouse = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
+        panel.setFrame(CGRect(
+            x: (visible.midX - size.width / 2).rounded(), y: (visible.maxY - size.height - Quiet.Space.s4).rounded(),
+            width: size.width, height: size.height
+        ), display: true)
+        if self.panel == nil {
+            panel.alphaValue = 0
+            panel.orderFrontRegardless()
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = QuietTokens.durBase
+                panel.animator().alphaValue = 1
+            }
+        }
+        self.panel = panel
+        if let seconds {
+            closeTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(seconds))
+                guard !Task.isCancelled else { return }
+                self?.close()
+            }
+        }
+    }
+
+    func close() {
+        closeTask?.cancel()
+        closeTask = nil
+        text = nil
+        panel?.orderOut(nil)
+        panel = nil
+    }
+}
+
+private struct CopyNoticeView: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(Quiet.Font.nativeBody)
+            .foregroundStyle(Quiet.ink)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.vertical, Quiet.Space.s2)
+            .background(Quiet.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: Quiet.Radius.md, style: .continuous).strokeBorder(Quiet.line, lineWidth: 1))
+            .fixedSize()
+            .accessibilityAddTraits(.updatesFrequently)
     }
 }

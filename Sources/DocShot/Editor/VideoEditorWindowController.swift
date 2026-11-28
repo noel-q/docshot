@@ -40,17 +40,20 @@ public final class VideoEditorWindowController: NSObject, NSWindowDelegate {
         self.viewModel = vm
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 900, height: 700),
+            contentRect: NSRect(x: 0, y: 0, width: 1000, height: 720),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
-        window.title = "DocShot - Video Editor"
-        window.minSize = NSSize(width: 850, height: 650)
+        window.title = "Edit recording"
+        // Wide enough for the drawing bar in one row.
+        window.minSize = NSSize(width: 960, height: 650)
         window.center()
         window.isReleasedWhenClosed = false
-        window.backgroundColor = DesignTokens.nsGraphiteBase
-        window.appearance = NSAppearance(named: .darkAqua)
+        // The title bar takes the top bar's `surface`, so the two read as one bar.
+        window.titlebarAppearsTransparent = true
+        window.backgroundColor = NSColor(Quiet.surface)
+        // Follows macOS light or dark, like every other DocShot window (it was always dark).
         window.delegate = self
 
         let editorView = VideoEditorView(viewModel: vm) { [weak self] exit in
@@ -90,9 +93,9 @@ public final class VideoEditorWindowController: NSObject, NSWindowDelegate {
 
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "Leave Video Editor?"
-        alert.informativeText = "This recording has not been saved. Return to the recording output choices to save it, export a GIF, or discard it."
-        alert.addButton(withTitle: "Return to Output Choices")
+        alert.messageText = "Leave the editor?"
+        alert.informativeText = "The recording has not been saved. Go back to the choices to save it, export a GIF or discard it."
+        alert.addButton(withTitle: "Back to the choices")
         alert.addButton(withTitle: "Cancel")
         if alert.runModal() == .alertFirstButtonReturn {
             closeEditor(with: .returnToOutputChoice)

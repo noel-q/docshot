@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import CoreGraphics
+import AppKit
 @testable import DocShot
 
 /// Lets a test hold a capture in flight until it chooses to release it.
@@ -261,5 +262,40 @@ struct DisplaySnapshotServiceTests {
 
         // A point on no display samples nothing.
         #expect(service.sample(atGlobalPoint: CGPoint(x: 5000, y: 5000)) == nil)
+    }
+}
+
+@MainActor
+@Suite("Space change observer")
+struct SpaceChangeObserverTests {
+    private func postSpaceChange(on center: NotificationCenter) {
+        center.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+    }
+
+    @Test("A Space change is reported while observing, and not after stop")
+    func testReportsUntilStopped() {
+        let center = NotificationCenter()
+        let observer = SpaceChangeObserver(center: center)
+        var changes = 0
+        observer.start { changes += 1 }
+        postSpaceChange(on: center)
+        #expect(changes == 1)
+        observer.stop()
+        postSpaceChange(on: center)
+        #expect(changes == 1)
+    }
+
+    @Test("Starting again replaces the old handler, so one change is reported once")
+    func testRestartDoesNotDouble() {
+        let center = NotificationCenter()
+        let observer = SpaceChangeObserver(center: center)
+        var first = 0
+        var second = 0
+        observer.start { first += 1 }
+        observer.start { second += 1 }
+        postSpaceChange(on: center)
+        #expect(first == 0)
+        #expect(second == 1)
+        observer.stop()
     }
 }

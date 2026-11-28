@@ -7,6 +7,51 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2000002C2000000000000A1 /* ClipboardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000001C2000000000000A1 /* ClipboardSettings.swift */; };
+		C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000001C2000000000000A1 /* ClipboardSettings.swift */; };
+		C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
+		C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000004C2000000000000A1 /* PasteboardReader.swift */; };
+		C3000002C3000000000000A1 /* PasteAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000001C3000000000000A1 /* PasteAction.swift */; };
+		C3000003C3000000000000A1 /* PasteAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000001C3000000000000A1 /* PasteAction.swift */; };
+		C3000005C3000000000000A1 /* ClipboardListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000004C3000000000000A1 /* ClipboardListModel.swift */; };
+		C3000006C3000000000000A1 /* ClipboardListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000004C3000000000000A1 /* ClipboardListModel.swift */; };
+		D4000002D4000000000000A1 /* QuietTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000001D4000000000000A1 /* QuietTokens.swift */; };
+		D4000003D4000000000000A1 /* QuietTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000001D4000000000000A1 /* QuietTokens.swift */; };
+		D4000005D4000000000000A1 /* Quiet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000004D4000000000000A1 /* Quiet.swift */; };
+		D4000006D4000000000000A1 /* Quiet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000004D4000000000000A1 /* Quiet.swift */; };
+		D4000008D4000000000000A1 /* ClipPreviewText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000007D4000000000000A1 /* ClipPreviewText.swift */; };
+		D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000007D4000000000000A1 /* ClipPreviewText.swift */; };
+		D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
+		D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
+		D8000002D8000000000000A1 /* FloatLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000001D8000000000000A1 /* FloatLayout.swift */; };
+		D8000003D8000000000000A1 /* FloatLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000001D8000000000000A1 /* FloatLayout.swift */; };
+		D8000005D8000000000000A1 /* FloatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000004D8000000000000A1 /* FloatController.swift */; };
+		D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8000006D8000000000000A1 /* FloatLayoutTests.swift */; };
+		D9000002D9000000000000A1 /* UpdateRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000001D9000000000000A1 /* UpdateRelease.swift */; };
+		D9000003D9000000000000A1 /* UpdateRelease.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000001D9000000000000A1 /* UpdateRelease.swift */; };
+		D9000005D9000000000000A1 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000004D9000000000000A1 /* UpdateController.swift */; };
+		D9000007D9000000000000A1 /* UpdateReleaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9000006D9000000000000A1 /* UpdateReleaseTests.swift */; };
+		E9000002E9000000000000A1 /* EasterEggs.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9000001E9000000000000A1 /* EasterEggs.swift */; };
+		E9000003E9000000000000A1 /* EasterEggs.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9000001E9000000000000A1 /* EasterEggs.swift */; };
+		E9000005E9000000000000A1 /* EasterEggTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9000004E9000000000000A1 /* EasterEggTests.swift */; };
+		D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000001D7000000000000A1 /* OnboardingPages.swift */; };
+		D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6000001D6000000000000A1 /* SettingsPanelLayout.swift */; };
+		D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */; };
+		D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4000012D4000000000000A1 /* QuietTokensTests.swift */; };
+		C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */; };
+		C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000007C3000000000000A1 /* PasteActionTests.swift */; };
+		C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3000009C3000000000000A1 /* ClipboardListModelTests.swift */; };
+		D7000005D7000000000000A1 /* OnboardingPagesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7000004D7000000000000A1 /* OnboardingPagesTests.swift */; };
+		C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
+		C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000007C2000000000000A1 /* ClipboardHistoryController.swift */; };
+		C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000010C2000000000000A1 /* ClipboardWindowController.swift */; };
+		C2000013C2000000000000A1 /* ClipboardHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000012C2000000000000A1 /* ClipboardHistoryView.swift */; };
+		C2000015C2000000000000A1 /* ClipboardSettingsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */; };
+		C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */; };
+		C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000018C2000000000000A1 /* PasteboardReaderTests.swift */; };
+		C2000021C2000000000000A1 /* ClipboardHistoryControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */; };
+		C2000903C2000000000000A1 /* ClipboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2000901C2000000000000A1 /* ClipboardKit */; };
+		C2000904C2000000000000A1 /* ClipboardKit in Frameworks */ = {isa = PBXBuildFile; productRef = C2000902C2000000000000A1 /* ClipboardKit */; };
 		DA0000012C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
 		DA0000022C50000000000001 /* LaunchAtLoginService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000012C50000000000001 /* LaunchAtLoginService.swift */; };
 		DA0000032C50000000000001 /* LaunchAtLoginServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0000022C50000000000001 /* LaunchAtLoginServiceTests.swift */; };
@@ -22,6 +67,7 @@
 		4FF1ED9930111159009B2696 /* VideoEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000992C50000000000001 /* VideoEditorViewModelTests.swift */; };
 		4FF1ED1730111159009B2696 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000022C50000000000001 /* Annotation.swift */; };
 		4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000032C50000000000001 /* AnnotationTool.swift */; };
+		C0500001C0500000000000A1 /* GlobalShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500003C0500000000000A1 /* GlobalShortcut.swift */; };
 		4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000042C50000000000001 /* CaptureState.swift */; };
 		4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000052C50000000000001 /* DisplayGeometry.swift */; };
 		4FF1ED1B30111159009B2696 /* WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000062C50000000000001 /* WindowInfo.swift */; };
@@ -37,6 +83,7 @@
 		A00000012C50000000000001 /* DocShotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000012C50000000000001 /* DocShotApp.swift */; };
 		A00000022C50000000000001 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000022C50000000000001 /* Annotation.swift */; };
 		A00000032C50000000000001 /* AnnotationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000032C50000000000001 /* AnnotationTool.swift */; };
+		C0500002C0500000000000A1 /* GlobalShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500003C0500000000000A1 /* GlobalShortcut.swift */; };
 		A00000042C50000000000001 /* CaptureState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000042C50000000000001 /* CaptureState.swift */; };
 		A00000052C50000000000001 /* DisplayGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000052C50000000000001 /* DisplayGeometry.swift */; };
 		A00000062C50000000000001 /* WindowInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000062C50000000000001 /* WindowInfo.swift */; };
@@ -54,8 +101,22 @@
 		A00000122C50000000000001 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000122C50000000000001 /* CanvasView.swift */; };
 		A00000132C50000000000001 /* ImageRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000132C50000000000001 /* ImageRenderer.swift */; };
 		A00000142C50000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000142C50000000000001 /* SettingsView.swift */; };
+		D5000002D5000000000000A1 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5000001D5000000000000A1 /* SettingsComponents.swift */; };
 		A00000152C50000000000001 /* DisplayGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000152C50000000000001 /* DisplayGeometryTests.swift */; };
 		A00000162C50000000000001 /* AnnotationModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000162C50000000000001 /* AnnotationModelTests.swift */; };
+		C0500004C0500000000000A1 /* GlobalShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500005C0500000000000A1 /* GlobalShortcutTests.swift */; };
+		C0500006C0500000000000A1 /* AnnotationToolKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */; };
+		C050000AC0500000000000A1 /* SettingsLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C050000BC0500000000000A1 /* SettingsLayoutTests.swift */; };
+		C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */; };
+		C0600001C0600000000000A1 /* PreviewThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600003C0600000000000A1 /* PreviewThumbnail.swift */; };
+		C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600003C0600000000000A1 /* PreviewThumbnail.swift */; };
+		C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600005C0600000000000A1 /* PreviewThumbnailController.swift */; };
+		C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */; };
+		C0700001C0700000000000A1 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700003C0700000000000A1 /* ColorTheme.swift */; };
+		C0700002C0700000000000A1 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700003C0700000000000A1 /* ColorTheme.swift */; };
+		C0700004C0700000000000A1 /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700006C0700000000000A1 /* ThemeController.swift */; };
+		C0700005C0700000000000A1 /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700006C0700000000000A1 /* ThemeController.swift */; };
+		C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0700008C0700000000000A1 /* ColorThemeTests.swift */; };
 		A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000172C50000000000001 /* EditorViewModelTests.swift */; };
 		A00000182C50000000000001 /* PermissionWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000182C50000000000001 /* PermissionWindowController.swift */; };
 		A00000192C50000000000001 /* OutputServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000192C50000000000001 /* OutputServiceTests.swift */; };
@@ -176,6 +237,7 @@
 		B00000012C50000000000001 /* DocShotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DocShotApp.swift; path = Sources/DocShot/DocShotApp.swift; sourceTree = "<group>"; };
 		B00000022C50000000000001 /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Annotation.swift; path = Sources/DocShot/Models/Annotation.swift; sourceTree = "<group>"; };
 		B00000032C50000000000001 /* AnnotationTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationTool.swift; path = Sources/DocShot/Models/AnnotationTool.swift; sourceTree = "<group>"; };
+		C0500003C0500000000000A1 /* GlobalShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalShortcut.swift; path = Sources/DocShot/Models/GlobalShortcut.swift; sourceTree = "<group>"; };
 		B00000042C50000000000001 /* CaptureState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureState.swift; path = Sources/DocShot/Models/CaptureState.swift; sourceTree = "<group>"; };
 		B00000052C50000000000001 /* DisplayGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayGeometry.swift; path = Sources/DocShot/Models/DisplayGeometry.swift; sourceTree = "<group>"; };
 		B00000062C50000000000001 /* WindowInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WindowInfo.swift; path = Sources/DocShot/Models/WindowInfo.swift; sourceTree = "<group>"; };
@@ -193,8 +255,19 @@
 		B00000122C50000000000001 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CanvasView.swift; path = Sources/DocShot/Editor/CanvasView.swift; sourceTree = "<group>"; };
 		B00000132C50000000000001 /* ImageRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImageRenderer.swift; path = Sources/DocShot/Editor/ImageRenderer.swift; sourceTree = "<group>"; };
 		B00000142C50000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Sources/DocShot/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		D5000001D5000000000000A1 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsComponents.swift; path = Sources/DocShot/Settings/SettingsComponents.swift; sourceTree = "<group>"; };
 		B00000152C50000000000001 /* DisplayGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayGeometryTests.swift; path = Tests/DocShotTests/DisplayGeometryTests.swift; sourceTree = "<group>"; };
 		B00000162C50000000000001 /* AnnotationModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationModelTests.swift; path = Tests/DocShotTests/AnnotationModelTests.swift; sourceTree = "<group>"; };
+		C0500005C0500000000000A1 /* GlobalShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GlobalShortcutTests.swift; path = Tests/DocShotTests/GlobalShortcutTests.swift; sourceTree = "<group>"; };
+		C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnnotationToolKeyTests.swift; path = Tests/DocShotTests/AnnotationToolKeyTests.swift; sourceTree = "<group>"; };
+		C050000BC0500000000000A1 /* SettingsLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsLayoutTests.swift; path = Tests/DocShotTests/SettingsLayoutTests.swift; sourceTree = "<group>"; };
+		C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HotkeyServiceTableTests.swift; path = Tests/DocShotTests/HotkeyServiceTableTests.swift; sourceTree = "<group>"; };
+		C0600003C0600000000000A1 /* PreviewThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnail.swift; path = Sources/DocShot/Models/PreviewThumbnail.swift; sourceTree = "<group>"; };
+		C0600005C0600000000000A1 /* PreviewThumbnailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailController.swift; path = Sources/DocShot/Capture/PreviewThumbnailController.swift; sourceTree = "<group>"; };
+		C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PreviewThumbnailTests.swift; path = Tests/DocShotTests/PreviewThumbnailTests.swift; sourceTree = "<group>"; };
+		C0700003C0700000000000A1 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorTheme.swift; path = Sources/DocShot/Models/ColorTheme.swift; sourceTree = "<group>"; };
+		C0700006C0700000000000A1 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ThemeController.swift; path = Sources/DocShot/Design/ThemeController.swift; sourceTree = "<group>"; };
+		C0700008C0700000000000A1 /* ColorThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ColorThemeTests.swift; path = Tests/DocShotTests/ColorThemeTests.swift; sourceTree = "<group>"; };
 		B00000172C50000000000001 /* EditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EditorViewModelTests.swift; path = Tests/DocShotTests/EditorViewModelTests.swift; sourceTree = "<group>"; };
 		B00000182C50000000000001 /* PermissionWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionWindowController.swift; path = Sources/DocShot/Services/PermissionWindowController.swift; sourceTree = "<group>"; };
 		B00000192C50000000000001 /* OutputServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OutputServiceTests.swift; path = Tests/DocShotTests/OutputServiceTests.swift; sourceTree = "<group>"; };
@@ -264,6 +337,37 @@
 		CA00001F2C50000000000001 /* VideoProjectExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportService.swift; path = Sources/DocShot/Services/VideoProjectExportService.swift; sourceTree = "<group>"; };
 		CA0000222C50000000000001 /* VideoProjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectTests.swift; path = Tests/DocShotTests/VideoProjectTests.swift; sourceTree = "<group>"; };
 		CA0000232C50000000000001 /* VideoProjectExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoProjectExportTests.swift; path = Tests/DocShotTests/VideoProjectExportTests.swift; sourceTree = "<group>"; };
+		C2000001C2000000000000A1 /* ClipboardSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettings.swift; path = Sources/DocShot/Clipboard/ClipboardSettings.swift; sourceTree = "<group>"; };
+		C2000004C2000000000000A1 /* PasteboardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteboardReader.swift; path = Sources/DocShot/Clipboard/PasteboardReader.swift; sourceTree = "<group>"; };
+		C3000001C3000000000000A1 /* PasteAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteAction.swift; path = Sources/DocShot/Clipboard/PasteAction.swift; sourceTree = "<group>"; };
+		C3000004C3000000000000A1 /* ClipboardListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardListModel.swift; path = Sources/DocShot/Clipboard/ClipboardListModel.swift; sourceTree = "<group>"; };
+		D4000001D4000000000000A1 /* QuietTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QuietTokens.swift; path = Sources/DocShot/Design/QuietTokens.swift; sourceTree = "<group>"; };
+		D4000004D4000000000000A1 /* Quiet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Quiet.swift; path = Sources/DocShot/Design/Quiet.swift; sourceTree = "<group>"; };
+		D4000007D4000000000000A1 /* ClipPreviewText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipPreviewText.swift; path = Sources/DocShot/Clipboard/ClipPreviewText.swift; sourceTree = "<group>"; };
+		D6000001D6000000000000A1 /* SettingsPanelLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SettingsPanelLayout.swift; path = Sources/DocShot/Settings/SettingsPanelLayout.swift; sourceTree = "<group>"; };
+		D7000001D7000000000000A1 /* OnboardingPages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingPages.swift; path = Sources/DocShot/Onboarding/OnboardingPages.swift; sourceTree = "<group>"; };
+		D8000001D8000000000000A1 /* FloatLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayout.swift; path = Sources/DocShot/Capture/FloatLayout.swift; sourceTree = "<group>"; };
+		D8000004D8000000000000A1 /* FloatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatController.swift; path = Sources/DocShot/Capture/FloatController.swift; sourceTree = "<group>"; };
+		D8000006D8000000000000A1 /* FloatLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FloatLayoutTests.swift; path = Tests/DocShotTests/FloatLayoutTests.swift; sourceTree = "<group>"; };
+		D9000001D9000000000000A1 /* UpdateRelease.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateRelease.swift; path = Sources/DocShot/Updates/UpdateRelease.swift; sourceTree = "<group>"; };
+		D9000004D9000000000000A1 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateController.swift; path = Sources/DocShot/Updates/UpdateController.swift; sourceTree = "<group>"; };
+		D9000006D9000000000000A1 /* UpdateReleaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UpdateReleaseTests.swift; path = Tests/DocShotTests/UpdateReleaseTests.swift; sourceTree = "<group>"; };
+		E9000001E9000000000000A1 /* EasterEggs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EasterEggs.swift; path = Sources/DocShot/Models/EasterEggs.swift; sourceTree = "<group>"; };
+		E9000004E9000000000000A1 /* EasterEggTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EasterEggTests.swift; path = Tests/DocShotTests/EasterEggTests.swift; sourceTree = "<group>"; };
+		D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardPreviewPane.swift; path = Sources/DocShot/Clipboard/ClipboardPreviewPane.swift; sourceTree = "<group>"; };
+		D4000012D4000000000000A1 /* QuietTokensTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QuietTokensTests.swift; path = Tests/DocShotTests/QuietTokensTests.swift; sourceTree = "<group>"; };
+		C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardDebugHooks.swift; path = Sources/DocShot/Clipboard/ClipboardDebugHooks.swift; sourceTree = "<group>"; };
+		C3000007C3000000000000A1 /* PasteActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteActionTests.swift; path = Tests/DocShotTests/PasteActionTests.swift; sourceTree = "<group>"; };
+		C3000009C3000000000000A1 /* ClipboardListModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardListModelTests.swift; path = Tests/DocShotTests/ClipboardListModelTests.swift; sourceTree = "<group>"; };
+		D7000004D7000000000000A1 /* OnboardingPagesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OnboardingPagesTests.swift; path = Tests/DocShotTests/OnboardingPagesTests.swift; sourceTree = "<group>"; };
+		C2000007C2000000000000A1 /* ClipboardHistoryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryController.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryController.swift; sourceTree = "<group>"; };
+		C2000010C2000000000000A1 /* ClipboardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardWindowController.swift; path = Sources/DocShot/Clipboard/ClipboardWindowController.swift; sourceTree = "<group>"; };
+		C2000012C2000000000000A1 /* ClipboardHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryView.swift; path = Sources/DocShot/Clipboard/ClipboardHistoryView.swift; sourceTree = "<group>"; };
+		C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettingsSection.swift; path = Sources/DocShot/Clipboard/ClipboardSettingsSection.swift; sourceTree = "<group>"; };
+		C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardSettingsTests.swift; path = Tests/DocShotTests/ClipboardSettingsTests.swift; sourceTree = "<group>"; };
+		C2000018C2000000000000A1 /* PasteboardReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PasteboardReaderTests.swift; path = Tests/DocShotTests/PasteboardReaderTests.swift; sourceTree = "<group>"; };
+		C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipboardHistoryControllerTests.swift; path = Tests/DocShotTests/ClipboardHistoryControllerTests.swift; sourceTree = "<group>"; };
+		C2000900C2000000000000A1 /* ClipboardKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Packages/ClipboardKit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -271,6 +375,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2000903C2000000000000A1 /* ClipboardKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,6 +383,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2000904C2000000000000A1 /* ClipboardKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +417,25 @@
 				B00000012C50000000000001 /* DocShotApp.swift */,
 				B00000022C50000000000001 /* Annotation.swift */,
 				B00000032C50000000000001 /* AnnotationTool.swift */,
+				C0500003C0500000000000A1 /* GlobalShortcut.swift */,
+				C0600003C0600000000000A1 /* PreviewThumbnail.swift */,
+				C0600005C0600000000000A1 /* PreviewThumbnailController.swift */,
+				C0700003C0700000000000A1 /* ColorTheme.swift */,
+				E9000001E9000000000000A1 /* EasterEggs.swift */,
+				C2000001C2000000000000A1 /* ClipboardSettings.swift */,
+				C2000004C2000000000000A1 /* PasteboardReader.swift */,
+				C3000001C3000000000000A1 /* PasteAction.swift */,
+				C3000004C3000000000000A1 /* ClipboardListModel.swift */,
+				D4000007D4000000000000A1 /* ClipPreviewText.swift */,
+				D4000010D4000000000000A1 /* ClipboardPreviewPane.swift */,
+				C3000011C3000000000000A1 /* ClipboardDebugHooks.swift */,
+				C2000007C2000000000000A1 /* ClipboardHistoryController.swift */,
+				C2000010C2000000000000A1 /* ClipboardWindowController.swift */,
+				C2000012C2000000000000A1 /* ClipboardHistoryView.swift */,
+				C2000014C2000000000000A1 /* ClipboardSettingsSection.swift */,
+				C0700006C0700000000000A1 /* ThemeController.swift */,
+				D4000001D4000000000000A1 /* QuietTokens.swift */,
+				D4000004D4000000000000A1 /* Quiet.swift */,
 				B00000042C50000000000001 /* CaptureState.swift */,
 				B00000052C50000000000001 /* DisplayGeometry.swift */,
 				B00000232C50000000000001 /* ExportSize.swift */,
@@ -344,9 +469,16 @@
 				B00000132C50000000000001 /* ImageRenderer.swift */,
 				B00000252C50000000000001 /* ExportSizeControl.swift */,
 				B00000142C50000000000001 /* SettingsView.swift */,
+				D5000001D5000000000000A1 /* SettingsComponents.swift */,
+				D6000001D6000000000000A1 /* SettingsPanelLayout.swift */,
 				B00000262C50000000000001 /* CustomShortcutRecorder.swift */,
 				B00000182C50000000000001 /* PermissionWindowController.swift */,
 				B000001B2C50000000000001 /* OnboardingView.swift */,
+				D7000001D7000000000000A1 /* OnboardingPages.swift */,
+				D8000001D8000000000000A1 /* FloatLayout.swift */,
+				D8000004D8000000000000A1 /* FloatController.swift */,
+				D9000001D9000000000000A1 /* UpdateRelease.swift */,
+				D9000004D9000000000000A1 /* UpdateController.swift */,
 				CA0000012C50000000000001 /* RecordingTarget.swift */,
 				CA0000022C50000000000001 /* RecordingOptions.swift */,
 				CA0000032C50000000000001 /* RecordingFailure.swift */,
@@ -382,6 +514,22 @@
 			children = (
 				B00000152C50000000000001 /* DisplayGeometryTests.swift */,
 				B00000162C50000000000001 /* AnnotationModelTests.swift */,
+				C0500005C0500000000000A1 /* GlobalShortcutTests.swift */,
+				C0500007C0500000000000A1 /* AnnotationToolKeyTests.swift */,
+				C050000BC0500000000000A1 /* SettingsLayoutTests.swift */,
+				C0500009C0500000000000A1 /* HotkeyServiceTableTests.swift */,
+				C0600007C0600000000000A1 /* PreviewThumbnailTests.swift */,
+				C0700008C0700000000000A1 /* ColorThemeTests.swift */,
+				C2000016C2000000000000A1 /* ClipboardSettingsTests.swift */,
+				C2000018C2000000000000A1 /* PasteboardReaderTests.swift */,
+				C3000007C3000000000000A1 /* PasteActionTests.swift */,
+				C3000009C3000000000000A1 /* ClipboardListModelTests.swift */,
+				D7000004D7000000000000A1 /* OnboardingPagesTests.swift */,
+				D8000006D8000000000000A1 /* FloatLayoutTests.swift */,
+				D9000006D9000000000000A1 /* UpdateReleaseTests.swift */,
+				E9000004E9000000000000A1 /* EasterEggTests.swift */,
+				D4000012D4000000000000A1 /* QuietTokensTests.swift */,
+				C2000020C2000000000000A1 /* ClipboardHistoryControllerTests.swift */,
 				B00000172C50000000000001 /* EditorViewModelTests.swift */,
 				B00000192C50000000000001 /* OutputServiceTests.swift */,
 				B000001A2C50000000000001 /* CropRenderingTests.swift */,
@@ -412,6 +560,7 @@
 		100000000000000000000005 = {
 			isa = PBXGroup;
 			children = (
+				C2000900C2000000000000A1 /* ClipboardKit */,
 				100000000000000000000003 /* Sources */,
 				100000000000000000000004 /* Tests */,
 				100000000000000000000002 /* Products */,
@@ -443,6 +592,9 @@
 			dependencies = (
 			);
 			name = DocShot;
+			packageProductDependencies = (
+				C2000901C2000000000000A1 /* ClipboardKit */,
+			);
 			productName = DocShot;
 			productReference = E00000012C50000000000001 /* DocShot.app */;
 			productType = "com.apple.product-type.application";
@@ -460,6 +612,9 @@
 				T00000012C50000000000001 /* PBXTargetDependency */,
 			);
 			name = DocShotTests;
+			packageProductDependencies = (
+				C2000902C2000000000000A1 /* ClipboardKit */,
+			);
 			productName = DocShotTests;
 			productReference = E00000022C50000000000001 /* DocShotTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -516,6 +671,31 @@
 				A00000012C50000000000001 /* DocShotApp.swift in Sources */,
 				A00000022C50000000000001 /* Annotation.swift in Sources */,
 				A00000032C50000000000001 /* AnnotationTool.swift in Sources */,
+				C0500002C0500000000000A1 /* GlobalShortcut.swift in Sources */,
+				C0600002C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
+				C0600004C0600000000000A1 /* PreviewThumbnailController.swift in Sources */,
+				C0700002C0700000000000A1 /* ColorTheme.swift in Sources */,
+				C2000002C2000000000000A1 /* ClipboardSettings.swift in Sources */,
+				C2000005C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C3000002C3000000000000A1 /* PasteAction.swift in Sources */,
+				C3000005C3000000000000A1 /* ClipboardListModel.swift in Sources */,
+				D4000002D4000000000000A1 /* QuietTokens.swift in Sources */,
+				D4000005D4000000000000A1 /* Quiet.swift in Sources */,
+				D4000008D4000000000000A1 /* ClipPreviewText.swift in Sources */,
+				D6000002D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
+				D7000002D7000000000000A1 /* OnboardingPages.swift in Sources */,
+				D8000002D8000000000000A1 /* FloatLayout.swift in Sources */,
+				D8000005D8000000000000A1 /* FloatController.swift in Sources */,
+				D9000002D9000000000000A1 /* UpdateRelease.swift in Sources */,
+				D9000005D9000000000000A1 /* UpdateController.swift in Sources */,
+				E9000002E9000000000000A1 /* EasterEggs.swift in Sources */,
+				D4000011D4000000000000A1 /* ClipboardPreviewPane.swift in Sources */,
+				C3000012C3000000000000A1 /* ClipboardDebugHooks.swift in Sources */,
+				C2000008C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
+				C2000011C2000000000000A1 /* ClipboardWindowController.swift in Sources */,
+				C2000013C2000000000000A1 /* ClipboardHistoryView.swift in Sources */,
+				C2000015C2000000000000A1 /* ClipboardSettingsSection.swift in Sources */,
+				C0700005C0700000000000A1 /* ThemeController.swift in Sources */,
 				A00000042C50000000000001 /* CaptureState.swift in Sources */,
 				A00000052C50000000000001 /* DisplayGeometry.swift in Sources */,
 				A00000232C50000000000001 /* ExportSize.swift in Sources */,
@@ -546,6 +726,7 @@
 				A00000132C50000000000001 /* ImageRenderer.swift in Sources */,
 				A00000252C50000000000001 /* ExportSizeControl.swift in Sources */,
 				A00000142C50000000000001 /* SettingsView.swift in Sources */,
+				D5000002D5000000000000A1 /* SettingsComponents.swift in Sources */,
 				A00000262C50000000000001 /* CustomShortcutRecorder.swift in Sources */,
 				A00000182C50000000000001 /* PermissionWindowController.swift in Sources */,
 				A000001B2C50000000000001 /* OnboardingView.swift in Sources */,
@@ -589,6 +770,10 @@
 				4FF1ED9930111159009B2696 /* VideoEditorViewModelTests.swift in Sources */,
 				4FF1ED1730111159009B2696 /* Annotation.swift in Sources */,
 				4FF1ED1830111159009B2696 /* AnnotationTool.swift in Sources */,
+				C0500001C0500000000000A1 /* GlobalShortcut.swift in Sources */,
+				C0600001C0600000000000A1 /* PreviewThumbnail.swift in Sources */,
+				C0700001C0700000000000A1 /* ColorTheme.swift in Sources */,
+				C0700004C0700000000000A1 /* ThemeController.swift in Sources */,
 				4FF1ED1930111159009B2696 /* CaptureState.swift in Sources */,
 				4FF1ED1A30111159009B2696 /* DisplayGeometry.swift in Sources */,
 				4FF1ED2630111159009B2696 /* ExportSize.swift in Sources */,
@@ -613,6 +798,35 @@
 				4FF1ED2530111159009B2696 /* MarkView.swift in Sources */,
 				A00000152C50000000000001 /* DisplayGeometryTests.swift in Sources */,
 				A00000162C50000000000001 /* AnnotationModelTests.swift in Sources */,
+				C0500004C0500000000000A1 /* GlobalShortcutTests.swift in Sources */,
+				C0500006C0500000000000A1 /* AnnotationToolKeyTests.swift in Sources */,
+				C050000AC0500000000000A1 /* SettingsLayoutTests.swift in Sources */,
+				C0500008C0500000000000A1 /* HotkeyServiceTableTests.swift in Sources */,
+				C0600006C0600000000000A1 /* PreviewThumbnailTests.swift in Sources */,
+				C0700007C0700000000000A1 /* ColorThemeTests.swift in Sources */,
+				C2000003C2000000000000A1 /* ClipboardSettings.swift in Sources */,
+				C2000006C2000000000000A1 /* PasteboardReader.swift in Sources */,
+				C3000003C3000000000000A1 /* PasteAction.swift in Sources */,
+				C3000006C3000000000000A1 /* ClipboardListModel.swift in Sources */,
+				D4000003D4000000000000A1 /* QuietTokens.swift in Sources */,
+				D4000006D4000000000000A1 /* Quiet.swift in Sources */,
+				D4000009D4000000000000A1 /* ClipPreviewText.swift in Sources */,
+				D6000003D6000000000000A1 /* SettingsPanelLayout.swift in Sources */,
+				D7000003D7000000000000A1 /* OnboardingPages.swift in Sources */,
+				D8000003D8000000000000A1 /* FloatLayout.swift in Sources */,
+				D8000007D8000000000000A1 /* FloatLayoutTests.swift in Sources */,
+				D9000003D9000000000000A1 /* UpdateRelease.swift in Sources */,
+				D9000007D9000000000000A1 /* UpdateReleaseTests.swift in Sources */,
+				E9000003E9000000000000A1 /* EasterEggs.swift in Sources */,
+				E9000005E9000000000000A1 /* EasterEggTests.swift in Sources */,
+				D4000013D4000000000000A1 /* QuietTokensTests.swift in Sources */,
+				C3000008C3000000000000A1 /* PasteActionTests.swift in Sources */,
+				C3000010C3000000000000A1 /* ClipboardListModelTests.swift in Sources */,
+				D7000005D7000000000000A1 /* OnboardingPagesTests.swift in Sources */,
+				C2000009C2000000000000A1 /* ClipboardHistoryController.swift in Sources */,
+				C2000017C2000000000000A1 /* ClipboardSettingsTests.swift in Sources */,
+				C2000019C2000000000000A1 /* PasteboardReaderTests.swift in Sources */,
+				C2000021C2000000000000A1 /* ClipboardHistoryControllerTests.swift in Sources */,
 				A00000172C50000000000001 /* EditorViewModelTests.swift in Sources */,
 				A00000192C50000000000001 /* OutputServiceTests.swift in Sources */,
 				A000001A2C50000000000001 /* CropRenderingTests.swift in Sources */,
@@ -675,7 +889,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
+				MARKETING_VERSION = 1.1.0;
 				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -695,7 +910,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
+				MARKETING_VERSION = 1.1.0;
 				DEVELOPMENT_TEAM = DVV9Z7Q7B9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -796,6 +1012,17 @@
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C2000901C2000000000000A1 /* ClipboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClipboardKit;
+		};
+		C2000902C2000000000000A1 /* ClipboardKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClipboardKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCConfigurationList section */
 		G00000012C50000000000001 /* Build configuration list for PBXNativeTarget "DocShot" */ = {

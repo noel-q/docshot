@@ -18,10 +18,23 @@ public final class EditorViewModel: ObservableObject {
     @Published public var exportSize: ExportSize = .native
 
     public let undoManager = UndoManager()
-    
-    public init(baseImage: CGImage) {
+
+    /// The Captures entry this editor works on, when reopened from Captures (C4).
+    public var captureID: UUID?
+
+    public init(baseImage: CGImage, captureID: UUID? = nil, state: CaptureEditorState? = nil) {
         self.baseImage = baseImage
+        self.captureID = captureID
+        if let state {
+            self.annotations = state.annotations
+            self.cropRect = state.cropRect
+        }
         self.undoManager.groupsByEvent = false
+    }
+
+    /// What Captures keeps when the editor closes.
+    public var captureState: CaptureEditorState {
+        CaptureEditorState(annotations: annotations, cropRect: cropRect)
     }
     
     // MARK: - Annotation Operations

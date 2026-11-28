@@ -98,11 +98,11 @@ public struct SelectionOverlayView: View {
                     
                     ZStack {
                         Rectangle()
-                            .fill(Color.blue.opacity(0.12))
+                            .fill(Quiet.accent.opacity(0.12))
                             .frame(width: winRect.width, height: winRect.height)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 4)
-                                    .stroke(Color.blue, lineWidth: 2.5)
+                                    .stroke(Quiet.accent, lineWidth: 2.5)
                             )
                             .position(x: winRect.midX, y: winRect.midY)
                         
@@ -118,7 +118,7 @@ public struct SelectionOverlayView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(Capsule().fill(Color.black.opacity(0.85)))
-                        .overlay(Capsule().stroke(Color.blue.opacity(0.6), lineWidth: 1))
+                        .overlay(Capsule().stroke(Quiet.accent.opacity(0.6), lineWidth: 1))
                         .position(x: winRect.midX, y: max(winRect.minY - 24, 30))
                     }
                 }
@@ -131,7 +131,7 @@ public struct SelectionOverlayView: View {
                             .frame(width: max(dragRect.width, 1), height: max(dragRect.height, 1))
                             .overlay(
                                 Rectangle()
-                                    .stroke(Color(nsColor: .controlAccentColor), lineWidth: 2)
+                                    .stroke(Quiet.accent, lineWidth: 2)
                             )
                             .position(x: dragRect.midX, y: dragRect.midY)
                         

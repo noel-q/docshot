@@ -32,6 +32,28 @@ struct CaptureActivityPolicyTests {
         #expect(policy.allowsStopRecording == false)
     }
 
+    @Test("The record shortcut starts when idle, stops a live recording, and refuses otherwise")
+    func testRecordShortcutAction() {
+        func action(_ recording: RecordingState, capture: CaptureState = .idle) -> CaptureActivityPolicy.RecordShortcutAction {
+            CaptureActivityPolicy.evaluate(captureState: capture, recordingState: recording).recordShortcutAction
+        }
+        #expect(action(.idle) == .start)
+        #expect(action(.starting(Self.target)) == .stop)
+        #expect(action(.recording(Self.target, startedAt: Date())) == .stop)
+        #expect(action(.selecting) == .refuse)
+        #expect(action(.awaitingConfirmation(Self.target)) == .refuse)
+        #expect(action(.stopping) == .refuse)
+        #expect(action(.awaitingOutput(Self.recording())) == .refuse)
+        #expect(action(.idle, capture: .selecting) == .refuse)
+        #expect(action(.permissionRequired) == .refuse)
+        #expect(action(.exportingGIF(Self.recording())) == .refuse)
+        #expect(action(.failed(.permissionDenied)) == .refuse)
+        for busy: CaptureState in [.permissionRequired, .capturing, .editing] {
+            #expect(action(.idle, capture: busy) == .refuse)
+        }
+        #expect(action(.idle, capture: .cancelled) == .start)
+    }
+
     @Test("Every non-idle recording state blocks screenshot capture")
     func testRecordingBlocksScreenshots() {
         let busyStates: [RecordingState] = [

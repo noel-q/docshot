@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 /// Owns the temporary global Escape registration that covers the interval between starting a
@@ -62,5 +63,33 @@ public final class PendingEscapeSession {
         guard activeToken != nil else { return }
         activeToken = nil
         handler.unregisterTemporaryEscape()
+    }
+}
+
+/// Tells an open selector that the user moved to another Space (a desktop or a full-screen
+/// app), for example with a three-finger swipe. The selector's frozen picture and window list
+/// belong to the Space it opened on, so it must re-read both or it captures the Space the user
+/// left.
+@MainActor
+public final class SpaceChangeObserver {
+    private let center: NotificationCenter
+    private var token: NSObjectProtocol?
+
+    public init(center: NotificationCenter = NSWorkspace.shared.notificationCenter) {
+        self.center = center
+    }
+
+    public func start(_ onChange: @escaping @MainActor @Sendable () -> Void) {
+        stop()
+        token = center.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated { onChange() }
+        }
+    }
+
+    public func stop() {
+        if let token { center.removeObserver(token) }
+        token = nil
     }
 }

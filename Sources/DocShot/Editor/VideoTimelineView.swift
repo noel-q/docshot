@@ -2,6 +2,8 @@ import SwiftUI
 import AppKit
 
 public struct VideoTimelineView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject private var themeController = ThemeController.shared
     @ObservedObject var viewModel: VideoEditorViewModel
 
     public init(viewModel: VideoEditorViewModel) {
@@ -9,55 +11,35 @@ public struct VideoTimelineView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 12) {
-            // Playback Transport Controls & Scrubber
-            HStack(spacing: 12) {
-                // Play/Pause & Step Buttons
-                HStack(spacing: 6) {
-                    Button(action: { viewModel.seek(to: 0) }) {
-                        Image(systemName: "gobackward.10")
-                    }
-                    .buttonStyle(.plain)
-                    .help("Jump to start")
-
-                    Button(action: { viewModel.stepFrame(by: -1.0) }) {
-                        Image(systemName: "backward.frame")
-                    }
-                    .buttonStyle(.plain)
-                    .help("Step back 1 second")
-
-                    Button(action: { viewModel.togglePlayPause() }) {
+        VStack(spacing: Quiet.Space.s3) {
+            // Transport and scrubber. Neutral: the accent stays for Save.
+            HStack(spacing: Quiet.Space.s3) {
+                HStack(spacing: Quiet.Space.s1) {
+                    EditorIconButton("backward.end", help: "Go to the start") { viewModel.seek(to: 0) }
+                    EditorIconButton("gobackward", help: "Back one second") { viewModel.stepFrame(by: -1.0) }
+                    Button {
+                        viewModel.togglePlayPause()
+                    } label: {
                         Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(DesignTokens.primaryAccent)
-                            .frame(width: 28, height: 28)
-                            .background(DesignTokens.primaryAccent.opacity(0.15))
-                            .clipShape(Circle())
+                            .font(Quiet.Font.ui)
+                            .foregroundStyle(Quiet.ink)
+                            .frame(width: Quiet.Space.s8, height: Quiet.Space.s8)
+                            .background(Circle().fill(Quiet.selection))
+                            .contentShape(Circle())
                     }
                     .buttonStyle(.plain)
                     .keyboardShortcut(.space, modifiers: [])
-                    .help("Play/Pause (Space)")
-
-                    Button(action: { viewModel.stepFrame(by: 1.0) }) {
-                        Image(systemName: "forward.frame")
-                    }
-                    .buttonStyle(.plain)
-                    .help("Step forward 1 second")
-
-                    Button(action: { viewModel.seek(to: viewModel.timelineDuration) }) {
-                        Image(systemName: "goforward.10")
-                    }
-                    .buttonStyle(.plain)
-                    .help("Jump to end")
+                    .help(viewModel.isPlaying ? "Pause (Space)" : "Play (Space)")
+                    .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
+                    EditorIconButton("goforward", help: "Forward one second") { viewModel.stepFrame(by: 1.0) }
+                    EditorIconButton("forward.end", help: "Go to the end") { viewModel.seek(to: viewModel.timelineDuration) }
                 }
 
-                // Monospaced Timestamp Readout
                 Text("\(formatTime(viewModel.currentTimelineTime)) / \(formatTime(viewModel.timelineDuration))")
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .frame(width: 130)
+                    .font(Quiet.Font.caption.monospacedDigit())
+                    .foregroundStyle(Quiet.ink)
+                    .fixedSize()
 
-                // Timeline Scrubber Slider
                 Slider(
                     value: Binding(
                         get: { viewModel.currentTimelineTime },
@@ -65,26 +47,22 @@ public struct VideoTimelineView: View {
                     ),
                     in: 0...max(0.01, viewModel.timelineDuration)
                 )
-                .tint(DesignTokens.primaryAccent)
+                .tint(Quiet.inkMuted)
+                .accessibilityLabel("Playhead")
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.top, Quiet.Space.s3)
 
-            Divider()
+            QuietRule()
 
-            // Segment Timeline & Inspector
-            HStack(alignment: .top, spacing: 16) {
-                // Segment Timeline List
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Timeline Segments (\(viewModel.project.segments.count))")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(DesignTokens.secondaryText)
-                        Spacer()
-                    }
+            HStack(alignment: .top, spacing: Quiet.Space.s4) {
+                VStack(alignment: .leading, spacing: Quiet.Space.s2) {
+                    Text("Clips (\(viewModel.project.segments.count))")
+                        .font(Quiet.Font.label)
+                        .foregroundStyle(Quiet.inkMuted)
 
                     ScrollView(.horizontal, showsIndicators: true) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: Quiet.Space.s2) {
                             ForEach(Array(viewModel.project.segments.enumerated()), id: \.element.id) { index, segment in
                                 SegmentCardView(
                                     segment: segment,
@@ -107,104 +85,90 @@ public struct VideoTimelineView: View {
                                 )
                             }
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, Quiet.Space.s1)
                     }
                 }
                 .frame(maxWidth: .infinity)
 
-                Divider()
+                QuietRule(vertical: true)
                     .frame(height: 100)
 
-                // Selected Segment Trim Controls & Annotation Inspector
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: Quiet.Space.s2) {
                     if let segment = viewModel.selectedSegment {
-                        Text("Trim Segment #\(segmentIndex(for: segment.id) + 1)")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(DesignTokens.secondaryText)
+                        Text("Trim clip \(segmentIndex(for: segment.id) + 1)")
+                            .font(Quiet.Font.label)
+                            .foregroundStyle(Quiet.inkMuted)
 
-                        HStack(spacing: 12) {
-                            // Trim In Control
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("In Point")
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundColor(DesignTokens.secondaryText)
-                                HStack(spacing: 4) {
-                                    Text(formatTime(segment.sourceRange.start))
-                                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                                    Button("Set Playhead") {
-                                        if let (seg, localTime) = viewModel.currentSegmentAndLocalTime, seg.id == segment.id {
-                                            let newStart = segment.sourceRange.start + localTime
-                                            if newStart < segment.sourceRange.end - VideoTimeRange.minimumDuration {
-                                                viewModel.trimSegment(id: segment.id, startInSource: newStart, endInSource: segment.sourceRange.end)
-                                            }
-                                        }
+                        HStack(spacing: Quiet.Space.s3) {
+                            trimControl(title: "Start", time: segment.sourceRange.start) {
+                                if let (seg, localTime) = viewModel.currentSegmentAndLocalTime, seg.id == segment.id {
+                                    let newStart = segment.sourceRange.start + localTime
+                                    if newStart < segment.sourceRange.end - VideoTimeRange.minimumDuration {
+                                        viewModel.trimSegment(id: segment.id, startInSource: newStart, endInSource: segment.sourceRange.end)
                                     }
-                                    .font(.system(size: 10))
-                                    .buttonStyle(.bordered)
                                 }
                             }
-
-                            // Trim Out Control
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Out Point")
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundColor(DesignTokens.secondaryText)
-                                HStack(spacing: 4) {
-                                    Text(formatTime(segment.sourceRange.end))
-                                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                                    Button("Set Playhead") {
-                                        if let (seg, localTime) = viewModel.currentSegmentAndLocalTime, seg.id == segment.id {
-                                            let newEnd = segment.sourceRange.start + localTime
-                                            if newEnd > segment.sourceRange.start + VideoTimeRange.minimumDuration {
-                                                viewModel.trimSegment(id: segment.id, startInSource: segment.sourceRange.start, endInSource: newEnd)
-                                            }
-                                        }
+                            trimControl(title: "End", time: segment.sourceRange.end) {
+                                if let (seg, localTime) = viewModel.currentSegmentAndLocalTime, seg.id == segment.id {
+                                    let newEnd = segment.sourceRange.start + localTime
+                                    if newEnd > segment.sourceRange.start + VideoTimeRange.minimumDuration {
+                                        viewModel.trimSegment(id: segment.id, startInSource: segment.sourceRange.start, endInSource: newEnd)
                                     }
-                                    .font(.system(size: 10))
-                                    .buttonStyle(.bordered)
                                 }
                             }
                         }
 
-                        // Annotations List on Segment
                         let annotations = viewModel.project.annotations(forSegmentID: segment.id)
                         if !annotations.isEmpty {
-                            Text("Annotations (\(annotations.count))")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(DesignTokens.secondaryText)
-                                .padding(.top, 4)
+                            Text("Marks (\(annotations.count))")
+                                .font(Quiet.Font.label)
+                                .foregroundStyle(Quiet.inkMuted)
+                                .padding(.top, Quiet.Space.s1)
 
                             ForEach(annotations) { annotation in
-                                HStack(spacing: 6) {
+                                HStack(spacing: Quiet.Space.s2) {
                                     Circle()
                                         .fill(annotation.item.color.swiftUIColor)
-                                        .frame(width: 8, height: 8)
-                                    Text("\(annotation.item.typeDescription) [\(formatTime(annotation.sourceRange.start)) - \(formatTime(annotation.sourceRange.end))]")
-                                        .font(.system(size: 10, design: .monospaced))
-                                    Spacer()
-                                    Button(action: {
+                                        .frame(width: Quiet.Space.s2, height: Quiet.Space.s2)
+                                    Text("\(annotation.item.typeDescription), \(formatTime(annotation.sourceRange.start)) to \(formatTime(annotation.sourceRange.end))")
+                                        .font(Quiet.Font.caption.monospacedDigit())
+                                        .foregroundStyle(Quiet.ink)
+                                    Spacer(minLength: 0)
+                                    EditorIconButton("xmark", help: "Remove this mark") {
                                         viewModel.removeAnnotation(id: annotation.id)
-                                    }) {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 10))
-                                            .foregroundColor(.red)
                                     }
-                                    .buttonStyle(.plain)
                                 }
                             }
                         }
                     } else {
-                        Text("Select a segment to trim")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(DesignTokens.secondaryText)
+                        Text("Choose a clip to trim it.")
+                            .font(Quiet.Font.caption)
+                            .foregroundStyle(Quiet.inkMuted)
                     }
                 }
-                .frame(width: 280)
+                .frame(width: 280, alignment: .leading)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 10)
+            .padding(.horizontal, Quiet.Space.s4)
+            .padding(.bottom, Quiet.Space.s3)
         }
-        .background(DesignTokens.cardBackground)
+        .background(Quiet.surface)
+    }
+
+    /// One end of the trim: its time and a button that moves it to the playhead.
+    private func trimControl(title: String, time: TimeInterval, action: @escaping () -> Void) -> some View {
+        VStack(alignment: .leading, spacing: Quiet.Space.s1) {
+            Text(title)
+                .font(Quiet.Font.caption)
+                .foregroundStyle(Quiet.inkMuted)
+            HStack(spacing: Quiet.Space.s1) {
+                Text(formatTime(time))
+                    .font(Quiet.Font.caption.monospacedDigit())
+                    .foregroundStyle(Quiet.ink)
+                Button("To playhead", action: action)
+                    .controlSize(.small)
+                    .help("Move the \(title.lowercased()) to the playhead")
+            }
+        }
     }
 
     private func isPlayheadInSegment(_ segment: VideoSegment) -> Bool {
@@ -228,6 +192,8 @@ public struct VideoTimelineView: View {
 // MARK: - Segment Card View
 
 private struct SegmentCardView: View {
+    /// Redraws this view when the colour theme changes (C0.7).
+    @ObservedObject var themeController = ThemeController.shared
     let segment: VideoSegment
     let index: Int
     let totalSegments: Int
@@ -239,60 +205,48 @@ private struct SegmentCardView: View {
     let onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Quiet.Space.s1) {
             HStack {
-                Text("Segment #\(index + 1)")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(isSelected ? DesignTokens.primaryAccent : .primary)
-                Spacer()
+                Text("Clip \(index + 1)")
+                    .font(Quiet.Font.label)
+                    .foregroundStyle(Quiet.ink)
+                Spacer(minLength: 0)
                 if isPlayheadHere {
                     Circle()
-                        .fill(DesignTokens.identityAccent)
-                        .frame(width: 6, height: 6)
+                        .fill(Quiet.ink)
+                        .frame(width: Quiet.Space.s2, height: Quiet.Space.s2)
+                        .help("The playhead is in this clip")
+                        .accessibilityLabel("Playhead here")
                 }
             }
 
-            Text("Src: \(String(format: "%.1f", segment.sourceRange.start))s - \(String(format: "%.1f", segment.sourceRange.end))s")
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(DesignTokens.secondaryText)
+            Text("\(String(format: "%.1f", segment.sourceRange.start)) to \(String(format: "%.1f", segment.sourceRange.end)) s")
+                .font(Quiet.Font.caption.monospacedDigit())
+                .foregroundStyle(Quiet.inkMuted)
 
-            Text("Duration: \(String(format: "%.1f", segment.duration))s")
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.secondary)
-
-            HStack(spacing: 4) {
-                Button(action: onMoveLeft) {
-                    Image(systemName: "chevron.left")
-                }
-                .disabled(index == 0)
-
-                Button(action: onMoveRight) {
-                    Image(systemName: "chevron.right")
-                }
-                .disabled(index == totalSegments - 1)
-
-                Spacer()
-
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                }
-                .disabled(totalSegments <= 1)
+            HStack(spacing: 0) {
+                EditorIconButton("chevron.left", help: "Move earlier", disabled: index == 0, action: onMoveLeft)
+                EditorIconButton("chevron.right", help: "Move later", disabled: index == totalSegments - 1, action: onMoveRight)
+                Spacer(minLength: 0)
+                EditorIconButton("trash", help: "Delete this clip", disabled: totalSegments <= 1, action: onDelete)
             }
-            .font(.system(size: 10))
-            .buttonStyle(.borderless)
-            .padding(.top, 2)
         }
-        .padding(8)
-        .frame(width: 140)
-        .background(isSelected ? DesignTokens.primaryAccent.opacity(0.1) : DesignTokens.graphiteBase)
-        .cornerRadius(6)
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(isSelected ? DesignTokens.primaryAccent : DesignTokens.borderSubtle, lineWidth: isSelected ? 2 : 1)
+        .padding(Quiet.Space.s2)
+        .frame(width: 150)
+        .background(
+            RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                .fill(isSelected ? Quiet.selection : Quiet.canvas)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: Quiet.Radius.sm, style: .continuous)
+                .strokeBorder(isSelected ? Quiet.ink : Quiet.line, lineWidth: 1)
+        )
+        .contentShape(Rectangle())
         .onTapGesture {
             onSelect()
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Clip \(index + 1), \(String(format: "%.1f", segment.duration)) seconds")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

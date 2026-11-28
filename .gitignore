@@ -6,3 +6,5 @@ dist/
 .swiftpm/
 xcuserdata/
 *.xcuserstate
+HANDOFF.md
+spikes/

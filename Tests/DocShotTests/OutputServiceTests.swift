@@ -188,3 +188,57 @@ struct OutputServiceTests {
         #expect(mockFile.writeCount == 0)
     }
 }
+
+/// Copy GIF on a private pasteboard and a temporary folder: never the real clipboard.
+@Suite("Copy GIF")
+struct GIFClipboardTests {
+    @Test("The GIF goes on the clipboard as a file and as GIF data, each copy under its own name")
+    func testCopyGIF() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DocShotGIFClipboard-\(UUID().uuidString)")
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("DocShotTests.\(UUID().uuidString)"))
+        defer {
+            pasteboard.releaseGlobally()
+            try? FileManager.default.removeItem(at: root)
+        }
+        let folder = root.appendingPathComponent("Copied GIF")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+        let first = root.appendingPathComponent("first.gif")
+        try Data("GIF89a first".utf8).write(to: first)
+        let copied = try GIFClipboard.copy(gifAt: first, into: folder, pasteboard: pasteboard, now: now)
+        #expect(copied.lastPathComponent == GIFClipboard.fileName(at: now))
+        #expect(FileManager.default.fileExists(atPath: first.path) == false)
+        #expect(pasteboard.data(forType: GIFClipboard.gifType) == Data("GIF89a first".utf8))
+        #expect(pasteboard.string(forType: .fileURL).flatMap(URL.init(string:))?.standardizedFileURL == copied.standardizedFileURL)
+
+        // Same second: a second name, and the first copy still holds its own GIF.
+        let second = root.appendingPathComponent("second.gif")
+        try Data("GIF89a second".utf8).write(to: second)
+        let copiedAgain = try GIFClipboard.copy(gifAt: second, into: folder, pasteboard: pasteboard, now: now)
+        #expect(copiedAgain != copied)
+        #expect(try Data(contentsOf: copied) == Data("GIF89a first".utf8))
+        #expect(pasteboard.data(forType: GIFClipboard.gifType) == Data("GIF89a second".utf8))
+    }
+
+    @Test("Only the newest copies are kept, always including the one just made")
+    func testKeepsNewest() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DocShotGIFClipboard-\(UUID().uuidString)")
+        let pasteboard = NSPasteboard(name: NSPasteboard.Name("DocShotTests.\(UUID().uuidString)"))
+        defer {
+            pasteboard.releaseGlobally()
+            try? FileManager.default.removeItem(at: root)
+        }
+        let folder = root.appendingPathComponent("Copied GIF")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        var last: URL?
+        for index in 0..<(GIFClipboard.keptCopies + 3) {
+            let source = root.appendingPathComponent("\(index).gif")
+            try Data("GIF89a \(index)".utf8).write(to: source)
+            last = try GIFClipboard.copy(gifAt: source, into: folder, pasteboard: pasteboard, now: Date(timeIntervalSince1970: 1_800_000_000 + Double(index)))
+        }
+        let kept = try FileManager.default.contentsOfDirectory(atPath: folder.path)
+        #expect(kept.count == GIFClipboard.keptCopies)
+        #expect(kept.contains(try #require(last).lastPathComponent))
+    }
+}

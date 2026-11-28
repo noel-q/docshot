@@ -12,11 +12,13 @@ let package = Package(
             targets: ["DocShot"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(path: "Packages/ClipboardKit")
+    ],
     targets: [
         .executableTarget(
             name: "DocShot",
-            dependencies: [],
+            dependencies: [.product(name: "ClipboardKit", package: "ClipboardKit")],
             path: "Sources/DocShot",
             exclude: ["Info.plist"],
             resources: [
@@ -28,7 +30,7 @@ let package = Package(
         ),
         .testTarget(
             name: "DocShotTests",
-            dependencies: ["DocShot"],
+            dependencies: ["DocShot", .product(name: "ClipboardKit", package: "ClipboardKit")],
             path: "Tests/DocShotTests"
         )
     ]

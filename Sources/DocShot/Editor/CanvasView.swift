@@ -26,7 +26,7 @@ public struct CanvasView: View {
             let displayedHeight = imageHeight * canvasScale
             
             ZStack {
-                Color(nsColor: .windowBackgroundColor)
+                Quiet.canvas
                     .ignoresSafeArea()
                 
                 // Base Image
@@ -119,6 +119,11 @@ public struct CanvasView: View {
                             )
                             
                             if activeDragStart == nil {
+                                // Clicking the canvas takes focus back from the export size
+                                // fields, so the tool keys work again.
+                                if let window = NSApp.keyWindow, window.firstResponder is NSText {
+                                    window.makeFirstResponder(nil)
+                                }
                                 activeDragStart = startInImage
                                 lastDragLocation = startInImage
                                 
